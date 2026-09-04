@@ -252,7 +252,7 @@ Install the Science Ladder CLI when ready to compute the artifact digest or subm
 SL_TOOLS_DIR="$(cd .. && pwd)/.science-ladder-tools"
 mkdir -p "$SL_TOOLS_DIR"
 GOBIN="$SL_TOOLS_DIR" go install github.com/matbalez/science-ladder/cmd/sl@${CLI_SOURCE}
-PATH="$SL_TOOLS_DIR:$PATH"
+export PATH="$SL_TOOLS_DIR:$PATH"
 sl version
 sl challenge lint science-ladder.yaml
 sl artifact digest --manifest science-ladder.yaml --artifact ../candidate-artifact
