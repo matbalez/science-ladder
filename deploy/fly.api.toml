@@ -1,0 +1,48 @@
+app = "science-ladder-api"
+primary_region = "sjc"
+kill_signal = "SIGTERM"
+kill_timeout = "30s"
+
+[build]
+  dockerfile = "Dockerfile.api"
+
+[env]
+  DEPLOYMENT_MODE = "controlled-demo"
+  LISTEN_ADDR = ":8080"
+  PUBLIC_ORIGIN = "https://science-ladder.fly.dev"
+  OPERATOR_GITHUB_ID = "60949391"
+  OPENAI_REVIEW_MODEL = "gpt-6-astra"
+  S3_BUCKET = "science-ladder-cas"
+  S3_REGION = "auto"
+  S3_ENDPOINT = "https://t3.storage.dev"
+
+[processes]
+  api = "/app/api"
+  worker = "/app/worker"
+
+[deploy]
+  release_command = "/app/api migrate"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["api"]
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 100
+    hard_limit = 200
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "3s"
+    grace_period = "15s"
+    method = "GET"
+    path = "/readyz"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "512mb"
+  processes = ["api", "worker"]

@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+bin/
+coverage/
+*.log
+.DS_Store
+data/
+!examples/**/data/
+.terraform/
+*.tfstate*
+*.pem
+*.key
+work/

@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "ArtifactEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "mode": {
+          "const": "0644"
+        },
+        "path": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "size": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "type": {
+          "const": "file"
+        }
+      },
+      "required": [
+        "path",
+        "type",
+        "mode",
+        "size",
+        "digest"
+      ],
+      "type": "object"
+    },
+    "ArtifactTree": {
+      "additionalProperties": false,
+      "properties": {
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/ArtifactEntry"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "kind": {
+          "const": "ScienceLadderArtifactTree"
+        },
+        "version": {
+          "const": 1
+        }
+      },
+      "required": [
+        "kind",
+        "version",
+        "entries"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/matbalez/science-ladder/blob/main/protocol/schemas/artifact-tree-v1.schema.json",
+  "$ref": "#/$defs/ArtifactTree",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Science Ladder ArtifactTree v1"
+}

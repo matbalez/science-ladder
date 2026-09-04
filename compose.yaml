@@ -1,0 +1,26 @@
+name: science-ladder-dev
+services:
+  postgres:
+    image: postgres:17-bookworm@sha256:051f7b7b3abdd564d5d1bd1e8c4b9c1b6e77087d1dd22020ede611c096a272e0
+    environment:
+      POSTGRES_DB: science_ladder
+      POSTGRES_USER: science_ladder
+      POSTGRES_PASSWORD: ${DEV_DATABASE_PASSWORD:?Run scripts/dev-services.py first}
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U science_ladder -d science_ladder"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  objects:
+    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: science-ladder-local
+      MINIO_ROOT_PASSWORD: ${DEV_STORAGE_PASSWORD:?Run scripts/dev-services.py first}
+    ports: ["127.0.0.1:59000:9000", "127.0.0.1:59001:9001"]
+    volumes: ["objects:/data"]
+volumes:
+  postgres:
+  objects:

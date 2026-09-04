@@ -1,0 +1,283 @@
+{
+  "$defs": {
+    "BuildReport": {
+      "additionalProperties": false,
+      "properties": {
+        "challengeDisk": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "executionProfileDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "findings": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "fixtures": {
+          "items": {
+            "$ref": "#/$defs/FixtureReport"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "hostileCorpusPassed": {
+          "type": "boolean"
+        },
+        "manifestDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "offlineRebuild": {
+          "type": "boolean"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "rebuiltValidatorDiskDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "scansPassed": {
+          "type": "boolean"
+        },
+        "sourceSnapshotDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "submissionDisk": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "suiteDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "suiteDisk": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "validatorDisk": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "validatorDiskDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "validatorImageDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "manifestDigest",
+        "sourceSnapshotDigest",
+        "validatorDiskDigest",
+        "rebuiltValidatorDiskDigest",
+        "validatorImageDigest",
+        "suiteDigest",
+        "executionProfileDigest",
+        "offlineRebuild",
+        "fixtures",
+        "hostileCorpusPassed",
+        "scansPassed",
+        "passed",
+        "findings"
+      ],
+      "type": "object"
+    },
+    "FixtureReport": {
+      "additionalProperties": false,
+      "properties": {
+        "expectedOutcome": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "outcome": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "scoreTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "expectedOutcome",
+        "outcome",
+        "passed"
+      ],
+      "type": "object"
+    },
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "size": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "url": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "size",
+        "url"
+      ],
+      "type": "object"
+    },
+    "RunReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptanceReceiptDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "apiVersion": {
+          "const": "science-ladder/v1"
+        },
+        "artifactDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "buildReport": {
+          "$ref": "#/$defs/BuildReport"
+        },
+        "challengeLockDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "cleanupAttested": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deploymentMode": {
+          "enum": [
+            "controlled-demo",
+            "production"
+          ]
+        },
+        "durationMillis": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "executionProfileDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "fencingToken": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "gates": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "maxProperties": 128,
+          "type": "object"
+        },
+        "hostGroup": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "hostId": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "jobDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "jobId": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "kind": {
+          "const": "ValidationRunReceipt"
+        },
+        "official": {
+          "type": "boolean"
+        },
+        "officialAcceptance": {
+          "type": "boolean"
+        },
+        "outcome": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "producer": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "runnerEpoch": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "scoreTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "suiteDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentMode",
+        "officialAcceptance",
+        "apiVersion",
+        "kind",
+        "id",
+        "createdAt",
+        "producer",
+        "jobId",
+        "jobDigest",
+        "challengeLockDigest",
+        "artifactDigest",
+        "suiteDigest",
+        "executionProfileDigest",
+        "runnerEpoch",
+        "fencingToken",
+        "hostId",
+        "hostGroup",
+        "official",
+        "outcome",
+        "durationMillis",
+        "cleanupAttested"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/matbalez/science-ladder/blob/main/protocol/schemas/run-receipt-v1.schema.json",
+  "$ref": "#/$defs/RunReceipt",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Science Ladder RunReceipt v1"
+}

@@ -1,0 +1,51 @@
+{
+  "$defs": {
+    "Envelope": {
+      "additionalProperties": false,
+      "properties": {
+        "payload": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "payloadType": {
+          "const": "application/vnd.science-ladder.v1+json"
+        },
+        "signatures": {
+          "items": {
+            "$ref": "#/$defs/Signature"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        }
+      },
+      "required": [
+        "payloadType",
+        "payload",
+        "signatures"
+      ],
+      "type": "object"
+    },
+    "Signature": {
+      "additionalProperties": false,
+      "properties": {
+        "keyid": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "sig": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyid",
+        "sig"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/matbalez/science-ladder/blob/main/protocol/schemas/envelope-v1.schema.json",
+  "$ref": "#/$defs/Envelope",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Science Ladder Envelope v1"
+}

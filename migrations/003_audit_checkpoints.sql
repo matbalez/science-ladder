@@ -1,0 +1,3 @@
+CREATE TABLE audit_checkpoints(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,digest text NOT NULL UNIQUE,payload jsonb NOT NULL,envelope jsonb,from_sequence bigint NOT NULL,to_sequence bigint NOT NULL,issued_at timestamptz NOT NULL,quorum_verified_at timestamptz);
+CREATE TABLE witness_receipts(checkpoint_digest text NOT NULL REFERENCES audit_checkpoints(digest),key_id text NOT NULL,envelope jsonb NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(checkpoint_digest,key_id));
+CREATE TRIGGER immutable_witness_receipt BEFORE UPDATE OR DELETE ON witness_receipts FOR EACH ROW EXECUTE FUNCTION deny_audit_mutation();

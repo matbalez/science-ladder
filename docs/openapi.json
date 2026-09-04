@@ -1,0 +1,2994 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Science Ladder API",
+    "version": "0.1.0",
+    "description": "Payment-free invitation-only reference platform. All mutations require Idempotency-Key; browser mutations require same-origin Origin. Integer ticks are decimal strings. Missing infrastructure is an explicit unavailable response."
+  },
+  "servers": [
+    {
+      "url": "/v1"
+    }
+  ],
+  "paths": {
+    "/audit/events": {
+      "get": {
+        "operationId": "get_audit_events",
+        "summary": "GET /audit/events",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/audit/checkpoints": {
+      "get": {
+        "operationId": "get_audit_checkpoints",
+        "summary": "GET /audit/checkpoints",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/audit/checkpoints/{digest}/witness": {
+      "post": {
+        "operationId": "post_audit_checkpoints_digest_witness",
+        "summary": "POST /audit/checkpoints/{digest}/witness",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "digest",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "envelope": {
+                    "$ref": "#/components/schemas/Envelope"
+                  }
+                },
+                "required": [
+                  "envelope"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "get_me",
+        "summary": "GET /me",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/auth/github": {
+      "get": {
+        "operationId": "get_auth_github",
+        "summary": "GET /auth/github",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/auth/github/callback": {
+      "get": {
+        "operationId": "get_auth_github_callback",
+        "summary": "GET /auth/github/callback",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "post_auth_logout",
+        "summary": "POST /auth/logout",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/cli-sessions": {
+      "post": {
+        "operationId": "post_auth_cli_sessions",
+        "summary": "POST /auth/cli-sessions",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/cli-sessions/{id}/approve": {
+      "post": {
+        "operationId": "post_auth_cli_sessions_id_approve",
+        "summary": "POST /auth/cli-sessions/{id}/approve",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userCode": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "userCode"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/cli-sessions/{id}/token": {
+      "post": {
+        "operationId": "post_auth_cli_sessions_id_token",
+        "summary": "POST /auth/cli-sessions/{id}/token",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceSecret": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "deviceSecret"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/github": {
+      "post": {
+        "operationId": "post_webhooks_github",
+        "summary": "POST /webhooks/github",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/challenges": {
+      "get": {
+        "operationId": "get_challenges",
+        "summary": "GET /challenges",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "challenges": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Challenge"
+                      }
+                    }
+                  },
+                  "required": [
+                    "challenges"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": []
+      },
+      "post": {
+        "operationId": "post_challenges",
+        "summary": "POST /challenges",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "candidateId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "repository": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{40}$"
+                  },
+                  "adoptionStatement": {
+                    "type": "string",
+                    "minLength": 20
+                  }
+                },
+                "required": [
+                  "candidateId",
+                  "repository",
+                  "ref",
+                  "adoptionStatement"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/challenges/{slug}": {
+      "get": {
+        "operationId": "get_challenges_slug",
+        "summary": "GET /challenges/{slug}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "operationId": "get_dashboard",
+        "summary": "GET /dashboard",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/prompts/challenge-scout/{version}": {
+      "get": {
+        "operationId": "get_prompts_challenge_scout_version",
+        "summary": "GET /prompts/challenge-scout/{version}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/prompts/challenge-scout/{version}/prefill": {
+      "post": {
+        "operationId": "post_prompts_challenge_scout_version_prefill",
+        "summary": "POST /prompts/challenge-scout/{version}/prefill",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "topic"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidates/validate": {
+      "post": {
+        "operationId": "post_candidates_validate",
+        "summary": "POST /candidates/validate",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "document": {
+                    "type": "string",
+                    "maxLength": 1048576
+                  }
+                },
+                "required": [
+                  "document"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidates/import": {
+      "post": {
+        "operationId": "post_candidates_import",
+        "summary": "POST /candidates/import",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "document": {
+                    "type": "string",
+                    "maxLength": 1048576
+                  }
+                },
+                "required": [
+                  "document"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidates/{id}": {
+      "get": {
+        "operationId": "get_candidates_id",
+        "summary": "GET /candidates/{id}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Candidate"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/challenge-versions/{id}/preflights": {
+      "post": {
+        "operationId": "post_challenge_versions_id_preflights",
+        "summary": "POST /challenge-versions/{id}/preflights",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/preflights/{id}": {
+      "get": {
+        "operationId": "get_preflights_id",
+        "summary": "GET /preflights/{id}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/challenge-versions/{id}/lock": {
+      "post": {
+        "operationId": "post_challenge_versions_id_lock",
+        "summary": "POST /challenge-versions/{id}/lock",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/challenge-versions/{id}/publish": {
+      "post": {
+        "operationId": "post_challenge_versions_id_publish",
+        "summary": "POST /challenge-versions/{id}/publish",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submission-intents": {
+      "post": {
+        "operationId": "post_submission_intents",
+        "summary": "POST /submission-intents",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "versionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "repository": {
+                    "type": "string"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{40}$"
+                  },
+                  "previewDigest": {
+                    "type": "string"
+                  },
+                  "parentFrontierDigest": {
+                    "type": "string"
+                  },
+                  "license": {
+                    "type": "string"
+                  },
+                  "attribution": {
+                    "type": "object"
+                  },
+                  "publish": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "versionId",
+                  "repository",
+                  "ref",
+                  "license",
+                  "publish"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submission-intents/{id}": {
+      "get": {
+        "operationId": "get_submission_intents_id",
+        "summary": "GET /submission-intents/{id}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Intent"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/submission-intents/{id}/accept": {
+      "post": {
+        "operationId": "post_submission_intents_id_accept",
+        "summary": "POST /submission-intents/{id}/accept",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submissions/{id}": {
+      "get": {
+        "operationId": "get_submissions_id",
+        "summary": "GET /submissions/{id}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Submission"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/submissions/{id}/publish": {
+      "post": {
+        "operationId": "post_submissions_id_publish",
+        "summary": "POST /submissions/{id}/publish",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flags": {
+      "post": {
+        "operationId": "post_flags",
+        "summary": "POST /flags",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "versionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "science",
+                      "metric",
+                      "safety",
+                      "rights",
+                      "reproducibility",
+                      "integrity"
+                    ]
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 10000
+                  },
+                  "evidenceUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "versionId",
+                  "category",
+                  "message"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/editor/queue": {
+      "get": {
+        "operationId": "get_editor_queue",
+        "summary": "GET /editor/queue",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/editor/decisions": {
+      "post": {
+        "operationId": "post_editor_decisions",
+        "summary": "POST /editor/decisions",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "versionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "approve_review",
+                      "changes_required",
+                      "reject",
+                      "feature",
+                      "unfeature",
+                      "human_reviewed",
+                      "pause",
+                      "resume",
+                      "compromise"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 20
+                  }
+                },
+                "required": [
+                  "versionId",
+                  "action",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites": {
+      "post": {
+        "operationId": "post_invites",
+        "summary": "POST /invites",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "githubId": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "member",
+                      "editor"
+                    ]
+                  },
+                  "validationQuota": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  }
+                },
+                "required": [
+                  "githubId",
+                  "role",
+                  "validationQuota"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/receipts/{digest}": {
+      "get": {
+        "operationId": "get_receipts_digest",
+        "summary": "GET /receipts/{digest}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "digest",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/artifacts/{digest}": {
+      "get": {
+        "operationId": "get_artifacts_digest",
+        "summary": "GET /artifacts/{digest}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "digest",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/exports/challenge-versions/{id}": {
+      "get": {
+        "operationId": "get_exports_challenge_versions_id",
+        "summary": "GET /exports/challenge-versions/{id}",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    },
+    "/challenge-versions/{id}/events": {
+      "get": {
+        "operationId": "get_challenge_versions_id_events",
+        "summary": "GET /challenge-versions/{id}/events",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sl_session"
+      },
+      "token": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {}
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "Finding": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "pending",
+              "review",
+              "error"
+            ]
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "severity"
+        ],
+        "additionalProperties": false
+      },
+      "Metric": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "units": {
+            "type": "string"
+          },
+          "quantum": {
+            "type": "string"
+          },
+          "baselineTicks": {
+            "type": "string"
+          },
+          "minimumDeltaTicks": {
+            "type": "string"
+          },
+          "toleranceTicks": {
+            "type": "string"
+          },
+          "domainMinTicks": {
+            "type": "string"
+          },
+          "domainMaxTicks": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "direction",
+          "quantum",
+          "baselineTicks"
+        ],
+        "additionalProperties": false
+      },
+      "Milestone": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "thresholdTicks": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)$"
+          },
+          "claimedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "claimedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "thresholdTicks"
+        ],
+        "additionalProperties": false
+      },
+      "Submission": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "scoreTicks": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "artifactDigest": {
+            "type": "string"
+          },
+          "public": {
+            "type": "boolean"
+          },
+          "attribution": {
+            "type": "object"
+          },
+          "receiptDigest": {
+            "type": "string"
+          },
+          "adjudicationDigest": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "runs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "Challenge": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "status",
+          "versionId",
+          "economicMode"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reviewStatus": {
+            "type": "string"
+          },
+          "intakeStatus": {
+            "type": "string"
+          },
+          "economicMode": {
+            "type": "string",
+            "const": "none"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "repository": {
+            "type": "string"
+          },
+          "sourceCommit": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{40}$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "metric": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "milestones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Milestone"
+            }
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "manifest": {
+            "type": "object"
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "submissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Submission"
+            }
+          }
+        }
+      },
+      "Intent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "github_fetch",
+              "quarantine_pending",
+              "ready",
+              "failed",
+              "accepted"
+            ]
+          },
+          "repository": {
+            "type": "string"
+          },
+          "sourceCommit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "artifactDigest": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "submissionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Candidate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "candidate": {
+            "type": "object"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Envelope": {
+        "type": "object",
+        "properties": {
+          "payloadType": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "string",
+            "contentEncoding": "base64"
+          },
+          "signatures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "keyid": {
+                  "type": "string"
+                },
+                "sig": {
+                  "type": "string",
+                  "contentEncoding": "base64"
+                }
+              },
+              "required": [
+                "keyid",
+                "sig"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "payloadType",
+          "payload",
+          "signatures"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

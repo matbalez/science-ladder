@@ -1,0 +1,6 @@
+CREATE TABLE milestone_version_mappings(milestone_id text NOT NULL REFERENCES milestone_tiers(id),version_id uuid NOT NULL REFERENCES challenge_versions(id),threshold_ticks numeric(150,0) NOT NULL,PRIMARY KEY(milestone_id,version_id));
+INSERT INTO milestone_version_mappings(milestone_id,version_id,threshold_ticks) SELECT id,version_id,threshold_ticks FROM milestone_tiers;
+CREATE FUNCTION initial_milestone_mapping() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN INSERT INTO milestone_version_mappings(milestone_id,version_id,threshold_ticks) VALUES(NEW.id,NEW.version_id,NEW.threshold_ticks);RETURN NEW;END $$;
+CREATE TRIGGER initial_milestone_mapping AFTER INSERT ON milestone_tiers FOR EACH ROW EXECUTE FUNCTION initial_milestone_mapping();
+CREATE FUNCTION protect_milestone_mapping() RETURNS trigger LANGUAGE plpgsql AS $$ DECLARE version uuid;BEGIN IF TG_OP='DELETE' THEN version=OLD.version_id;ELSE version=NEW.version_id;END IF;IF EXISTS(SELECT 1 FROM challenge_versions WHERE id=version AND lock_digest IS NOT NULL) THEN RAISE EXCEPTION 'locked milestone mapping is immutable';END IF;IF TG_OP='DELETE' THEN RETURN OLD;END IF;RETURN NEW;END $$;
+CREATE TRIGGER immutable_milestone_mapping BEFORE UPDATE OR DELETE ON milestone_version_mappings FOR EACH ROW EXECUTE FUNCTION protect_milestone_mapping();

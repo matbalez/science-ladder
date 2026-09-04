@@ -1,0 +1,434 @@
+{
+  "$defs": {
+    "Fixture": {
+      "additionalProperties": false,
+      "properties": {
+        "expectedOutcome": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "expectedTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "path",
+        "expectedOutcome"
+      ],
+      "type": "object"
+    },
+    "Manifest": {
+      "additionalProperties": false,
+      "properties": {
+        "apiVersion": {
+          "const": "science-ladder/v1"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deadline": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "economicMode": {
+          "const": "none"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "fixtures": {
+          "items": {
+            "$ref": "#/$defs/Fixture"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "hardGates": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "impact": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "kind": {
+          "const": "ChallengeManifest"
+        },
+        "limitations": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "metric": {
+          "$ref": "#/$defs/Metric"
+        },
+        "milestones": {
+          "items": {
+            "$ref": "#/$defs/Milestone"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "producer": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "resources": {
+          "$ref": "#/$defs/Resources"
+        },
+        "safetyClassification": {
+          "enum": [
+            "low-risk-computational",
+            "review-required"
+          ]
+        },
+        "scientificQuestion": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "slug": {
+          "maxLength": 100,
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "type": "string"
+        },
+        "submission": {
+          "$ref": "#/$defs/SubmissionContract"
+        },
+        "suite": {
+          "$ref": "#/$defs/Suite"
+        },
+        "summary": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 160,
+          "minLength": 5,
+          "type": "string"
+        },
+        "validator": {
+          "$ref": "#/$defs/Validator"
+        }
+      },
+      "required": [
+        "apiVersion",
+        "kind",
+        "id",
+        "createdAt",
+        "producer",
+        "slug",
+        "title",
+        "summary",
+        "scientificQuestion",
+        "evidence",
+        "impact",
+        "limitations",
+        "safetyClassification",
+        "economicMode",
+        "metric",
+        "hardGates",
+        "milestones",
+        "deadline",
+        "submission",
+        "validator",
+        "suite",
+        "resources",
+        "fixtures"
+      ],
+      "type": "object"
+    },
+    "Metric": {
+      "additionalProperties": false,
+      "properties": {
+        "baselineTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "maximize",
+            "minimize"
+          ]
+        },
+        "domainMaxTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "domainMinTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "minimumDeltaTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "quantum": {
+          "maxLength": 152,
+          "pattern": "^[+]?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        },
+        "toleranceTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "unit": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "direction",
+        "unit",
+        "quantum",
+        "baselineTicks",
+        "minimumDeltaTicks",
+        "toleranceTicks"
+      ],
+      "type": "object"
+    },
+    "Milestone": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "rationale": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "thresholdTicks": {
+          "maxLength": 160,
+          "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "thresholdTicks",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "Resources": {
+      "additionalProperties": false,
+      "properties": {
+        "class": {
+          "enum": [
+            "cpu-small",
+            "cpu-medium"
+          ]
+        },
+        "maxOutputBytes": {
+          "maximum": 65536,
+          "minimum": 1024,
+          "type": "integer"
+        },
+        "memoryMb": {
+          "maximum": 8192,
+          "minimum": 128,
+          "type": "integer"
+        },
+        "timeoutSeconds": {
+          "maximum": 600,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "vCpu": {
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "class",
+        "vCpu",
+        "memoryMb",
+        "timeoutSeconds",
+        "maxOutputBytes"
+      ],
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "accessedAt": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "evidence": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "location": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "url": {
+          "format": "uri",
+          "pattern": "^https://",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "title",
+        "evidence",
+        "location"
+      ],
+      "type": "object"
+    },
+    "SubmissionContract": {
+      "additionalProperties": false,
+      "properties": {
+        "allowedExtensions": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "allowedPaths": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "license": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "maxBytes": {
+          "maximum": 67108864,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maxFiles": {
+          "maximum": 4096,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "allowedPaths",
+        "allowedExtensions",
+        "maxBytes",
+        "maxFiles",
+        "license"
+      ],
+      "type": "object"
+    },
+    "Suite": {
+      "additionalProperties": false,
+      "properties": {
+        "commitment": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "revealAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "visibility": {
+          "enum": [
+            "public",
+            "hidden"
+          ]
+        }
+      },
+      "required": [
+        "visibility",
+        "path"
+      ],
+      "type": "object"
+    },
+    "Validator": {
+      "additionalProperties": false,
+      "properties": {
+        "dependencyLock": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "entrypoint": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "profile": {
+          "const": "artifact-checker-v1"
+        },
+        "runtimeImageDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile",
+        "entrypoint",
+        "dependencyLock",
+        "runtimeImageDigest"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/matbalez/science-ladder/blob/main/protocol/schemas/challenge-manifest-v1.schema.json",
+  "$ref": "#/$defs/Manifest",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Science Ladder Manifest v1"
+}

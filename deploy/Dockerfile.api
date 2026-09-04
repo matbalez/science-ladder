@@ -1,0 +1,20 @@
+FROM golang:1.27.1-bookworm@sha256:648f440f42a0958804efb24df176f806f9d353b41f1c0627f666428e40310f6b AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+ARG SOURCE_COMMIT=development
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/matbalez/science-ladder/internal/buildinfo.Commit=$SOURCE_COMMIT" -o /out/api ./cmd/api && \
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/matbalez/science-ladder/internal/buildinfo.Commit=$SOURCE_COMMIT" -o /out/worker ./cmd/worker
+
+FROM debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+WORKDIR /app
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /out/ /app/
+COPY protocol/ /app/protocol/
+COPY prompts/ /app/prompts/
+COPY docs/openapi.json /app/docs/openapi.json
+USER 10001:10001
+ENV LISTEN_ADDR=:8080
+EXPOSE 8080
+CMD ["/app/api"]
