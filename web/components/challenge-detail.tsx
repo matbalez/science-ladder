@@ -46,8 +46,10 @@ import {
 } from "./ui";
 import { SubmissionTable } from "./submission";
 import { Participate } from "./participate";
+import { ResearcherSection } from "./researchers";
 import { solverInstructions } from "@/lib/solver-prompt";
 export function ChallengeDetail({ slug }: { slug: string }) {
+  const session = useSession();
   const {
     data: c,
     error,
@@ -384,6 +386,14 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                   </Empty>
                 )}
               </section>
+              <ResearcherSection
+                context={c.researcherContext}
+                editHref={
+                  session.data?.capabilities.review
+                    ? `/review?challenge=${encodeURIComponent(c.slug)}&version=${encodeURIComponent(c.versionId)}#researcher-editor`
+                    : undefined
+                }
+              />
               <section className="content-section">
                 <div className="section-kicker">03 / BEGIN AN EXPERIMENT</div>
                 <h2>Bring your own agent.</h2>

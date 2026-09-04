@@ -2494,7 +2494,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "researcherHistory": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ResearcherEdition"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -2543,7 +2551,7 @@
             "token": []
           }
         ],
-        "description": "Public challenge version, signed lock/conformance/run/adjudication/publication/migration/reveal envelopes, submissions and authorized artifact descriptors. Version-specific audit is a projection; verify contiguous global history through /audit/events and witnessed checkpoints. Private artifacts remain omitted."
+        "description": "Public challenge version, signed lock/conformance/run/adjudication/publication/migration/reveal envelopes, submissions and authorized artifact descriptors. Version-specific audit is a projection; verify contiguous global history through /audit/events and witnessed checkpoints. Private artifacts remain omitted. Public exports include researcherHistory, an array of ResearcherEdition objects ordered oldest to newest, including clearing editions. The latest context is also included in challenge.researcherContext. History is editorial and excluded from immutable scoring contracts."
       }
     },
     "/challenge-versions/{id}/events": {
@@ -3032,6 +3040,96 @@
         },
         "description": "Owner-only unlocked versions with a completed earlier review. Consumes remote-preparation budget and permits one pending request per version. Appends the actual provider report; earlier reports are immutable. Bounded exact-commit source evidence excludes hidden suites, private solver artifacts, repository instructions and detected credentials. Poll challenge reviewStatus and reviews. No automatic approval is implied."
       }
+    },
+    "/editor/challenge-versions/{id}/researchers": {
+      "post": {
+        "operationId": "edit_challenge_researchers",
+        "summary": "Append curated researcher context for an exact challenge version",
+        "description": "Invited editor/operator browser session required. CLI tokens cannot administer editorial metadata. Same-origin protection and Idempotency-Key apply. All researcher fields required; strings trimmed and bounded, Unicode-normalized duplicate names rejected. Supply [] to clear the panel while retaining history; omitted/null lists are invalid. No sponsorship/contact status fields are accepted. The mutation does not alter the manifest, immutable lock, scientific reviews, scores, milestones or receipts. Global audit binds the edition digest without revealing unpublished content.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "researchers",
+                  "reason"
+                ],
+                "properties": {
+                  "researchers": {
+                    "type": "array",
+                    "maxItems": 6,
+                    "items": {
+                      "$ref": "#/components/schemas/Researcher"
+                    }
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 2000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Editorial edition committed, or original response on identical retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearcherEdition"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, unknown fields or missing idempotency key"
+          },
+          "403": {
+            "description": "Invited editor/operator browser authorization or same origin required"
+          },
+          "404": {
+            "description": "Unknown challenge version"
+          },
+          "409": {
+            "description": "Idempotency key reused with different content"
+          },
+          "422": {
+            "description": "Invalid bounds, duplicate names or unsupported links"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3376,6 +3474,17 @@
               "platform",
               "independent"
             ]
+          },
+          "researcherContext": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearcherEdition"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latest editorial edition, or null if none exists. Existing challenge visibility rules apply."
           }
         }
       },
@@ -3495,6 +3604,103 @@
           "signatures"
         ],
         "additionalProperties": false
+      },
+      "Researcher": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "profileUrl",
+          "connection",
+          "workTitle",
+          "workUrl"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "profileUrl": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "pattern": "^https://"
+          },
+          "connection": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "workTitle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "workUrl": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "pattern": "^https://"
+          }
+        },
+        "description": "Editorial bibliographic context only. Does not assert sponsorship, endorsement, interest or contact. Links require public HTTPS DNS names without credentials or nondefault ports; the platform never fetches these URLs."
+      },
+      "ResearcherEdition": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "versionId",
+          "researchers",
+          "updatedAt",
+          "updatedBy",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "researchers": {
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+              "$ref": "#/components/schemas/Researcher"
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "githubId",
+              "login"
+            ],
+            "properties": {
+              "githubId": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]*$"
+              },
+              "login": {
+                "type": "string"
+              }
+            }
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 2000
+          }
+        },
+        "description": "Append-only editorial edition with the editor identity snapshotted at the time of editing. An empty researchers list explicitly clears the panel. Separate from the immutable manifest, scoring lock and scientific receipts."
       }
     }
   }

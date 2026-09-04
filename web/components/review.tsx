@@ -5,6 +5,7 @@ import { Check, ClipboardCheck, Flag, LockKeyhole } from "lucide-react";
 import { useAction, useResource } from "@/lib/api";
 import { asText, dateLabel } from "@/lib/scientific";
 import { useSession } from "./shell";
+import { ResearcherEditor } from "./researchers";
 import {
   Badge,
   Empty,
@@ -14,7 +15,13 @@ import {
   Loading,
   Status,
 } from "./ui";
-export function ReviewConsole() {
+export function ReviewConsole({
+  initialChallenge = "",
+  initialVersion = "",
+}: {
+  initialChallenge?: string;
+  initialVersion?: string;
+}) {
   const session = useSession();
   const allowed = session.data?.capabilities.review;
   const queue = useResource<{
@@ -60,6 +67,10 @@ export function ReviewConsole() {
       ) : (
         <>
           <ErrorMessage error={queue.error} retry={queue.refresh} />
+          <ResearcherEditor
+            initialChallenge={initialChallenge}
+            initialVersion={initialVersion}
+          />
           <div className="two-column">
             <div>
               {queue.loading && !queue.data ? (

@@ -488,3 +488,289 @@ test("educational explorer link is secondary and bound to the exact registered s
     page.getByText("Awaiting validation", { exact: true }),
   ).toBeVisible();
 });
+
+// Explicit test-only researcher metadata; no fixture is shipped to public pages.
+const researcherFixture = {
+  name: "TEST ONLY researcher",
+  profileUrl: "https://example.org/researcher",
+  connection:
+    "Authored the test-only paper that motivates this synthetic browser fixture.",
+  workTitle: "TEST ONLY research paper",
+  workUrl: "https://example.org/research-paper",
+};
+const researcherContextFixture = {
+  id: "test-context",
+  versionId: challenge.versionId,
+  researchers: [researcherFixture],
+  updatedAt: "2026-09-04T22:00:00Z",
+  updatedBy: { githubId: "123", login: "test-editor" },
+  reason:
+    "This browser-test context records a synthetic publication connection.",
+};
+const researcherNotice =
+  "Listed for their research, not as challenge sponsors or endorsers. Their interest has not been confirmed.";
+
+test("public researcher context is optional, informational, and contains only safe secondary links", async ({
+  page,
+}) => {
+  await base(page);
+  let context: typeof researcherContextFixture | null = null;
+  await page.route("**/v1/challenges/test-only", (r) =>
+    r.fulfill({ json: { ...challenge, researcherContext: context } }),
+  );
+  await page.goto("/challenges/test-only");
+  await expect(
+    page.getByRole("heading", { name: manifest.scientificQuestion }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Researchers to know" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Add researcher context" }),
+  ).toHaveCount(0);
+  context = researcherContextFixture;
+  await page.reload();
+  const section = page.locator(".researchers-section");
+  await expect(
+    section.getByRole("heading", { name: "Researchers to know" }),
+  ).toBeVisible();
+  await expect(
+    section.getByText(researcherNotice, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    section.getByText(
+      "Their published work connects to this question. The community could invite them to follow our progress.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    section.getByRole("link", { name: "Research profile" }),
+  ).toHaveAttribute("href", researcherFixture.profileUrl);
+  await expect(
+    section.getByRole("link", { name: researcherFixture.workTitle }),
+  ).toHaveAttribute("href", researcherFixture.workUrl);
+  await expect(section.locator("button,input,textarea,img")).toHaveCount(0);
+  await expect(
+    page.locator(".challenge-header-actions .primary:visible"),
+  ).toHaveCount(1);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await page.screenshot({
+    path: "test-results/researchers-mobile.png",
+    fullPage: true,
+  });
+  context = {
+    ...researcherContextFixture,
+    researchers: [
+      {
+        ...researcherFixture,
+        name: "<img src=x onerror=alert(1)>",
+        profileUrl: "javascript:alert(1)",
+        workUrl: "data:text/html,unsafe",
+      },
+    ],
+  };
+  await page.reload();
+  await expect(
+    section.getByText("<img src=x onerror=alert(1)>", { exact: true }),
+  ).toBeVisible();
+  await expect(section.getByRole("link")).toHaveCount(0);
+  await expect(section.locator("img")).toHaveCount(0);
+});
+
+test("authorized editor saves researcher fields and public reason, including explicit empty-list clearing", async ({
+  page,
+}) => {
+  const editorSession = {
+    ...session,
+    user: { ...session.user, role: "editor" },
+    capabilities: { ...session.capabilities, review: true },
+  };
+  await page.route("**/v1/me", (r) => r.fulfill({ json: editorSession }));
+  await page.route("**/v1/editor/queue", (r) =>
+    r.fulfill({ json: { flags: [], reviews: [], candidates: [] } }),
+  );
+  await page.route("**/v1/challenges/test-only", (r) =>
+    r.fulfill({
+      json: { ...challenge, researcherContext: researcherContextFixture },
+    }),
+  );
+  const writes: Record<string, unknown>[] = [];
+  await page.route(
+    "**/v1/editor/challenge-versions/test-version/researchers",
+    async (r) => {
+      expect(r.request().method()).toBe("POST");
+      expect(r.request().headers()["idempotency-key"]).toBeTruthy();
+      const body = r.request().postDataJSON();
+      writes.push(body);
+      await r.fulfill({
+        status: 201,
+        json: {
+          ...researcherContextFixture,
+          id: `test-edition-${writes.length}`,
+          researchers: body.researchers,
+          reason: body.reason,
+        },
+      });
+    },
+  );
+  await page.goto("/challenges/test-only");
+  await page
+    .getByRole("link", { name: "Edit researcher context", exact: true })
+    .click();
+  await expect(page).toHaveURL(
+    /\/review\?challenge=test-only&version=test-version#researcher-editor/,
+  );
+  const editor = page.locator("#researcher-editor");
+  await expect(
+    editor.getByLabel("Researcher 1 name", { exact: true }),
+  ).toHaveValue(researcherFixture.name);
+  await editor
+    .getByLabel("Researcher 1 connection to the question", { exact: true })
+    .fill("Updated test-only connection to the exact scientific question.");
+  await editor
+    .getByLabel("Reason for this change (public)", { exact: true })
+    .fill("Correct the publication connection for this test-only researcher.");
+  await editor
+    .getByLabel("Researcher 1 profile URL", { exact: true })
+    .fill("http://example.org/researcher");
+  await editor.getByRole("button", { name: "Save researcher context" }).click();
+  await expect(editor.getByRole("alert")).toContainText("public HTTPS");
+  expect(writes).toHaveLength(0);
+  await editor
+    .getByLabel("Researcher 1 profile URL", { exact: true })
+    .fill(researcherFixture.profileUrl);
+  await editor.getByRole("button", { name: "Save researcher context" }).click();
+  await expect(editor.getByRole("status")).toContainText(
+    "Researcher context saved",
+  );
+  expect(writes[0]).toEqual({
+    researchers: [
+      {
+        ...researcherFixture,
+        connection:
+          "Updated test-only connection to the exact scientific question.",
+      },
+    ],
+    reason: "Correct the publication connection for this test-only researcher.",
+  });
+  await editor
+    .getByRole("button", { name: "Remove researcher 1", exact: true })
+    .click();
+  await expect(
+    editor.getByLabel("Researcher 1 name", { exact: true }),
+  ).toHaveCount(0);
+  await editor
+    .getByLabel("Reason for this change (public)", { exact: true })
+    .fill("Remove this test-only context while preserving its public history.");
+  await editor.getByRole("button", { name: "Save researcher context" }).click();
+  await expect(editor.getByRole("status")).toContainText(
+    "Researcher context saved",
+  );
+  expect(writes[1]).toEqual({
+    researchers: [],
+    reason:
+      "Remove this test-only context while preserving its public history.",
+  });
+  for (let i = 0; i < 6; i++)
+    await editor
+      .getByRole("button", { name: "Add researcher", exact: true })
+      .click();
+  await expect(
+    editor.getByRole("button", { name: "Add researcher", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    editor.getByLabel("Researcher 6 name", { exact: true }),
+  ).toBeVisible();
+});
+
+test("researcher editor is hidden without editor capability and refuses a mismatched selected version", async ({
+  page,
+}) => {
+  await base(page);
+  await page.goto("/review?challenge=test-only&version=other-version");
+  await expect(
+    page.getByRole("heading", { name: "Editor access required." }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("Researcher 1 name", { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Save researcher context" }),
+  ).toHaveCount(0);
+  await page.route("**/v1/me", (r) =>
+    r.fulfill({
+      json: {
+        ...session,
+        capabilities: { ...session.capabilities, review: true },
+      },
+    }),
+  );
+  await page.route("**/v1/editor/queue", (r) =>
+    r.fulfill({ json: { flags: [], reviews: [], candidates: [] } }),
+  );
+  await page.route("**/v1/challenges/test-only", (r) =>
+    r.fulfill({
+      json: { ...challenge, researcherContext: researcherContextFixture },
+    }),
+  );
+  await page.reload();
+  await expect(
+    page.locator("#researcher-editor").getByRole("alert"),
+  ).toContainText("another challenge version");
+  await expect(
+    page.getByRole("button", { name: "Save researcher context" }),
+  ).toHaveCount(0);
+});
+
+test("standalone explorer consumes optional public researcher context without hardcoded people", async ({
+  page,
+  request,
+}) => {
+  const response = await request.get("/showcase/quiet-echoes/index.html");
+  expect(response.ok()).toBeTruthy();
+  const html = await response.text();
+  const origin = "https://science-ladder.fly.dev";
+  let populated = false;
+  await page.route(`${origin}/showcase/quiet-echoes/index.html`, (r) =>
+    r.fulfill({ status: 200, contentType: "text/html", body: html }),
+  );
+  await page.route(`${origin}/v1/challenges/quiet-echoes-labs512`, (r) =>
+    r.fulfill({
+      json: {
+        ...challenge,
+        slug: "quiet-echoes-labs512",
+        versionId: "56ddbf39-2b67-4172-9a9d-e3c78e44c7cf",
+        sourceCommit: "f42f527e97563b1c068a1835732c6da44f21223f",
+        researcherContext: populated ? researcherContextFixture : null,
+      },
+    }),
+  );
+  await page.goto(`${origin}/showcase/quiet-echoes/index.html`);
+  await expect(page.locator("#researcher-context")).not.toBeVisible();
+  populated = true;
+  await page.reload();
+  const section = page.locator("#researcher-context");
+  await expect(
+    section.getByRole("heading", { name: "Researchers to know" }),
+  ).toBeVisible();
+  await expect(
+    section.getByText(researcherNotice, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    section.getByText(
+      "Their published work connects to this question. The community could invite them to follow our progress.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    section.getByRole("link", { name: `Profile of ${researcherFixture.name}` }),
+  ).toHaveAttribute("href", researcherFixture.profileUrl);
+  await expect(section.locator("button,input,textarea,img")).toHaveCount(0);
+  await expect(page.locator(".participate-primary:visible")).toHaveCount(1);
+  await expect(page.locator("#energy")).toHaveText("17,996");
+});

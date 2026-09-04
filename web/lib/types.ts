@@ -59,6 +59,21 @@ export interface Submission {
   claims: unknown[];
   runs: Record<string, unknown>[];
 }
+export interface Researcher {
+  name: string;
+  profileUrl: string;
+  connection: string;
+  workTitle: string;
+  workUrl: string;
+}
+export interface ResearcherContext {
+  id: string;
+  versionId: string;
+  researchers: Researcher[];
+  updatedAt: string;
+  updatedBy: { githubId: string; login: string };
+  reason: string;
+}
 export interface Challenge {
   id: string;
   slug: string;
@@ -87,6 +102,7 @@ export interface Challenge {
   publicFrontier?: { submissionId: string; scoreTicks: string };
   badges: string[];
   manifest?: Record<string, unknown>;
+  researcherContext?: ResearcherContext | null;
   candidate?: Record<string, unknown>;
   reviews?: Record<string, unknown>[];
   submissions?: Submission[];
