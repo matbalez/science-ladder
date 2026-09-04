@@ -1,0 +1,32 @@
+name: Publish patched validator runtime
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: publish-patched-validator-runtime
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Authenticate container registry
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Build the fixed offline runtime
+        run: >-
+          docker build --platform linux/amd64
+          --build-arg PYTHON_IMAGE=python@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e
+          --label org.opencontainers.image.revision="$GITHUB_SHA"
+          -f internal/runner/assets/validator-runtime-patched.Dockerfile
+          -t ghcr.io/matbalez/science-ladder-python:2026-09-04-patched internal/runner/assets
+      - name: Publish immutable image digest
+        run: docker push ghcr.io/matbalez/science-ladder-python:2026-09-04-patched
+      - name: Remove temporary registry credential
+        if: always()
+        run: docker logout ghcr.io
