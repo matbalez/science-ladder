@@ -24,7 +24,7 @@ jobs:
           --build-arg PYTHON_IMAGE=python@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e
           --label org.opencontainers.image.revision="$GITHUB_SHA"
           -f internal/runner/assets/validator-runtime.Dockerfile
-          -t ghcr.io/matbalez/science-ladder-python:2026-09-04 .
+          -t ghcr.io/matbalez/science-ladder-python:2026-09-04 internal/runner/assets
       - name: Publish immutable image digest
         run: docker push ghcr.io/matbalez/science-ladder-python:2026-09-04
       - name: Remove temporary registry credential
