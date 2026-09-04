@@ -65,8 +65,17 @@ func (s *Server) queueSubmission(ctx context.Context, id string) error {
 
 // Expired leases never produce a competitive loss. Superseding the fence makes
 // every old result incapable of committing, while reservations remain durable.
+// Explicit platform policy permits a fresh attempt on the same host. Existing
+// exclusions remain intact; independent and legacy jobs still exclude that host.
 func (s *Server) recoverRunnerLeases(ctx context.Context) error {
-	_, err := s.DB.Exec(ctx, `UPDATE runner_jobs j SET status=CASE WHEN attempts>=8 THEN 'attention_required' ELSE 'queued' END,fence=fence+1,payload=jsonb_set(payload,'{excludedHostIds}',COALESCE(payload->'excludedHostIds','[]'::jsonb)||to_jsonb(host_id)),host_id=NULL,lease_expires_at=NULL,result_token_hash=NULL WHERE status='running' AND lease_expires_at<now() AND NOT EXISTS(SELECT 1 FROM runner_results r WHERE r.job_id=j.id)`)
+	_, err := s.DB.Exec(ctx, `UPDATE runner_jobs j SET
+		status=CASE WHEN attempts>=8 THEN 'attention_required' ELSE 'queued' END,
+		fence=fence+1,
+		payload=CASE WHEN payload->>'verificationPolicy'='platform' THEN payload
+			ELSE jsonb_set(payload,'{excludedHostIds}',COALESCE(payload->'excludedHostIds','[]'::jsonb)||to_jsonb(host_id)) END,
+		host_id=NULL,lease_expires_at=NULL,result_token_hash=NULL
+		WHERE status='running' AND lease_expires_at<now()
+		AND NOT EXISTS(SELECT 1 FROM runner_results r WHERE r.job_id=j.id)`)
 	return err
 }
 
