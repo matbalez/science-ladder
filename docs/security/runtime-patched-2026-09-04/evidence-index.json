@@ -1,0 +1,48 @@
+{
+  "kind": "PublicEvidenceFileIndex",
+  "generatedAt": "2026-09-04T22:49:26.947782+00:00",
+  "byteExactCopies": [
+    {
+      "file": "runtime-inventory.json",
+      "sourceFileName": "runtime-inventory-patched-published.json",
+      "digest": "sha256:0dbe6e677aecaf5ee204bd49d4f167f6496bcbb37c6d8348daf23dd2657bcd2a",
+      "bytes": 2416
+    },
+    {
+      "file": "advisory-snapshot-unsigned.json",
+      "sourceFileName": "advisory-snapshot-patched.json",
+      "digest": "sha256:2fb534b758cbf14087055284459b98b665741117a9649d8346e603f175f2af10",
+      "bytes": 100703
+    },
+    {
+      "file": "scanner-report-unsigned.json",
+      "sourceFileName": "scanner-validation-patched-published.json",
+      "digest": "sha256:6301a728bfdbef2e080ac523415f85550095834ef2064c6c69699a36ffabe01a",
+      "bytes": 3361
+    },
+    {
+      "file": "component-probes.json",
+      "sourceFileName": "patched-component-probes.json",
+      "digest": "sha256:bb993c07ecf58d7a4fea9578f136ad0eba7cbece8d168e4bf8bf3368ab3ee2e0",
+      "bytes": 1662
+    },
+    {
+      "file": "debian-version-comparisons.json",
+      "sourceFileName": "patched-version-comparisons.json",
+      "digest": "sha256:50ef0c552c57e8142fc5b954ffb9af6d26d3bcf4ac39cec2c89c285368795b93",
+      "bytes": 5178
+    },
+    {
+      "file": "initial-distroless-blocked-review.json",
+      "sourceFileName": "distroless-review.json",
+      "digest": "sha256:c65f553e921c4edc27882dc79a446da2add2bf26609fffa4740fda8cde99f0b9",
+      "bytes": 11096
+    }
+  ],
+  "derivedSummary": {
+    "file": "review-summary.json",
+    "digest": "sha256:c6eaacc0adfead1685563f71ef275bcb100a79d7493263cff8087dfb60790d1b"
+  },
+  "rawSourcesPublished": false,
+  "rawSourceReason": "The snapshot records all311 source URLs, fetch times and raw-response digests. Large raw downloads and private workstation paths are omitted."
+}

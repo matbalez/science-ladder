@@ -68,7 +68,7 @@ func (b *Builder) isolationCorpus(ctx context.Context, parent protocol.RunnerJob
 	if err != nil {
 		return false, err
 	}
-	for index, test := range []struct{ name, code, outcome string }{{"isolation", isolationProbe, "valid"}, {"cpu-limit", "while True: pass\n", "resource_limit"}, {"invalid-output", "from pathlib import Path\nPath('/sl/output/result.json').write_text('{\"score\": \"NaN\"}')\n", "invalid_output"}, {"output-bound", outputProbe, "valid"}} {
+	for index, test := range []struct{ name, code, outcome string }{{"isolation", isolationProbe, "valid"}, {"cpu-limit", "while True: pass\n", "resource_limit"}, {"memory-limit", "chunks = []\nwhile True: chunks.append(bytearray(16 * 1024 * 1024))\n", "resource_limit"}, {"invalid-output", "from pathlib import Path\nPath('/sl/output/result.json').write_text('{\"score\": \"NaN\"}')\n", "invalid_output"}, {"output-bound", outputProbe, "valid"}} {
 		source := filepath.Join(root, fmt.Sprintf("probe-%d", index))
 		if err := os.Mkdir(source, 0755); err != nil {
 			return false, err

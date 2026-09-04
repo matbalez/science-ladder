@@ -11,6 +11,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -93,17 +95,31 @@ func GuestInit() error {
 	command.Dir = "/sl/challenge"
 	command.Env = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/sl/work", "PYTHONPATH=/sl/validator/site-packages", "PYTHONHASHSEED=0", "PYTHONDONTWRITEBYTECODE=1", "TZ=UTC", "LC_ALL=C.UTF-8", "OPENBLAS_NUM_THREADS=1", "OMP_NUM_THREADS=1", "SOURCE_DATE_EPOCH=0"}
 	command.SysProcAttr = &syscall.SysProcAttr{Credential: &syscall.Credential{Uid: 65534, Gid: 65534}, Setpgid: true, UseCgroupFD: true, CgroupFD: int(cgroup.Fd())}
+	// Kill every descendant, including children that create a different process
+	// group. The cgroup boundary also prevents a surviving writer from changing
+	// the result after the checker exits.
+	command.Cancel = func() error { return killGuestValidatorCgroup("/sys/fs/cgroup/validator") }
+	command.WaitDelay = 2 * time.Second
 	log := &boundedBuffer{max: 65536}
 	command.Stdout = log
 	command.Stderr = log
 	err = command.Run()
-	if command.Process != nil {
-		_ = syscall.Kill(-command.Process.Pid, syscall.SIGKILL)
+	timedOut := ctx.Err() != nil
+	cancel()
+	if cleanupErr := killGuestValidatorCgroup("/sys/fs/cgroup/validator"); cleanupErr != nil {
+		return fmt.Errorf("stop all validator descendants: %w", cleanupErr)
 	}
-	if ctx.Err() != nil {
+	if timedOut {
 		return guestFailure("resource_limit")
 	}
 	if err != nil {
+		limited, statsErr := guestResourceLimitExceeded("/sys/fs/cgroup/validator", err)
+		if statsErr != nil {
+			return fmt.Errorf("inspect validator resource outcome: %w", statsErr)
+		}
+		if limited {
+			return guestFailure("resource_limit")
+		}
 		return guestFailure("challenge_fault")
 	}
 	entries, err := os.ReadDir("/sl/output")
@@ -129,13 +145,17 @@ func GuestInit() error {
 	}
 	fmt.Println("SL_RESULT " + base64.StdEncoding.EncodeToString(result))
 	syscall.Sync()
-	return syscall.Reboot(syscall.LINUX_REBOOT_CMD_POWER_OFF)
+	// Firecracker exposes the i8042 reset path selected by reboot=k.
+	// POWER_OFF halts this minimal guest without terminating the VMM.
+	return syscall.Reboot(syscall.LINUX_REBOOT_CMD_RESTART)
 }
 
 func guestFailure(outcome string) error {
 	fmt.Println("SL_ERROR " + outcome)
 	syscall.Sync()
-	return syscall.Reboot(syscall.LINUX_REBOOT_CMD_POWER_OFF)
+	// Firecracker exposes the i8042 reset path selected by reboot=k.
+	// POWER_OFF halts this minimal guest without terminating the VMM.
+	return syscall.Reboot(syscall.LINUX_REBOOT_CMD_RESTART)
 }
 
 // A kernel with CONFIG_DEVTMPFS_MOUNT mounts /dev before starting PID 1.
@@ -161,4 +181,57 @@ func mountGuestFilesystem(source, target, kind string, flags uintptr, data strin
 		return fmt.Errorf("enforce flags on kernel-created mount: %w", err)
 	}
 	return nil
+}
+
+func killGuestValidatorCgroup(directory string) error {
+	if err := os.WriteFile(filepath.Join(directory, "cgroup.kill"), []byte("1"), 0600); err != nil {
+		return err
+	}
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		data, err := os.ReadFile(filepath.Join(directory, "cgroup.events"))
+		if err != nil {
+			return err
+		}
+		for _, line := range strings.Split(string(data), "\n") {
+			if line == "populated 0" {
+				return nil
+			}
+		}
+		if !time.Now().Before(deadline) {
+			return errors.New("validator cgroup remained populated after kill")
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+}
+
+func guestResourceLimitExceeded(directory string, runErr error) (bool, error) {
+	var exitError *exec.ExitError
+	if errors.As(runErr, &exitError) {
+		if status, ok := exitError.Sys().(syscall.WaitStatus); ok && (status.Signal() == syscall.SIGXFSZ || status.Signal() == syscall.SIGXCPU) {
+			return true, nil
+		}
+	}
+	for _, filename := range []string{"memory.events", "pids.events"} {
+		data, err := os.ReadFile(filepath.Join(directory, filename))
+		if err != nil {
+			return false, err
+		}
+		for _, line := range strings.Split(string(data), "\n") {
+			fields := strings.Fields(line)
+			if len(fields) != 2 {
+				continue
+			}
+			if (filename == "memory.events" && (fields[0] == "oom_kill" || fields[0] == "oom_group_kill")) || (filename == "pids.events" && fields[0] == "max") {
+				count, err := strconv.ParseUint(fields[1], 10, 64)
+				if err != nil {
+					return false, err
+				}
+				if count > 0 {
+					return true, nil
+				}
+			}
+		}
+	}
+	return false, nil
 }

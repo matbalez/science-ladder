@@ -1,0 +1,765 @@
+{
+  "kind": "PublicPatchedRuntimeEvidenceSummary",
+  "generatedAt": "2026-09-04T22:49:26.947782+00:00",
+  "status": "unsigned_advisory_policy_pass_with_remaining_findings",
+  "officialAcceptance": false,
+  "independentSecurityReview": false,
+  "runtimeImage": "ghcr.io/matbalez/science-ladder-python@sha256:a8136bf6f5082a72776f2565f279a6c336b462da483aa54cfa81586ad20705fa",
+  "runtimeImageDigest": "sha256:a8136bf6f5082a72776f2565f279a6c336b462da483aa54cfa81586ad20705fa",
+  "runtimeInventoryDigest": "sha256:0dbe6e677aecaf5ee204bd49d4f167f6496bcbb37c6d8348daf23dd2657bcd2a",
+  "componentInventoryDigest": "sha256:188492919acca87e0b11fde5b24464a2511e886a551d987a9f8583e879745226",
+  "retainedFileCount": 2134,
+  "componentDigestConvention": "SHA-256 of embedded component JSON bytes. The local exported JSON adds one trailing LF, so its exported-file digest differs.",
+  "priorLocallyBuiltImageDigest": "sha256:a77ec0dd3f62a6caa4b9e0c57a6eefd3fdfe0edcc27ceaa089aa68c404080ed9",
+  "publicImageVerification": {
+    "componentDigestMatches": true,
+    "cliLocalIntegrationPassed": true,
+    "explanation": "Pulled exact public CI image and extracted identical complete component inventory; reran local checker/hidden-preview/output contract tests against that exact digest."
+  },
+  "probeBinding": {
+    "executedAgainst": "prior local build with byte-identical complete component inventory",
+    "evidence": {
+      "file": "patched-component-probes.json",
+      "digest": "sha256:bb993c07ecf58d7a4fea9578f136ad0eba7cbece8d168e4bf8bf3368ab3ee2e0",
+      "nativeModuleImportsPassed": 77,
+      "runtimeVersionConfirmed": {
+        "glibc": "2.43",
+        "sqlite": "3.53.4"
+      }
+    },
+    "publicOCIComponentMatchConfirmed": true
+  },
+  "advisorySnapshot": {
+    "id": "patched-debian-review-20260904T223626Z",
+    "generatedAt": "2026-09-04T22:36:26.017165+00:00",
+    "expiresAt": "2026-09-05T22:36:26.017165+00:00",
+    "signatureVerified": false,
+    "coverageEntries": 18,
+    "sourceCount": 311,
+    "allSourceResponseDigestsRechecked": true
+  },
+  "findings": [
+    {
+      "component": "CPython:cpython@3.13.15",
+      "id": "CVE-2026-15806",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15806.json"
+    },
+    {
+      "component": "CPython:cpython@3.13.15",
+      "id": "CVE-2026-17084",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/17xxx/CVE-2026-17084.json"
+    },
+    {
+      "component": "CPython:cpython@3.13.15",
+      "id": "CVE-2026-19672",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/19xxx/CVE-2026-19672.json"
+    },
+    {
+      "component": "CPython:cpython@3.13.15",
+      "id": "CVE-2026-15310",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15310.json"
+    },
+    {
+      "component": "CPython:cpython@3.13.15",
+      "id": "CVE-2025-15367",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/15xxx/CVE-2025-15367.json"
+    },
+    {
+      "component": "Debian:libbz2-1.0@1.0.8-5+b1",
+      "id": "CVE-2026-42250",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42250.json"
+    },
+    {
+      "component": "Debian:libc6@2.43-4",
+      "id": "CVE-2026-18374",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/18xxx/CVE-2026-18374.json"
+    },
+    {
+      "component": "Debian:libc6@2.43-4",
+      "id": "CVE-2026-19499",
+      "severity": "medium",
+      "sourceUrl": "https://bugzilla.redhat.com/rest/bug/2523258"
+    },
+    {
+      "component": "Debian:libssl3@3.0.20-1~deb12u2",
+      "id": "CVE-2025-27587",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/27xxx/CVE-2025-27587.json"
+    },
+    {
+      "component": "Debian:libssl3@3.0.20-1~deb12u2",
+      "id": "CVE-2026-42767",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42767.json"
+    },
+    {
+      "component": "Debian:libssl3@3.0.20-1~deb12u2",
+      "id": "CVE-2026-54874",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/54xxx/CVE-2026-54874.json"
+    },
+    {
+      "component": "Debian:libssl3@3.0.20-1~deb12u2",
+      "id": "CVE-2026-63072",
+      "severity": "moderate",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63072.json"
+    },
+    {
+      "component": "Debian:libssl3@3.0.20-1~deb12u2",
+      "id": "CVE-2026-63074",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63074.json"
+    },
+    {
+      "component": "Debian:libssl3@3.0.20-1~deb12u2",
+      "id": "CVE-2026-63076",
+      "severity": "moderate",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63076.json"
+    },
+    {
+      "component": "Debian:libssl3@3.0.20-1~deb12u2",
+      "id": "CVE-2026-75803",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/75xxx/CVE-2026-75803.json"
+    },
+    {
+      "component": "Debian:libuuid1@2.42.2-4",
+      "id": "CVE-2022-0563",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2022/0xxx/CVE-2022-0563.json"
+    },
+    {
+      "component": "Debian:zlib1g@1:1.2.13.dfsg-1",
+      "id": "CVE-2026-27171",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/27xxx/CVE-2026-27171.json"
+    }
+  ],
+  "severityCounts": {
+    "medium": 9,
+    "low": 6,
+    "moderate": 2
+  },
+  "reviewMethod": "Exact changed Debian source versions compared using real dpkg against sid fixed-version boundaries; original unchanged coordinates retain prior exact assessment. Named vendor non-security and absent-component exclusions carry explicit evidence; no CVSS values lowered.",
+  "operatorApprovalRequired": true,
+  "explicitApplicabilityExclusions": [
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2010-4756",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2010-4756",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2018-20796",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2018-20796",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-1010022",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-1010022",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-1010023",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-1010023",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-1010024",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-1010024",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-1010025",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-1010025",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-9192",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-9192",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2026-18374",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-18374",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2026-19499",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-19499",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2026-77117",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-77117",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2026-80489",
+      "disposition": "component_not_present",
+      "reason": "Only locale/config/copyright data retained from libc-bin; no executable library/program from this binary package remains. libc6 is independently reviewed.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-80489",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2010-4756",
+      "disposition": "vendor_non_security",
+      "reason": "The supported Debian binary assessment is unimportant; the record concerns intentional unbounded glob complexity in an FTP-service integration. No FTP service is present. This retains the vendor non-security determination, not a fixed-version claim.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2010-4756",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      },
+      "policySource": "https://security-team.debian.org/security_tracker.html#severity-levels"
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2018-20796",
+      "disposition": "vendor_non_security",
+      "reason": "Debian marks this crafted POSIX-regex recursion issue unimportant. The source report demonstrates deliberate regex complexity/DoS rather than a boundary bypass; preserve the vendor non-security determination.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2018-20796",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      },
+      "policySource": "https://security-team.debian.org/security_tracker.html#severity-levels"
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-1010022",
+      "disposition": "vendor_non_security",
+      "reason": "Primary CVE description explicitly records upstream treating the stack-guard mitigation report as a non-security bug with no real threat; maintained Debian binary assessment agrees unimportant.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-1010022",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      },
+      "policySource": "https://security-team.debian.org/security_tracker.html#severity-levels"
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-1010023",
+      "disposition": "vendor_non_security",
+      "reason": "Primary CVE description explicitly records upstream treating malicious-ELF ldd execution as a non-security bug. The distroless runtime contains no ldd program; maintained Debian assessment agrees unimportant.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-1010023",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      },
+      "policySource": "https://security-team.debian.org/security_tracker.html#severity-levels"
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-1010024",
+      "disposition": "vendor_non_security",
+      "reason": "Primary CVE description explicitly records upstream treating the ASLR stack/heap cache report as a non-security bug; maintained Debian assessment agrees unimportant.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-1010024",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      },
+      "policySource": "https://security-team.debian.org/security_tracker.html#severity-levels"
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-1010025",
+      "disposition": "vendor_non_security",
+      "reason": "Primary CVE description records vendor position that ASLR bypass itself is not a vulnerability; maintained Debian assessment agrees unimportant.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-1010025",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      },
+      "policySource": "https://security-team.debian.org/security_tracker.html#severity-levels"
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2019-9192",
+      "disposition": "vendor_non_security",
+      "reason": "Primary CVE description records maintainer dispute for deliberately crafted regex recursion; maintained Debian assessment agrees unimportant.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2019-9192",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "unimportant"
+      },
+      "policySource": "https://security-team.debian.org/security_tracker.html#severity-levels"
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2026-77117",
+      "disposition": "component_not_present",
+      "reason": "CVE-2026-77117 affects the SHIFT_JISX0213 gconv converter. No gconv module is retained in the exact runtime; ctypes iconv cannot load that absent converter.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-77117",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "id": "CVE-2026-80489",
+      "disposition": "component_not_present",
+      "reason": "CVE-2026-80489 affects the EUC_JISX0213 gconv converter. No gconv module is retained in the exact runtime; Python native codecs are separate CPython code.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-80489",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "2.43-4"
+        },
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libsqlite3-0",
+        "sourceName": "sqlite3",
+        "sourceVersion": "3.53.4-2",
+        "version": "3.53.4-2"
+      },
+      "id": "CVE-2021-45346",
+      "disposition": "vendor_non_security",
+      "reason": "SQLite developer disputes that attacker-supplied corrupt database content can disclose anything outside the database. Supported Debian binary assessment is unimportant; preserve this non-security determination.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2021-45346",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "3.53.4-2"
+        },
+        "urgency": "unimportant"
+      },
+      "policySource": "https://security-team.debian.org/security_tracker.html#severity-levels"
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libsqlite3-0",
+        "sourceName": "sqlite3",
+        "sourceVersion": "3.53.4-2",
+        "version": "3.53.4-2"
+      },
+      "id": "CVE-2025-70873",
+      "disposition": "component_not_present",
+      "reason": "The SQLite optional zipfile extension is absent. The actual patched runtime probe reports no such module and the exhaustive native-library inventory contains no zipfile extension.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2025-70873",
+      "sourceAssessment": {
+        "status": "open",
+        "repositories": {
+          "sid": "3.53.4-2"
+        },
+        "urgency": "unimportant"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libuuid1",
+        "sourceName": "util-linux",
+        "sourceVersion": "2.42.2-4",
+        "version": "2.42.2-4"
+      },
+      "id": "CVE-2026-76642",
+      "disposition": "component_not_present",
+      "reason": "The advisory concerns mount helper/post-mount-hook code, while only libuuid is retained from util-linux. mount and libmount code are absent.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-76642",
+      "sourceAssessment": {
+        "status": "resolved",
+        "repositories": {
+          "sid": "2.42.3-1"
+        },
+        "fixed_version": "2.42.3-1",
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libuuid1",
+        "sourceName": "util-linux",
+        "sourceVersion": "2.42.2-4",
+        "version": "2.42.2-4"
+      },
+      "id": "CVE-2026-78408",
+      "disposition": "component_not_present",
+      "reason": "The advisory concerns nsenter --join-cgroup descriptor inheritance. nsenter is absent; only libuuid is retained from util-linux.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-78408",
+      "sourceAssessment": {
+        "status": "resolved",
+        "repositories": {
+          "sid": "2.42.3-1"
+        },
+        "fixed_version": "2.42.3-1",
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libuuid1",
+        "sourceName": "util-linux",
+        "sourceVersion": "2.42.2-4",
+        "version": "2.42.2-4"
+      },
+      "id": "CVE-2026-78409",
+      "disposition": "component_not_present",
+      "reason": "The advisory concerns X-mount.subdir/libmount detached mount code. mount and libmount are absent; only libuuid is retained.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-78409",
+      "sourceAssessment": {
+        "status": "resolved",
+        "repositories": {
+          "sid": "2.42.3-1"
+        },
+        "fixed_version": "2.42.3-1",
+        "urgency": "not yet assigned"
+      }
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libuuid1",
+        "sourceName": "util-linux",
+        "sourceVersion": "2.42.2-4",
+        "version": "2.42.2-4"
+      },
+      "id": "CVE-2026-78410",
+      "disposition": "component_not_present",
+      "reason": "The advisory concerns privileged mount/fstab bind source handling. mount and libmount are absent; only libuuid is retained.",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-78410",
+      "sourceAssessment": {
+        "status": "resolved",
+        "repositories": {
+          "sid": "2.42.3-1"
+        },
+        "fixed_version": "2.42.3-1",
+        "urgency": "not yet assigned"
+      }
+    }
+  ],
+  "namedHighCriticalVersionFixes": [
+    {
+      "package": "libc6",
+      "sourceName": "glibc",
+      "installedSourceVersion": "2.43-4",
+      "id": "CVE-2026-5435",
+      "priorSeverity": "high",
+      "fixedVersion": "2.43-3",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-5435"
+    },
+    {
+      "package": "libc6",
+      "sourceName": "glibc",
+      "installedSourceVersion": "2.43-4",
+      "id": "CVE-2026-5450",
+      "priorSeverity": "critical",
+      "fixedVersion": "2.42-17",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-5450"
+    },
+    {
+      "package": "libc6",
+      "sourceName": "glibc",
+      "installedSourceVersion": "2.43-4",
+      "id": "CVE-2026-5928",
+      "priorSeverity": "high",
+      "fixedVersion": "2.42-17",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-5928"
+    },
+    {
+      "package": "libsqlite3-0",
+      "sourceName": "sqlite3",
+      "installedSourceVersion": "3.53.4-2",
+      "id": "CVE-2026-11822",
+      "priorSeverity": "high",
+      "fixedVersion": "3.53.2-1",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-11822"
+    },
+    {
+      "package": "libsqlite3-0",
+      "sourceName": "sqlite3",
+      "installedSourceVersion": "3.53.4-2",
+      "id": "CVE-2026-11824",
+      "priorSeverity": "high",
+      "fixedVersion": "3.53.2-1",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/CVE-2026-11824"
+    }
+  ],
+  "changedPackageReviewDispositionCounts": {
+    "fixed": 458,
+    "not_affected": 27,
+    "component_not_present": 18,
+    "vendor_non_security": 8
+  },
+  "historicalEvidence": {
+    "report": "../runtime-advisory-review-2026-09-04.md",
+    "initialDistrolessStatus": "BLOCKED",
+    "initialDistrolessUniqueAdvisories": 55,
+    "initialDistrolessSeverityCounts": {
+      "medium": 19,
+      "low": 8,
+      "unknown": 14,
+      "high": 9,
+      "critical": 1,
+      "moderate": 4
+    },
+    "initialComponentInventoryDigest": "sha256:d41164f57b49da152748146514f3e4bb20e79efafee93024d9746eac9c3b83ce",
+    "initialReportFileDigest": "sha256:c65f553e921c4edc27882dc79a446da2add2bf26609fffa4740fda8cde99f0b9"
+  },
+  "fullReviewProvenance": {
+    "sourceFileName": "patched-published-applicability-review.json",
+    "sourceDigest": "sha256:75bb7ccee2d6d2e6009b4c72dd904e78ec8d569de35bf1a03aef94d13b36d4df",
+    "summaryIsDerived": true
+  },
+  "limits": [
+    "This is an unsigned evidence bundle, not a platform verification receipt or an independent security assessment.",
+    "Pass means this exact snapshot meets the configured advisory threshold after explicit applicability review; it does not mean vulnerability-free.",
+    "No CVSS severity was lowered and no confinement-only waiver is used. Absent-component and vendor-disputed records are identified explicitly.",
+    "Runtime advisories do not assess every platform, host-kernel, Firecracker, KMS or deployment risk. Hardware-run receipts and operator signing are separate evidence."
+  ]
+}

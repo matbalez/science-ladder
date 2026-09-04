@@ -38,7 +38,7 @@ func TestBoundedGuestFrames(t *testing.T) {
 }
 
 func TestSourceSnapshotRejectsHostileFiles(t *testing.T) {
-	for _, files := range []map[string][]byte{{"../escape.py": nil}, {".GIT/config": nil}, {"safe.py": []byte("-----BEGIN PRIVATE KEY-----")}, {".env": []byte("TOKEN=x")}, {"Dockerfile": []byte("FROM ubuntu")}, {"checker.sh": nil}, {"A.py": nil, "a.py": nil}} {
+	for _, files := range []map[string][]byte{{"../escape.py": nil}, {".GIT/config": nil}, {"safe.py": []byte("-----BEGIN PRIVATE KEY-----")}, {".env": []byte("TOKEN=x")}, {"Dockerfile": []byte("FROM ubuntu")}, {"checker.sh": nil}, {"CHECKER.SH": nil}, {"data.txt": []byte{0x7f, 'E', 'L', 'F'}}, {"native.DYLIB": nil}, {"A.py": nil, "a.py": nil}} {
 		snapshot := SourceSnapshot{RepositoryID: 1, SourceCommit: strings.Repeat("a", 40), Files: files}
 		data, _ := json.Marshal(snapshot)
 		if _, err := ReadSourceSnapshot(data); err == nil {
@@ -59,7 +59,7 @@ func TestWheelLocksAndZipTraversal(t *testing.T) {
 	if _, err := lockedWheelFiles(map[string][]byte{"requirements.lock": []byte("thing==1 --hash=sha256:" + strings.Repeat("a", 64))}, "requirements.lock"); err == nil {
 		t.Fatal("missing wheel accepted")
 	}
-	for _, filename := range []string{"../escape.py", "package/hook.pth", "package/native.so", "package.data/purelib/a.py"} {
+	for _, filename := range []string{"../escape.py", "package/hook.pth", "package/native.so", "package/native.DLL", "package.data/purelib/a.py"} {
 		var data bytes.Buffer
 		writer := zip.NewWriter(&data)
 		entry, err := writer.Create(filename)

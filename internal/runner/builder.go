@@ -76,12 +76,15 @@ func validateSourceFiles(files map[string][]byte) error {
 		if total > 64<<20 {
 			return errors.New("source exceeds 64 MiB")
 		}
-		base := path.Base(name)
+		base := strings.ToLower(path.Base(name))
 		if strings.HasPrefix(base, ".env") && base != ".env.example" {
 			return errors.New("private environment files forbidden")
 		}
-		if base == "Dockerfile" || strings.HasSuffix(base, ".sh") {
+		if base == "dockerfile" || strings.HasSuffix(base, ".sh") {
 			return errors.New("creator Dockerfiles and shell build scripts are outside this profile")
+		}
+		if nativeSourcePayload(name, data) {
+			return errors.New("native binaries require a separately reviewed execution profile")
 		}
 		if secretPattern.Match(data) {
 			return errors.New("credential/private-key indicator detected in source")
@@ -91,6 +94,22 @@ func validateSourceFiles(files map[string][]byte) error {
 		}
 	}
 	return nil
+}
+
+// Profile admission rejects native payloads even when a file has a harmless
+// suffix. This inventory check does not claim to prove Python source harmless;
+// every checker still runs inside the reviewed hardware boundary.
+func nativeSourcePayload(name string, data []byte) bool {
+	switch strings.ToLower(path.Ext(name)) {
+	case ".so", ".dylib", ".dll", ".pyd", ".exe", ".o", ".a":
+		return true
+	}
+	for _, signature := range [][]byte{{0x7f, 'E', 'L', 'F'}, {'M', 'Z'}, {0xfe, 0xed, 0xfa, 0xce}, {0xfe, 0xed, 0xfa, 0xcf}, {0xce, 0xfa, 0xed, 0xfe}, {0xcf, 0xfa, 0xed, 0xfe}, {0xca, 0xfe, 0xba, 0xbe}, []byte("!<arch>\n")} {
+		if bytes.HasPrefix(data, signature) {
+			return true
+		}
+	}
+	return false
 }
 
 func writeTree(directory string, files map[string][]byte) error {
@@ -194,7 +213,7 @@ func lockedWheelFiles(files map[string][]byte, lockPath string) (map[string][]by
 		if !strings.HasSuffix(name, "-py3-none-any.whl") {
 			return nil, errors.New("initial build profile supports pure Python py3-none-any wheels only")
 		}
-		base := path.Base(name)
+		base := strings.ToLower(path.Base(name))
 		parts := strings.Split(base, "-")
 		if len(parts) != 5 {
 			return nil, errors.New("unsupported wheel filename")
@@ -234,7 +253,7 @@ func lockedWheelFiles(files map[string][]byte, lockPath string) (map[string][]by
 			if strings.Contains(relative, ".data/") {
 				return nil, errors.New("wheel data installers are outside the initial profile")
 			}
-			if strings.HasSuffix(relative, ".pth") || strings.HasSuffix(relative, ".so") {
+			if strings.HasSuffix(strings.ToLower(relative), ".pth") || nativeSourcePayload(relative, nil) {
 				return nil, errors.New("wheel startup hooks/native code require a new platform profile")
 			}
 			if file.UncompressedSize64 > 32<<20 || file.UncompressedSize64 > 100*max(file.CompressedSize64, 1) {
@@ -252,6 +271,9 @@ func lockedWheelFiles(files map[string][]byte, lockPath string) (map[string][]by
 			_ = entry.Close()
 			if err != nil || uint64(len(contents)) != file.UncompressedSize64 {
 				return nil, errors.New("invalid wheel member length")
+			}
+			if nativeSourcePayload(relative, contents) {
+				return nil, errors.New("disguised native wheel payload requires a new platform profile")
 			}
 			target := "site-packages/" + relative
 			if _, exists := out[target]; exists {

@@ -1,0 +1,299 @@
+{
+  "generatedAt": "2026-09-04T22:15:10.165193Z",
+  "runtimeImageDigest": "sha256:3d3200b7c50dc88d5f34a97ddca8123a1ce413f87101586ade60d6149158078e",
+  "componentInventoryDigest": "sha256:d41164f57b49da152748146514f3e4bb20e79efafee93024d9746eac9c3b83ce",
+  "status": "BLOCKED",
+  "method": "Strict subset of prior exact-version coverage; verified sourceName/sourceVersion; no changed severity or fresh exemption. Source-package findings remain conservatively retained even if the distroless file set lacks the specific executable.",
+  "packages": 18,
+  "uniqueAdvisories": 55,
+  "severityCounts": {
+    "medium": 19,
+    "low": 8,
+    "unknown": 14,
+    "high": 9,
+    "critical": 1,
+    "moderate": 4
+  },
+  "coverageCounts": {
+    "complete": 18
+  },
+  "findings": [
+    {
+      "id": "CVE-2026-15806",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15806.json"
+    },
+    {
+      "id": "CVE-2026-17084",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/17xxx/CVE-2026-17084.json"
+    },
+    {
+      "id": "CVE-2026-19672",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/19xxx/CVE-2026-19672.json"
+    },
+    {
+      "id": "CVE-2026-15310",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15310.json"
+    },
+    {
+      "id": "CVE-2025-15367",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/15xxx/CVE-2025-15367.json"
+    },
+    {
+      "id": "CVE-2026-42250",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42250.json"
+    },
+    {
+      "id": "CVE-2010-4756",
+      "severity": "unknown",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2010/4xxx/CVE-2010-4756.json"
+    },
+    {
+      "id": "CVE-2018-20796",
+      "severity": "unknown",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2018/20xxx/CVE-2018-20796.json"
+    },
+    {
+      "id": "CVE-2019-1010022",
+      "severity": "unknown",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/1010xxx/CVE-2019-1010022.json"
+    },
+    {
+      "id": "CVE-2019-1010023",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/1010xxx/CVE-2019-1010023.json"
+    },
+    {
+      "id": "CVE-2019-1010024",
+      "severity": "unknown",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/1010xxx/CVE-2019-1010024.json"
+    },
+    {
+      "id": "CVE-2019-1010025",
+      "severity": "unknown",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/1010xxx/CVE-2019-1010025.json"
+    },
+    {
+      "id": "CVE-2019-9192",
+      "severity": "unknown",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/9xxx/CVE-2019-9192.json"
+    },
+    {
+      "id": "CVE-2026-18374",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/18xxx/CVE-2026-18374.json"
+    },
+    {
+      "id": "CVE-2026-19499",
+      "severity": "unknown",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json"
+    },
+    {
+      "id": "CVE-2026-19542",
+      "severity": "unknown",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json"
+    },
+    {
+      "id": "CVE-2026-5435",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/5xxx/CVE-2026-5435.json"
+    },
+    {
+      "id": "CVE-2026-5450",
+      "severity": "critical",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/5xxx/CVE-2026-5450.json"
+    },
+    {
+      "id": "CVE-2026-5928",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/5xxx/CVE-2026-5928.json"
+    },
+    {
+      "id": "CVE-2026-6238",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/6xxx/CVE-2026-6238.json"
+    },
+    {
+      "id": "CVE-2026-6368",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/6xxx/CVE-2026-6368.json"
+    },
+    {
+      "id": "CVE-2026-6791",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/6xxx/CVE-2026-6791.json"
+    },
+    {
+      "id": "CVE-2026-77117",
+      "severity": "unknown",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json"
+    },
+    {
+      "id": "CVE-2026-80489",
+      "severity": "unknown",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json"
+    },
+    {
+      "id": "CVE-2023-50495",
+      "severity": "unknown",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/50xxx/CVE-2023-50495.json"
+    },
+    {
+      "id": "CVE-2025-6141",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/6xxx/CVE-2025-6141.json"
+    },
+    {
+      "id": "CVE-2021-45346",
+      "severity": "unknown",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2021/45xxx/CVE-2021-45346.json"
+    },
+    {
+      "id": "CVE-2025-29088",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/29xxx/CVE-2025-29088.json"
+    },
+    {
+      "id": "CVE-2025-70873",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/70xxx/CVE-2025-70873.json"
+    },
+    {
+      "id": "CVE-2025-7458",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/7xxx/CVE-2025-7458.json"
+    },
+    {
+      "id": "CVE-2025-7709",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/7xxx/CVE-2025-7709.json"
+    },
+    {
+      "id": "CVE-2026-11822",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/11xxx/CVE-2026-11822.json"
+    },
+    {
+      "id": "CVE-2026-11824",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/11xxx/CVE-2026-11824.json"
+    },
+    {
+      "id": "CVE-2026-39113",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/39xxx/CVE-2026-39113.json"
+    },
+    {
+      "id": "CVE-2026-50812",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/50xxx/CVE-2026-50812.json"
+    },
+    {
+      "id": "CVE-2026-50813",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/50xxx/CVE-2026-50813.json"
+    },
+    {
+      "id": "CVE-2025-27587",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/27xxx/CVE-2025-27587.json"
+    },
+    {
+      "id": "CVE-2026-42767",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42767.json"
+    },
+    {
+      "id": "CVE-2026-54874",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/54xxx/CVE-2026-54874.json"
+    },
+    {
+      "id": "CVE-2026-63072",
+      "severity": "moderate",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63072.json"
+    },
+    {
+      "id": "CVE-2026-63074",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63074.json"
+    },
+    {
+      "id": "CVE-2026-63076",
+      "severity": "moderate",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63076.json"
+    },
+    {
+      "id": "CVE-2026-75803",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/75xxx/CVE-2026-75803.json"
+    },
+    {
+      "id": "CVE-2022-0563",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2022/0xxx/CVE-2022-0563.json"
+    },
+    {
+      "id": "CVE-2025-14104",
+      "severity": "moderate",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/14xxx/CVE-2025-14104.json"
+    },
+    {
+      "id": "CVE-2026-13595",
+      "severity": "moderate",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/13xxx/CVE-2026-13595.json"
+    },
+    {
+      "id": "CVE-2026-27456",
+      "severity": "medium",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/27xxx/CVE-2026-27456.json"
+    },
+    {
+      "id": "CVE-2026-3184",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/3xxx/CVE-2026-3184.json"
+    },
+    {
+      "id": "CVE-2026-53613",
+      "severity": "unknown",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json"
+    },
+    {
+      "id": "CVE-2026-53615",
+      "severity": "unknown",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json"
+    },
+    {
+      "id": "CVE-2026-76642",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/76xxx/CVE-2026-76642.json"
+    },
+    {
+      "id": "CVE-2026-78408",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/78xxx/CVE-2026-78408.json"
+    },
+    {
+      "id": "CVE-2026-78409",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/78xxx/CVE-2026-78409.json"
+    },
+    {
+      "id": "CVE-2026-78410",
+      "severity": "high",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/78xxx/CVE-2026-78410.json"
+    },
+    {
+      "id": "CVE-2026-27171",
+      "severity": "low",
+      "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/27xxx/CVE-2026-27171.json"
+    }
+  ],
+  "sourceEvidence": "source-index.json; all306 retained raw source responses unchanged",
+  "newRuntimeImageDigestMayChange": "The final release CI image digest may change without changing this component inventory. Rebind only after the component digest is verified."
+}

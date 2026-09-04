@@ -436,7 +436,9 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 	receipt.VerificationPolicy = job.VerificationPolicy
 	receipt.ParentJobDigest = job.ParentJobDigest
 	if ctx.Err() != nil {
-		receipt.Outcome = "resource_limit"
+		// The guest reports checker-budget exhaustion explicitly. A host lease,
+		// boot, I/O or VMM deadline is infrastructure failure, not a solver loss.
+		receipt.Outcome = "infrastructure_fault"
 	} else if bytes.Contains(output.b.Bytes(), []byte("SL_BOOT_ERROR:")) {
 		receipt.Outcome = "infrastructure_fault"
 	} else if runErr == nil && !output.overflow {
@@ -461,8 +463,8 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 			receipt.Outcome = "invalid_output"
 		}
 	}
-	if r.probeDiagnostics != nil && receipt.Outcome == "infrastructure_fault" {
-		fmt.Fprintf(r.probeDiagnostics, "Fixed platform probe infrastructure failure (%v):\n%s\n", runErr, output.b.String())
+	if r.probeDiagnostics != nil && receipt.Outcome != "valid" {
+		fmt.Fprintf(r.probeDiagnostics, "Fixed platform probe %s (%v), duration %d ms:\n%s\n", receipt.Outcome, runErr, duration, output.b.String())
 	}
 	if err := os.RemoveAll(lease); err != nil {
 		return protocol.Envelope{}, errors.New("ephemeral teardown failed; host must be quarantined")

@@ -294,7 +294,7 @@ func ScanAdvisories(packages []PackageCoordinate, snapshot AdvisorySnapshot, now
 			return findings, "unknown"
 		}
 		switch u.Hostname() {
-		case "api.osv.dev", "osv.dev", "osv-vulnerabilities.storage.googleapis.com", "security-tracker.debian.org", "api.github.com", "github.com", "raw.githubusercontent.com", "www.python.org", "pypi.org":
+		case "api.osv.dev", "osv.dev", "osv-vulnerabilities.storage.googleapis.com", "security-tracker.debian.org", "security-team.debian.org", "bugs.debian.org", "bugzilla.redhat.com", "api.github.com", "github.com", "raw.githubusercontent.com", "www.python.org", "pypi.org":
 		default:
 			unknown("unapproved_primary_advisory_source")
 			return findings, "unknown"
@@ -317,12 +317,13 @@ func ScanAdvisories(packages []PackageCoordinate, snapshot AdvisorySnapshot, now
 			unknown("duplicate_advisory_coverage")
 			return findings, "unknown"
 		}
+		entry.Package = normalized
 		coverage[key] = entry
 	}
 	status := "pass"
 	for _, p := range packages {
 		entry, ok := coverage[packageKey(p)]
-		if !ok || entry.Status != "complete" || !sources[entry.SourceURL] {
+		if !ok || entry.Package != p || entry.Status != "complete" || !sources[entry.SourceURL] {
 			findings = append(findings, protocol.VulnerabilityFinding{Component: packageKey(p), ID: "coverage_missing_or_incomplete", Severity: "unknown", SourceURL: entry.SourceURL})
 			status = "unknown"
 			continue

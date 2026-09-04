@@ -40,8 +40,15 @@ func TestAdvisoryCoverageFailsClosed(t *testing.T) {
 		"missing source digest": func(s *AdvisorySnapshot) { s.Sources[0].ContentDigest = "" },
 		"missing package":       func(s *AdvisorySnapshot) { s.Coverage = nil },
 		"unknown package":       func(s *AdvisorySnapshot) { s.Coverage[0].Status = "unknown" },
-		"wrong version":         func(s *AdvisorySnapshot) { s.Coverage[0].Package.Version = "1.1" },
-		"duplicate coordinate":  func(s *AdvisorySnapshot) { s.Coverage = append(s.Coverage, s.Coverage[0]) },
+		"wrong package bytes": func(s *AdvisorySnapshot) {
+			s.Coverage[0].Package.Digest = protocol.DigestBytes([]byte("different package bytes"))
+		},
+		"wrong source metadata": func(s *AdvisorySnapshot) {
+			s.Coverage[0].Package.SourceName = "different-source"
+			s.Coverage[0].Package.SourceVersion = "1.0"
+		},
+		"wrong version":        func(s *AdvisorySnapshot) { s.Coverage[0].Package.Version = "1.1" },
+		"duplicate coordinate": func(s *AdvisorySnapshot) { s.Coverage = append(s.Coverage, s.Coverage[0]) },
 	}
 	for name, mutate := range tests {
 		t.Run(name, func(t *testing.T) {

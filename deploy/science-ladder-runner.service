@@ -1,0 +1,24 @@
+[Unit]
+Description=Science Ladder isolated verification worker
+Requires=science-ladder-host-controls.service science-ladder-host-signer.service
+After=network-online.target science-ladder-host-controls.service science-ladder-host-signer.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/science-ladder/runner.env
+ExecStart=/opt/science-ladder/runnerd serve --config /etc/science-ladder/host-a.json --keys /etc/science-ladder/platform-keys.json --host-keys /etc/science-ladder/host-keys.json --key-id ${HOST_KEY_ID} --signer-socket /run/science-ladder-signer/sign.sock --encryption-key /etc/science-ladder/host-x25519.key --api ${RUNNER_API} --tls-cert /etc/science-ladder/host-a.crt --tls-key /etc/science-ladder/host-a.key --tls-ca /etc/science-ladder/ca.crt
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=90
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+# Jailer needs /dev/kvm, namespace operations, and writable child cgroups.
+# Its guest has its own separately enforced confinement profile.
+ReadWritePaths=/run/science-ladder /var/lib/science-ladder/spool /sys/fs/cgroup
+
+[Install]
+WantedBy=multi-user.target

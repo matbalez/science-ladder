@@ -35,6 +35,7 @@ jobs:
       - run: go test -race ./...
       - run: go build ./cmd/...
       - run: python3 scripts/check-secrets.py
+      - run: python3 -m unittest discover -s scripts/tests -p test_github_repository.py -v
   web:
     runs-on: ubuntu-latest
     defaults:

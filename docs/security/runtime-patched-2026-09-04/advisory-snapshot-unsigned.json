@@ -1,0 +1,1872 @@
+{
+  "apiVersion": "science-ladder-advisories/v1",
+  "kind": "AdvisorySnapshot",
+  "id": "patched-debian-review-20260904T223626Z",
+  "generatedAt": "2026-09-04T22:36:26.017165+00:00",
+  "expiresAt": "2026-09-05T22:36:26.017165+00:00",
+  "sources": [
+    {
+      "url": "https://api.github.com/repos/psf/advisory-database/commits/main",
+      "fetchedAt": "2026-09-04T22:01:40.746489Z",
+      "contentDigest": "sha256:3ca8da9ff6c1fddb77f0626c2a05a549e66ea159d3fa183a77713db28eb9eaae"
+    },
+    {
+      "url": "https://api.github.com/repos/psf/advisory-database/git/trees/main?recursive=1",
+      "fetchedAt": "2026-09-04T22:01:13.518788Z",
+      "contentDigest": "sha256:355f916637ab1d623a06aca6fe016f553ad38854361eb1dc7a3dd639cef6b446"
+    },
+    {
+      "url": "https://api.github.com/repos/python/cpython/git/ref/tags/v3.13.15",
+      "fetchedAt": "2026-09-04T22:01:12.719718Z",
+      "contentDigest": "sha256:7305c619368ff088d2ede46349e6d94dfc6e78ec4d16362c54853b4527241956"
+    },
+    {
+      "url": "https://api.github.com/repos/python/cpython/git/tags/9cb432a43babc597b349cabb704870e88a82a382",
+      "fetchedAt": "2026-09-04T22:01:40.676521Z",
+      "contentDigest": "sha256:534b4c4a2cf3dc1f5a7c000e0153e85d2083ad73b8688c115c0e54c4c4cfe4e3"
+    },
+    {
+      "url": "https://api.osv.dev/v1/query",
+      "fetchedAt": "2026-09-04T22:02:12.979199Z",
+      "contentDigest": "sha256:dd4c88e5b3bf07bc32b91509995a6f1aebbc5884eb70fd77d19479c67279a24a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2005/2xxx/CVE-2005-2541.json",
+      "fetchedAt": "2026-09-04T22:04:04.461708Z",
+      "contentDigest": "sha256:b333988692f6ef9fb83bf4ab754f0133686c9e424620c874666c17682ccb7ed5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2007/5xxx/CVE-2007-5686.json",
+      "fetchedAt": "2026-09-04T22:04:06.939571Z",
+      "contentDigest": "sha256:6a411c2b17a3e2a3285f254216fd48a7e65f1913cc68ea5c644d8d0920a96887"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2010/4xxx/CVE-2010-4756.json",
+      "fetchedAt": "2026-09-04T22:04:04.653667Z",
+      "contentDigest": "sha256:9104bc5077e2d52af544e7cc63d06b7a52381d542410fafbbdf5fbd7c5187cf8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2011/3xxx/CVE-2011-3374.json",
+      "fetchedAt": "2026-09-04T22:04:05.574897Z",
+      "contentDigest": "sha256:5825e01ea6328b85d3d61912905105ce215d880209c3a5a4ff443a2a627cfa31"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2011/3xxx/CVE-2011-3389.json",
+      "fetchedAt": "2026-09-04T22:04:06.131454Z",
+      "contentDigest": "sha256:360792ece70d6bdd0431c675584042337c63e9b041d7d372d7e9242089a1978e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2011/4xxx/CVE-2011-4116.json",
+      "fetchedAt": "2026-09-04T22:04:06.051787Z",
+      "contentDigest": "sha256:7282deaa1b633ee2e97902a5fd6a491124b1c4190ebbc70d832e67c3702b711d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2013/4xxx/CVE-2013-4392.json",
+      "fetchedAt": "2026-09-04T22:04:07.316856Z",
+      "contentDigest": "sha256:70708f2cfbc37370b13ac239d5b1cee757e6e07232fa37f24fc8757d5f08ec06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2016/2xxx/CVE-2016-2781.json",
+      "fetchedAt": "2026-09-04T22:04:07.762744Z",
+      "contentDigest": "sha256:98501275dced4dfca55a50d785039be437b17e9cd0e0330e7a2d9f7e240babf7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2017/18xxx/CVE-2017-18018.json",
+      "fetchedAt": "2026-09-04T22:04:07.858683Z",
+      "contentDigest": "sha256:883b254ed1057587d5be0cc2bcde086d1f24b8b1c7273cabf634bd2a3774a942"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2018/20xxx/CVE-2018-20796.json",
+      "fetchedAt": "2026-09-04T22:04:04.667357Z",
+      "contentDigest": "sha256:c91c40844c248d89700701a13b6d15f18871b6a17619feb8f4b6159a8f9c5b11"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2018/6xxx/CVE-2018-6829.json",
+      "fetchedAt": "2026-09-04T22:04:07.503192Z",
+      "contentDigest": "sha256:440f3e23b8c2ecf023221ca783b24f92492306e47cb8fe7adf31b53340d58a13"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/1010xxx/CVE-2019-1010022.json",
+      "fetchedAt": "2026-09-04T22:04:04.469604Z",
+      "contentDigest": "sha256:372a8c6934165a8abe17ec19bd919dad552cb1c3514f3b66dc997843d221a371"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/1010xxx/CVE-2019-1010023.json",
+      "fetchedAt": "2026-09-04T22:04:04.659563Z",
+      "contentDigest": "sha256:d1054d558780a9ed3dff66ca49ef4e7bdb1e7fdf04a3158e0e7e53df12b9a0cd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/1010xxx/CVE-2019-1010024.json",
+      "fetchedAt": "2026-09-04T22:04:04.833805Z",
+      "contentDigest": "sha256:c3ccdd10a57cc9b2c2e87f00da748c8cf254c0c5ed5f8b321f81c7acfcf0b8c4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/1010xxx/CVE-2019-1010025.json",
+      "fetchedAt": "2026-09-04T22:04:04.865580Z",
+      "contentDigest": "sha256:8477c528a6dbe42f8c132d1eed7455be9945d9c6027816b8c99cebb1e74f54c8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2019/9xxx/CVE-2019-9192.json",
+      "fetchedAt": "2026-09-04T22:04:04.853221Z",
+      "contentDigest": "sha256:61934c4b65780b2dd07fd292f8afad2ce26801896eb282b2b8e344f3f1c11b30"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2021/45xxx/CVE-2021-45346.json",
+      "fetchedAt": "2026-09-04T22:04:06.961495Z",
+      "contentDigest": "sha256:f158139f4b130ba8ba1b3afa6c66a673228cf7a099c4995953ba00ad3ea2aa3a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2022/0xxx/CVE-2022-0563.json",
+      "fetchedAt": "2026-09-04T22:04:06.656851Z",
+      "contentDigest": "sha256:fe93bff51e2283ceaac35bebe795f2d40251788ffe99274afd23393b4c299bfe"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2022/27xxx/CVE-2022-27943.json",
+      "fetchedAt": "2026-09-04T22:04:07.990985Z",
+      "contentDigest": "sha256:ba5b751c8ce4c85c7b986a3540468e5e84651e88fc24f0bba527efc3491564df"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2022/3xxx/CVE-2022-3219.json",
+      "fetchedAt": "2026-09-04T22:04:05.455578Z",
+      "contentDigest": "sha256:f35fe7740d3d7f36bd4a786ecf9cfb3f046de72b47553b3339f8e90801cba249"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/31xxx/CVE-2023-31437.json",
+      "fetchedAt": "2026-09-04T22:04:07.314194Z",
+      "contentDigest": "sha256:f9b754f3f50aebda545889987d140be67629b7761b8b10f701b3b6c451411c8d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/31xxx/CVE-2023-31438.json",
+      "fetchedAt": "2026-09-04T22:04:07.524344Z",
+      "contentDigest": "sha256:101c62896403af97e797309dd5b0bd5e3ca72b5867a2d49de80e7d5823fc4ca0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/31xxx/CVE-2023-31439.json",
+      "fetchedAt": "2026-09-04T22:04:07.542509Z",
+      "contentDigest": "sha256:e6af6e062fd94c1176ee869277048adafa714e8479e7a2584bcf38fac1da084f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/31xxx/CVE-2023-31486.json",
+      "fetchedAt": "2026-09-04T22:04:06.048944Z",
+      "contentDigest": "sha256:8304f0f7d2856c2b35ff6f1252eb27f2f101635f88a7983b74cbeea28e0b2271"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/45xxx/CVE-2023-45853.json",
+      "fetchedAt": "2026-09-04T22:04:05.856583Z",
+      "contentDigest": "sha256:b72cccbb5e3f7957047e08aefb500ebcaaf2cde1d7c5a90d0b2754e52819bcb4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/50xxx/CVE-2023-50495.json",
+      "fetchedAt": "2026-09-04T22:04:05.768351Z",
+      "contentDigest": "sha256:0a84861be39a0f2b2ac25724a4c19f8447454c1d4cd143fff23910443315c5c6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/10xxx/CVE-2024-10041.json",
+      "fetchedAt": "2026-09-04T22:04:05.861504Z",
+      "contentDigest": "sha256:6c32717fb00db7e35bed6b963b974356d3dc092897aa1510cc3cfec8c8a5c9ff"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/2xxx/CVE-2024-2236.json",
+      "fetchedAt": "2026-09-04T22:04:07.545542Z",
+      "contentDigest": "sha256:ad79be3cfd8684ce4aca00495eda4934512d7620f3e4950dd1e29a4181cb9c94"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/56xxx/CVE-2024-56433.json",
+      "fetchedAt": "2026-09-04T22:04:06.946635Z",
+      "contentDigest": "sha256:868a609f2bb6919412ffe16d4768d2e056cd2e47ce59bc6792b2a342dbc94029"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/13xxx/CVE-2025-13151.json",
+      "fetchedAt": "2026-09-04T22:04:05.993125Z",
+      "contentDigest": "sha256:669e35424e155aa1f797470b8738a805e944e9239daf82f29d09291ff595854f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/14xxx/CVE-2025-14104.json",
+      "fetchedAt": "2026-09-04T22:04:06.697764Z",
+      "contentDigest": "sha256:9611bff9e53095158b3729bb6f458065aeab5972b37c3b3c61e13ded29d86fe5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/15xxx/CVE-2025-15367.json",
+      "fetchedAt": "2026-09-04T22:07:15.239882Z",
+      "contentDigest": "sha256:85c817393581367be9ba57ae60cb46c7388b3a02b1cea2fd24c30bcec3115123"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/15xxx/CVE-2025-15649.json",
+      "fetchedAt": "2026-09-04T22:04:06.088435Z",
+      "contentDigest": "sha256:1c9749314c311416c7b533512af3dc641175341ba1d267868447f179ff0f71d7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/27xxx/CVE-2025-27587.json",
+      "fetchedAt": "2026-09-04T22:04:07.572743Z",
+      "contentDigest": "sha256:ac86ea0c66abebfc2f497a5d328bacde90a74d67d728e0451a917da7a19b9281"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/29xxx/CVE-2025-29088.json",
+      "fetchedAt": "2026-09-04T22:04:06.992889Z",
+      "contentDigest": "sha256:e784a639df31009e630172ab4c66b272f89ab9c3a6f3a1189c3498bda8df7fdb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/30xxx/CVE-2025-30258.json",
+      "fetchedAt": "2026-09-04T22:04:05.498225Z",
+      "contentDigest": "sha256:4cce01d1f3c9a8986246720275a0d0bdd4081dd3a91ba61c44cef9bbf25628fe"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/5xxx/CVE-2025-5278.json",
+      "fetchedAt": "2026-09-04T22:04:07.921746Z",
+      "contentDigest": "sha256:faab7838db3d861b13e0ae5f511f0b4ed90abcdddd23e5c5cdb6b8ec00d864cd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/68xxx/CVE-2025-68972.json",
+      "fetchedAt": "2026-09-04T22:04:05.380612Z",
+      "contentDigest": "sha256:37e6b1c6402da44db538fb0a6c8c98b85fb6b2801250cf69a56b252f8ddbb1b5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/69xxx/CVE-2025-69720.json",
+      "fetchedAt": "2026-09-04T22:04:05.857671Z",
+      "contentDigest": "sha256:d9b704db9e739d5c3f3266acd4bfaa730a410dd4d4f63d60c60ec3a6c0f026e1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/6xxx/CVE-2025-6141.json",
+      "fetchedAt": "2026-09-04T22:04:06.088745Z",
+      "contentDigest": "sha256:5af835723a0c10622c5a99b6afa80d2fc7a8ba02325cf70462a0c7e6186b9b17"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/70xxx/CVE-2025-70873.json",
+      "fetchedAt": "2026-09-04T22:04:07.235012Z",
+      "contentDigest": "sha256:14b58284fe98cb17e8ddd24d028f29194c0449df738a9e94e60c4a3f72515e4b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/7xxx/CVE-2025-7458.json",
+      "fetchedAt": "2026-09-04T22:04:07.099958Z",
+      "contentDigest": "sha256:931b7a16255c14a704cc6a6d76482c416fb28b9ca0415342c335e819c43cf56d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/7xxx/CVE-2025-7709.json",
+      "fetchedAt": "2026-09-04T22:04:07.122263Z",
+      "contentDigest": "sha256:5c3837af416a47eb241a319214115cbcccea05b435cef4fdb41b772afe7b6263"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/8xxx/CVE-2025-8941.json",
+      "fetchedAt": "2026-09-04T22:04:05.999514Z",
+      "contentDigest": "sha256:97bda28a64ddd82d976e722d52830de2b16304e2a88d9462387dfcb7b836bed1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/11xxx/CVE-2026-11822.json",
+      "fetchedAt": "2026-09-04T22:04:07.129552Z",
+      "contentDigest": "sha256:d8209a78359316304adb3823b962d38882bb892272073238c46c9ee915e89334"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/11xxx/CVE-2026-11824.json",
+      "fetchedAt": "2026-09-04T22:04:07.358448Z",
+      "contentDigest": "sha256:39c5068ab85685cbecc61aec51e436d9a38625fcebbe76676f98dd957655bcf9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/12xxx/CVE-2026-12087.json",
+      "fetchedAt": "2026-09-04T22:04:06.392775Z",
+      "contentDigest": "sha256:3f5916d4cd73fc39a529a520332df5c57961d3fe5167272b31790d834d121205"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/13xxx/CVE-2026-13221.json",
+      "fetchedAt": "2026-09-04T22:04:06.185463Z",
+      "contentDigest": "sha256:99dcf4d454af970025b385e2dd401e46c9cbf7938f6af3466d3ee44e49dcfd44"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/13xxx/CVE-2026-13595.json",
+      "fetchedAt": "2026-09-04T22:04:06.899108Z",
+      "contentDigest": "sha256:231d68cf4717dde395cfae61d29c549182040d30957b666aabe3bcc7cce6269b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/13xxx/CVE-2026-13757.json",
+      "fetchedAt": "2026-09-04T22:04:05.498239Z",
+      "contentDigest": "sha256:c560b9c841e1d8adadc552d30a451b656498fe82e00e739585481ea99a30ee28"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15059.json",
+      "fetchedAt": "2026-09-04T22:04:07.770395Z",
+      "contentDigest": "sha256:240698d634178fdc06c6c132b95ffddf3232e409b97f2c055d586254349080ad"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15310.json",
+      "fetchedAt": "2026-09-04T22:07:15.213327Z",
+      "contentDigest": "sha256:948cff83f2544336bb118ce07a65b55dda4650be0c41fe82ea0e00995c30ce2c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15534.json",
+      "fetchedAt": "2026-09-04T22:04:06.445132Z",
+      "contentDigest": "sha256:3ab2ac8bd4f5eeba65f2fd5d769bd2c85097823af998c0298761e22c9de47d5d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15806.json",
+      "fetchedAt": "2026-09-04T22:03:40.326414Z",
+      "contentDigest": "sha256:2d712bee809c8e3d49b81562eafe19949f5b31533d63e7fd162322509dd3afe0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/16xxx/CVE-2026-16742.json",
+      "fetchedAt": "2026-09-04T22:04:07.484431Z",
+      "contentDigest": "sha256:2075bfb686e9c2a3b304c3279b82fd5e64fbd52b2a0e4339825d7cfa1c11e46a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/17xxx/CVE-2026-17084.json",
+      "fetchedAt": "2026-09-04T22:07:15.385158Z",
+      "contentDigest": "sha256:873b5dc45fbaf30ccaf45b6372f22bab9b81b1cbe1ae3efe0733bd75c48c469d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/18xxx/CVE-2026-18374.json",
+      "fetchedAt": "2026-09-04T22:04:05.017592Z",
+      "contentDigest": "sha256:aa73c418b75e95a044f422194f52fc7284e363547775f65571768d2e771b7c14"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/18xxx/CVE-2026-18477.json",
+      "fetchedAt": "2026-09-04T22:04:04.424208Z",
+      "contentDigest": "sha256:e6398416deb76732c685a5743e1fd78dfb5e17d73c9e57d21c01d1c4afca851b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/18xxx/CVE-2026-18508.json",
+      "fetchedAt": "2026-09-04T22:04:04.711217Z",
+      "contentDigest": "sha256:b01e92467a80b7488863d3d5068f695841db116f256e7c3987b98aea9b7da452"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/18xxx/CVE-2026-18938.json",
+      "fetchedAt": "2026-09-04T22:04:05.462760Z",
+      "contentDigest": "sha256:753e2f8528ebde2eaba2dd2691e76cb9a5ff3fa3e7d6ba86dc7d4d1ddb2773eb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/19xxx/CVE-2026-19487.json",
+      "fetchedAt": "2026-09-04T22:04:06.262057Z",
+      "contentDigest": "sha256:864622ea93e63ab72d8b8a677251b9682b027e75fe55bf9ef535abc59c9ee37c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/19xxx/CVE-2026-19672.json",
+      "fetchedAt": "2026-09-04T22:03:40.314328Z",
+      "contentDigest": "sha256:6d4371c9f845314321a61cd961acd231245ba0386c5ebed74bc81d81a4d3cbff"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/27xxx/CVE-2026-27171.json",
+      "fetchedAt": "2026-09-04T22:04:05.816863Z",
+      "contentDigest": "sha256:0f92ec672ae169dfb0464eaae638539fa02607c0c66c74ac637841affa683e13"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/27xxx/CVE-2026-27456.json",
+      "fetchedAt": "2026-09-04T22:04:06.733748Z",
+      "contentDigest": "sha256:0370686cd4f02d5e9689dc40e1a72f5bb6fcc82102bef229a7a89ec8d7eea470"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/39xxx/CVE-2026-39113.json",
+      "fetchedAt": "2026-09-04T22:04:07.123254Z",
+      "contentDigest": "sha256:52fbdf327e3275d2063b5804a00962dabd1357e2d825f9166ebb8c445565834b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/3xxx/CVE-2026-3184.json",
+      "fetchedAt": "2026-09-04T22:04:06.733766Z",
+      "contentDigest": "sha256:a6e19bca648b6f76d4472bca49610993d4d3e1131df3de165bcfb8fe47a9b1a9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/40xxx/CVE-2026-40228.json",
+      "fetchedAt": "2026-09-04T22:04:07.503264Z",
+      "contentDigest": "sha256:59a1132c5fb0ae24be8f04f5ced8a930bc857c1aa845ba90c60534cd964961d0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/41xxx/CVE-2026-41991.json",
+      "fetchedAt": "2026-09-04T22:04:05.898050Z",
+      "contentDigest": "sha256:89a75c5b8a9ef8cdd6eea7064c0997394d03b16888124a39cf53591e757b1297"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/41xxx/CVE-2026-41992.json",
+      "fetchedAt": "2026-09-04T22:04:05.664517Z",
+      "contentDigest": "sha256:97875df8c0a78e253d336c23a77dd388567ef5b7c445ef734d1670a4bd12147e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42250.json",
+      "fetchedAt": "2026-09-04T22:04:06.630227Z",
+      "contentDigest": "sha256:503cbf287354b7cafcf48a21a578e2f9f439657d8f2b24e8a283bded143c684f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42496.json",
+      "fetchedAt": "2026-09-04T22:04:06.366570Z",
+      "contentDigest": "sha256:5bcc47d4c9b8e25ac434664d62c56f6597e6699c9814e6e72208aec6ca1a05b1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42497.json",
+      "fetchedAt": "2026-09-04T22:04:06.267775Z",
+      "contentDigest": "sha256:e9b29c6af8244d006705cbe8925a7c7b6c8e9dca7c20536b3df79f6e60f454e1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42767.json",
+      "fetchedAt": "2026-09-04T22:04:07.879775Z",
+      "contentDigest": "sha256:7196c058165e6bc02341465d07dab33d599ec98aa99064438bdd0338dbe91a45"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/48xxx/CVE-2026-48959.json",
+      "fetchedAt": "2026-09-04T22:04:06.303359Z",
+      "contentDigest": "sha256:fc441764d5329e87b933ef1f14283f360b053f385f2bb559d45f4cb6c0bbcf17"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/48xxx/CVE-2026-48961.json",
+      "fetchedAt": "2026-09-04T22:04:06.366351Z",
+      "contentDigest": "sha256:3a77e38b2d9ad6f5fd0fd3a4349982b008827d9f65f3dc5fcba54027bf65bd0a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/48xxx/CVE-2026-48962.json",
+      "fetchedAt": "2026-09-04T22:04:06.444368Z",
+      "contentDigest": "sha256:d79ebe9b3496bc417b1d5192a8174feaa98235070ee91d02a4c018a463bf6fd9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/50xxx/CVE-2026-50812.json",
+      "fetchedAt": "2026-09-04T22:04:07.385748Z",
+      "contentDigest": "sha256:117082caad9a799c29d06c54522a889a6c2aa64c76d4ab86f9eb78385e4b108a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/50xxx/CVE-2026-50813.json",
+      "fetchedAt": "2026-09-04T22:04:07.273501Z",
+      "contentDigest": "sha256:3188708c2c11aa25de1d651514c690c779fc7ed1504c3ada1c00acfc52f521c3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/53xxx/CVE-2026-53910.json",
+      "fetchedAt": "2026-09-04T22:04:06.633088Z",
+      "contentDigest": "sha256:cd452cb7b7595b34cfa80c20822c9ced328ff3531b19310571f2cefc76e4e2de"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/54xxx/CVE-2026-54369.json",
+      "fetchedAt": "2026-09-04T22:04:07.969557Z",
+      "contentDigest": "sha256:42129041eed7a12d50a4ec9f62cfd8526903530f0752e7bb6d372ffcc89c4f4a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/54xxx/CVE-2026-54370.json",
+      "fetchedAt": "2026-09-04T22:04:07.991001Z",
+      "contentDigest": "sha256:b78415030fff89c0de32be1802a560e11c2fcc4702f56f01170caf37d52dfafa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/54xxx/CVE-2026-54371.json",
+      "fetchedAt": "2026-09-04T22:04:05.708409Z",
+      "contentDigest": "sha256:0afe5d0a385c65d76877b606e9a3d1d308e552a022f8b282e10e04cbf3bfab9b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/54xxx/CVE-2026-54411.json",
+      "fetchedAt": "2026-09-04T22:04:06.185444Z",
+      "contentDigest": "sha256:ef6d523acdb6b090c1d16d379221f3d716b611266b81d4d3f95e52e58f0736b3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/54xxx/CVE-2026-54874.json",
+      "fetchedAt": "2026-09-04T22:04:07.672381Z",
+      "contentDigest": "sha256:32c6ffe18ed0c5e308086305e94518e6eb3191572d307bf04c7ec7e3e5b8d2e1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/56xxx/CVE-2026-56391.json",
+      "fetchedAt": "2026-09-04T22:04:07.879150Z",
+      "contentDigest": "sha256:13a93ab7d91129b1c133c0928b0c276f8de044cbe332c8e6b6f8ba4ff0ad48c5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/56xxx/CVE-2026-56392.json",
+      "fetchedAt": "2026-09-04T22:04:07.898751Z",
+      "contentDigest": "sha256:df149d4630c48f39d9658382ccc25f455de243cf68a2862ecca593ec9c1cf1e7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/57xxx/CVE-2026-57062.json",
+      "fetchedAt": "2026-09-04T22:04:05.663746Z",
+      "contentDigest": "sha256:0b857acf9966d91652fcb434dfaeec6532acca3ae8e2cde80dc238eacd3b33f1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/57xxx/CVE-2026-57432.json",
+      "fetchedAt": "2026-09-04T22:04:06.450440Z",
+      "contentDigest": "sha256:57f14c67a90967752367d35ef17e38e0a113a7153dd844791ac2ef49ac8852ad"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/57xxx/CVE-2026-57433.json",
+      "fetchedAt": "2026-09-04T22:04:06.455684Z",
+      "contentDigest": "sha256:5a339b25e4f799052eb3eb714610f66629d3c5dc3fd1a84f0ab6f668018a7eac"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/5xxx/CVE-2026-5435.json",
+      "fetchedAt": "2026-09-04T22:04:05.073026Z",
+      "contentDigest": "sha256:f69e2204a21ba618e637d55f6b047fa5c34b6c6ac0a896600e3559f39b3ac249"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/5xxx/CVE-2026-5450.json",
+      "fetchedAt": "2026-09-04T22:04:05.101971Z",
+      "contentDigest": "sha256:52b77a071bcc3a66ff3293b16227751a45f1eca0dc76f4d7dc78d23ae2171389"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/5xxx/CVE-2026-5704.json",
+      "fetchedAt": "2026-09-04T22:04:04.636469Z",
+      "contentDigest": "sha256:847cc3e4ae38934a00d90e7cdab07e575535c1c95e20524f438ca86f0a9b632c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/5xxx/CVE-2026-5928.json",
+      "fetchedAt": "2026-09-04T22:04:05.019279Z",
+      "contentDigest": "sha256:8be87099fac4e754e4ee74e328867304defe3844c801c2e54e9f55f29708d04a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63072.json",
+      "fetchedAt": "2026-09-04T22:04:07.670960Z",
+      "contentDigest": "sha256:ec4a5f43b1756834d26cc8395242ac5ce3cd57e53d6698ab81786ea50107ae7f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63074.json",
+      "fetchedAt": "2026-09-04T22:04:07.693229Z",
+      "contentDigest": "sha256:fba468f3cda716357058baa7f3923de6cab280c5e1b2b666895eb60e6c31ae78"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63076.json",
+      "fetchedAt": "2026-09-04T22:04:07.702367Z",
+      "contentDigest": "sha256:e01fa30d1d7bda3ef1dfe79f04e9e802088d10d4314d59ec836d575c48866ddd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/6xxx/CVE-2026-6238.json",
+      "fetchedAt": "2026-09-04T22:04:05.055865Z",
+      "contentDigest": "sha256:366ba98a66e7fd4ebef909a76bede49b61a05dff4fbb76a22c34437a977e05a9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/6xxx/CVE-2026-6368.json",
+      "fetchedAt": "2026-09-04T22:04:05.268351Z",
+      "contentDigest": "sha256:2bb321b6e3a913d766340a3b9ca0ed143c2d52272d4c62401a5fc71a6e973bc8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/6xxx/CVE-2026-6791.json",
+      "fetchedAt": "2026-09-04T22:04:05.424520Z",
+      "contentDigest": "sha256:601193dc7064a8b747fafbc2450561cd464ef451d9ea1cca409cb35831c7b8ac"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/75xxx/CVE-2026-75803.json",
+      "fetchedAt": "2026-09-04T22:04:07.715115Z",
+      "contentDigest": "sha256:d6891b2762239aea368608cc6f9891ea75f4dc98e0f95a31de0f834d7c8f31d7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/76xxx/CVE-2026-76642.json",
+      "fetchedAt": "2026-09-04T22:04:06.803168Z",
+      "contentDigest": "sha256:aa82394bad099f4719310a62a36f5b26a3d457f35159968e6d5cab4359d2eb2e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/78xxx/CVE-2026-78408.json",
+      "fetchedAt": "2026-09-04T22:04:06.825151Z",
+      "contentDigest": "sha256:ed5395079b63fbf3b23355b3bc1559067e2994f28c144f010796f5e1fa7c600f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/78xxx/CVE-2026-78409.json",
+      "fetchedAt": "2026-09-04T22:04:07.078756Z",
+      "contentDigest": "sha256:40b55fc5944e034029523a3c8d6298a13fc037e45fc2d855c216757c53b9ad1f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/78xxx/CVE-2026-78410.json",
+      "fetchedAt": "2026-09-04T22:04:06.925962Z",
+      "contentDigest": "sha256:394836a212f286714c5ded2eac3df9f2c0cf3aace3b4ade26b99465e39c21e9a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/7xxx/CVE-2026-7010.json",
+      "fetchedAt": "2026-09-04T22:04:06.520781Z",
+      "contentDigest": "sha256:8a66512c9ea7352af09b604b5899993bfb8c230d3347cd2e9ed8009095c375be"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/7xxx/CVE-2026-7017.json",
+      "fetchedAt": "2026-09-04T22:04:06.562266Z",
+      "contentDigest": "sha256:c051ea46a1b7ecf7f7e8811575142d424396daf202d7ea1931138c307a2c0c33"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/85xxx/CVE-2026-85091.json",
+      "fetchedAt": "2026-09-04T22:04:05.612757Z",
+      "contentDigest": "sha256:fddd86196ab0f6131262bf10864af3d7fd9a7fcca09c8855bab84ee6c75c899c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/8xxx/CVE-2026-8376.json",
+      "fetchedAt": "2026-09-04T22:04:06.543218Z",
+      "contentDigest": "sha256:22185ea4de4fa0c89028daf371e2fdfb84ff5df9d76f1215267a411d11d996d9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/9xxx/CVE-2026-9538.json",
+      "fetchedAt": "2026-09-04T22:04:06.592313Z",
+      "contentDigest": "sha256:db79967e7eb5596eac6824d4c77c739f49413f1147571ea38ac9dceca458a654"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2007-1.json",
+      "fetchedAt": "2026-09-04T22:02:48.506154Z",
+      "contentDigest": "sha256:b02b3c6aecd5fab4cf635ca658d41b58beebff16b9d223386efe6af58fba998e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2007-2.json",
+      "fetchedAt": "2026-09-04T22:02:48.496904Z",
+      "contentDigest": "sha256:17a58003d20dc7526776ad5ac1e170ff0c5b34db411f00934a98d233e0aae46f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-1.json",
+      "fetchedAt": "2026-09-04T22:02:48.496576Z",
+      "contentDigest": "sha256:91f86bfd6cfcffdf52c0a256b1f0eca00f24d88fe1a01495fe9cc6cca08d2bce"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-10.json",
+      "fetchedAt": "2026-09-04T22:02:48.497856Z",
+      "contentDigest": "sha256:46bde065058cce612287fa8519a2f05c6765e968e87c6a32933044b7079d016a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-2.json",
+      "fetchedAt": "2026-09-04T22:02:48.501886Z",
+      "contentDigest": "sha256:8c169e7d06be3ef9d164935703f0827714676b7534f3ecf3e8caf51498f6ef58"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-3.json",
+      "fetchedAt": "2026-09-04T22:02:48.499623Z",
+      "contentDigest": "sha256:30a5ac26ccacc54e73cd790062f810e13e03f65a2ca46855a9de8c2cf5832acf"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-4.json",
+      "fetchedAt": "2026-09-04T22:02:48.525192Z",
+      "contentDigest": "sha256:e5662a21e0f17d6c65e73b33b880cd4e91f4059702eb00e9141494a0138254b3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-5.json",
+      "fetchedAt": "2026-09-04T22:02:48.497484Z",
+      "contentDigest": "sha256:cb34f0ea354335832619dd4ee541e54f6b67c68b6e1c917c0c38920648a77251"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-6.json",
+      "fetchedAt": "2026-09-04T22:02:48.665347Z",
+      "contentDigest": "sha256:d654641221ec656033bb12217963617e605957ff7de48353817a00c6ff157695"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-7.json",
+      "fetchedAt": "2026-09-04T22:02:48.686748Z",
+      "contentDigest": "sha256:41fea97879e701f03067bad9cdd2a35b503dab7415b1cbce0af412db57c73f04"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-8.json",
+      "fetchedAt": "2026-09-04T22:02:48.680327Z",
+      "contentDigest": "sha256:6308fd4e9c94a2fc00cd3a47edb25c63e2b06cb7c43cbd475ac7ab8ec70eb325"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2008-9.json",
+      "fetchedAt": "2026-09-04T22:02:48.668793Z",
+      "contentDigest": "sha256:1fa1639a41bc5cc330a364387ff5340c2aedb8131d843fb51de4a01952b3855a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2010-1.json",
+      "fetchedAt": "2026-09-04T22:02:48.673204Z",
+      "contentDigest": "sha256:eec35d233662b7d2f330dd8a90662367d3ace4e046b6abac7fb2d0ba62be3c58"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2010-2.json",
+      "fetchedAt": "2026-09-04T22:02:48.683183Z",
+      "contentDigest": "sha256:72b89fb7a43e730eeab342f662619eceab29db694676d68ce06d2988bf5b364e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2010-3.json",
+      "fetchedAt": "2026-09-04T22:02:48.680056Z",
+      "contentDigest": "sha256:77f6fa05faa5d3f0269713fba8ca4650501a3407c3ae90f3a3aab12c5cd60bec"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2010-4.json",
+      "fetchedAt": "2026-09-04T22:02:48.695697Z",
+      "contentDigest": "sha256:59ed956ac126e82dc45d9868b1d61f399b68280506480dcfd6724ba94e4faee2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2010-5.json",
+      "fetchedAt": "2026-09-04T22:02:48.841700Z",
+      "contentDigest": "sha256:931b6467ae217901582bce85f14f7e595bf3ef72c52e2e5ea044ed3cb657db84"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2010-6.json",
+      "fetchedAt": "2026-09-04T22:02:48.836632Z",
+      "contentDigest": "sha256:3c598665697291622cf9328d071a0b9807fa9a9477b6fadfb4623a9ba23b0a7e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2010-7.json",
+      "fetchedAt": "2026-09-04T22:02:48.842313Z",
+      "contentDigest": "sha256:56a2740fa553b7a841f20b6dd05efd87151181dd553a4eac4a3c6b697a4ff127"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2011-1.json",
+      "fetchedAt": "2026-09-04T22:02:48.853375Z",
+      "contentDigest": "sha256:d542ff5221e7f46c57a6cc92efd38cc219656392a69b9837933af180c846af1a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2011-2.json",
+      "fetchedAt": "2026-09-04T22:02:48.864290Z",
+      "contentDigest": "sha256:f9bb84f9ed3a89605a90a7ca3167fbac52296f48c8589fb18bf6d44b57dd97c1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2011-3.json",
+      "fetchedAt": "2026-09-04T22:02:48.862482Z",
+      "contentDigest": "sha256:85163a5d86a87af88e947dcc5db66629b3b6ce1a111692036a3b27ccc2161a51"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2012-1.json",
+      "fetchedAt": "2026-09-04T22:02:48.856711Z",
+      "contentDigest": "sha256:01badbc1a6a031109296bd58c21a9b32318828c5a972c1a7ec46664df63cc3ce"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2012-2.json",
+      "fetchedAt": "2026-09-04T22:02:48.887938Z",
+      "contentDigest": "sha256:f4237992739413a366ba36f7ce209a9040bc63383292ea4b4e97acd0f5244295"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2012-3.json",
+      "fetchedAt": "2026-09-04T22:02:49.005677Z",
+      "contentDigest": "sha256:060937b97cf2885f01f9edd1f257ee4e8fb289192cb7c62daf6f28ad8e25edb5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2012-4.json",
+      "fetchedAt": "2026-09-04T22:02:49.020216Z",
+      "contentDigest": "sha256:993145f15922a545a19f2f0f5a18c60467a27a4a80215713b9acf02ec2892fbf"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2012-5.json",
+      "fetchedAt": "2026-09-04T22:02:49.026630Z",
+      "contentDigest": "sha256:8169f5078acdcd45e4ee0b99e278f28115ec619e0531faf40c23602e3c32b804"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2012-6.json",
+      "fetchedAt": "2026-09-04T22:02:49.037458Z",
+      "contentDigest": "sha256:d0082ab7aa6a8d71977d8c3e9ecfd667ca00bdb1a0ddd5998d2bc3e4f2d87d28"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2013-1.json",
+      "fetchedAt": "2026-09-04T22:02:49.038437Z",
+      "contentDigest": "sha256:43c863b1833b65ff468a0bc47cb833097a7db0169cf27a6b493d0bb935b87465"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2013-2.json",
+      "fetchedAt": "2026-09-04T22:02:49.036277Z",
+      "contentDigest": "sha256:67724ac21fdaa34ad0a66908a88bcdc13aa8349b9e628898749aa866c117d1bb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2013-3.json",
+      "fetchedAt": "2026-09-04T22:02:49.036352Z",
+      "contentDigest": "sha256:f87c8af40da9e4e0aa78a6b56c2e63cab8c7d4b77a5f674b98ff787d699ceb7a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2014-1.json",
+      "fetchedAt": "2026-09-04T22:02:49.049388Z",
+      "contentDigest": "sha256:43a7f71247abbb17085e1fcb387978a4d8a4799b47a54c2d2f59cefd2b8561ab"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2014-2.json",
+      "fetchedAt": "2026-09-04T22:02:49.168570Z",
+      "contentDigest": "sha256:1c05196687774d7e5dd1aeea1a182a202f2a2249f69cc100644b47596ecacbb3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2014-3.json",
+      "fetchedAt": "2026-09-04T22:02:49.195604Z",
+      "contentDigest": "sha256:d0051bf4c95db11b4602034cf0f513cf60cfbc0a4a2ed277e644db9763f293ab"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2014-4.json",
+      "fetchedAt": "2026-09-04T22:02:49.195446Z",
+      "contentDigest": "sha256:37cbd0c9d7830e89bdfb580e4215fa57749dd1f590c90d6d919eef7738b3de6f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2014-5.json",
+      "fetchedAt": "2026-09-04T22:02:49.216664Z",
+      "contentDigest": "sha256:d4ed44112dce2068b8eb0511fea31790feb1e6799933061dfe168102e223f069"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2014-6.json",
+      "fetchedAt": "2026-09-04T22:02:49.240538Z",
+      "contentDigest": "sha256:d473b83cc915381da5f86db574ca517124dff07f813fdab17bc820961f6a1f42"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2014-7.json",
+      "fetchedAt": "2026-09-04T22:02:49.417409Z",
+      "contentDigest": "sha256:5ace421454f62c90d8fb4c91f4a4b1dbd955aeb6f5a10da5e43f9a843e9ac6f2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2015-1.json",
+      "fetchedAt": "2026-09-04T22:02:49.243506Z",
+      "contentDigest": "sha256:caa514776aca2f200070560f3d33d0e3619cfc07239a5e4073fe2b323dd8a6d8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-1.json",
+      "fetchedAt": "2026-09-04T22:02:49.214954Z",
+      "contentDigest": "sha256:5d86f91a1db1c9821192ea8da3557725eb590d38fcf553286d343fe3f41defe2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-10.json",
+      "fetchedAt": "2026-09-04T22:02:49.332010Z",
+      "contentDigest": "sha256:02833eea83807b16c2abe631e22a219fd495e2dd37e246210b321c6d4ac84049"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-2.json",
+      "fetchedAt": "2026-09-04T22:02:49.377943Z",
+      "contentDigest": "sha256:815002ab2bfad0406aff59ce9f25427039b1c9cd02271e7556183e2e736af731"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-3.json",
+      "fetchedAt": "2026-09-04T22:02:49.376065Z",
+      "contentDigest": "sha256:1c3280c018c500aa918a33687c5ce6ac665c6e615f7a1e8ce33331ac45bde4bc"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-4.json",
+      "fetchedAt": "2026-09-04T22:02:49.389390Z",
+      "contentDigest": "sha256:38bc3d1bd17854ef07d34c21117c32b402060ca83c0f67281b05b3c5bb86ca64"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-5.json",
+      "fetchedAt": "2026-09-04T22:02:49.377268Z",
+      "contentDigest": "sha256:3d44ad161db6f770d936738f888e743984145ad3b34eb5de921c03077107e7eb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-6.json",
+      "fetchedAt": "2026-09-04T22:02:49.430860Z",
+      "contentDigest": "sha256:507dde7396846337cd3410e3f4e7b188f0f4bec1326f75abf94b8ee5c0b224ee"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-7.json",
+      "fetchedAt": "2026-09-04T22:02:49.403133Z",
+      "contentDigest": "sha256:92bb71f62d0bf269649079785460b738bc19652ee032eac9b31712d59d516e14"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-8.json",
+      "fetchedAt": "2026-09-04T22:02:49.510296Z",
+      "contentDigest": "sha256:af45fc2e501c6d620751e1fcc2453a1e5cfa3d48099ecb32899188e8e24970aa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2016-9.json",
+      "fetchedAt": "2026-09-04T22:02:49.554464Z",
+      "contentDigest": "sha256:d9e85098148468de0c909222861cbf16695dbf2e39599e8fb4a58a468e97344e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-1.json",
+      "fetchedAt": "2026-09-04T22:02:49.672032Z",
+      "contentDigest": "sha256:113d1e1fcd8f5d906fb7bb6ba2c17c7009aa2eeabfa9b42222261506a696e611"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-10.json",
+      "fetchedAt": "2026-09-04T22:02:49.549421Z",
+      "contentDigest": "sha256:d2a0b7448abc84cc31611005e912bd1916cfcbe7557611d3066379517f25f02b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-11.json",
+      "fetchedAt": "2026-09-04T22:02:49.560969Z",
+      "contentDigest": "sha256:108f6f0186987fc374f4eee4752321b738173eca0164fa48335c7e6095937e48"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-2.json",
+      "fetchedAt": "2026-09-04T22:02:49.575734Z",
+      "contentDigest": "sha256:06df6dec2c1881bb7772b6a85a47f0c811ab42836f2284f261eb802a5484263d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-3.json",
+      "fetchedAt": "2026-09-04T22:02:49.584086Z",
+      "contentDigest": "sha256:c2a5559a8e4168a3d5731822650c201632263255769585a409a9b85e9a53fb94"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-4.json",
+      "fetchedAt": "2026-09-04T22:02:49.587363Z",
+      "contentDigest": "sha256:8e72cf0ca5a694d099ea74f359fb8761081191d86053ff69aa63bd6d0ddd0bf7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-5.json",
+      "fetchedAt": "2026-09-04T22:02:49.681984Z",
+      "contentDigest": "sha256:d1b0e37a794cb8a5aa8fbab7fa247bbc841c8a12a3f50bead884d14ceb1220b6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-6.json",
+      "fetchedAt": "2026-09-04T22:02:49.726806Z",
+      "contentDigest": "sha256:8be418f5b0de1392a691152a2d5481cbd0d37628e51d1a7ca4da3a7d931d8219"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-7.json",
+      "fetchedAt": "2026-09-04T22:02:49.748259Z",
+      "contentDigest": "sha256:d2d0088b2ce22eb590a42b6f18b3a48e1df44f4e4e2e95e9df5fa3923180f4e8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-8.json",
+      "fetchedAt": "2026-09-04T22:02:49.732398Z",
+      "contentDigest": "sha256:14da62e41a3ea10903a16775762ed8e90411f32a661c623d5d0b11a9bb831559"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2017-9.json",
+      "fetchedAt": "2026-09-04T22:02:49.751868Z",
+      "contentDigest": "sha256:43651d595119c46c2808380cfbb0cff54e4b3be24fead1adc165c2812004aa6e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2018-1.json",
+      "fetchedAt": "2026-09-04T22:02:49.755502Z",
+      "contentDigest": "sha256:f38ea442ce30a0fd72d2c29a4b2d14f893687eee06be07c692ac956cbb43e8cd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2018-2.json",
+      "fetchedAt": "2026-09-04T22:02:49.775791Z",
+      "contentDigest": "sha256:5cd8ad0adc29c0f065c91beb0d7fa7e5d29e7cf7c5559f4935b95be8d8417313"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2018-3.json",
+      "fetchedAt": "2026-09-04T22:02:49.842517Z",
+      "contentDigest": "sha256:20a093a9a545f571cc7ff01c1eca510c531f54154e8e1881f2783968e0e72523"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2018-4.json",
+      "fetchedAt": "2026-09-04T22:02:49.848104Z",
+      "contentDigest": "sha256:eeea525991b0805ef599447f729044c320da881bfdbab7f5b006a2d693163a29"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2018-5.json",
+      "fetchedAt": "2026-09-04T22:02:49.903830Z",
+      "contentDigest": "sha256:0cd4c142614cc48fb7cbe9c71d2ea49ffdf49a73d37f0dc3550935385c6087f0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2018-6.json",
+      "fetchedAt": "2026-09-04T22:02:49.932745Z",
+      "contentDigest": "sha256:f0cb989b3ceb03072887d8c324a762edc64b5139a48aa811b6d8d8996e1b76da"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2018-7.json",
+      "fetchedAt": "2026-09-04T22:02:49.905418Z",
+      "contentDigest": "sha256:1eb30c2c3c795f056a01cf42d2783cfe0f94ef75f266ac42805bfc0e2e93db42"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2018-8.json",
+      "fetchedAt": "2026-09-04T22:02:49.933455Z",
+      "contentDigest": "sha256:978b27ad38889fc4067c42857e76f3e8b10c0aabdc7af18506a69d06fd1ac88f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-1.json",
+      "fetchedAt": "2026-09-04T22:02:49.922599Z",
+      "contentDigest": "sha256:376f8b3fb6a2ddb546d2354e0943275febc12785106da12d147675167a45c554"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-10.json",
+      "fetchedAt": "2026-09-04T22:02:49.950408Z",
+      "contentDigest": "sha256:f9fb0aa126e8a767ad3b2a24d86fad84bec8f6b84b99997b1be1c969d886b909"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-11.json",
+      "fetchedAt": "2026-09-04T22:02:50.019258Z",
+      "contentDigest": "sha256:472960a8d2c63efc2f8da80d0f1b3aa02b00dd1492a4c8622d8cd14751502852"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-12.json",
+      "fetchedAt": "2026-09-04T22:02:50.033886Z",
+      "contentDigest": "sha256:65285d598b1a23a8bea8a4fa3f65702b953559a5233e27c2ef030dc46dbde7cf"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-13.json",
+      "fetchedAt": "2026-09-04T22:02:50.088314Z",
+      "contentDigest": "sha256:071a095caa4916b8c170b3a3fd2492baaffa079578e7394ed1f6ebd4eac29a0b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-14.json",
+      "fetchedAt": "2026-09-04T22:02:50.085455Z",
+      "contentDigest": "sha256:c4fd7a50b3a0f1cce4751378a3ef07fd394071dd36886f270068fb1f0bb04c45"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-15.json",
+      "fetchedAt": "2026-09-04T22:02:50.103261Z",
+      "contentDigest": "sha256:be36fa57a08baf8b598ecb3c0410e6554cc6793e7455d3296def47fbff6fb1c7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-16.json",
+      "fetchedAt": "2026-09-04T22:02:50.115557Z",
+      "contentDigest": "sha256:12eb37d248fd36f9468f569cdfe79ce6b3f50490daada96c11a810628f1b2f00"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-17.json",
+      "fetchedAt": "2026-09-04T22:02:50.110769Z",
+      "contentDigest": "sha256:c489bd3bb54a7c3704f57e367c3bbb96fbe9f3716c30a9adfcc68c4b0fb670b0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-2.json",
+      "fetchedAt": "2026-09-04T22:02:50.126089Z",
+      "contentDigest": "sha256:6bc2b54f006f356bfb62c644518ef2bd4a95307f3fd2f27b2647df64b3d5ea20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-3.json",
+      "fetchedAt": "2026-09-04T22:02:50.189949Z",
+      "contentDigest": "sha256:e895d8b2b5d2a885e8aefa3684bea9f1a504fee6db5e229ae13ebbaf1f4bfd06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-4.json",
+      "fetchedAt": "2026-09-04T22:02:50.237410Z",
+      "contentDigest": "sha256:c83d50593f9342df185076c08b722a588992623fb6b989642a76d87286efcb0e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-5.json",
+      "fetchedAt": "2026-09-04T22:02:50.255109Z",
+      "contentDigest": "sha256:af49d67b69804881d4cd3d252af78ab82079e7d6fe8f672ceca8667228105743"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-6.json",
+      "fetchedAt": "2026-09-04T22:02:50.261142Z",
+      "contentDigest": "sha256:8be62bad2d37baaa949e3e19bd89b26abd0164d2468d8352c6589c0099deb493"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-7.json",
+      "fetchedAt": "2026-09-04T22:02:50.271852Z",
+      "contentDigest": "sha256:2967c61ce78a241a3e79268053cb35a34cada316791c475ff4b8db91a48c4bc2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-8.json",
+      "fetchedAt": "2026-09-04T22:02:50.283188Z",
+      "contentDigest": "sha256:8810e59b1bc801fbcc61a35afb1ec41dda9b208d284c96951fb587bd4f3b0e9f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2019-9.json",
+      "fetchedAt": "2026-09-04T22:02:50.282010Z",
+      "contentDigest": "sha256:2974a6d8a1431af59d9cca9dc7ff324e3a6ec327ca5f23acf2f87e615a0e54b3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2020-1.json",
+      "fetchedAt": "2026-09-04T22:02:50.285057Z",
+      "contentDigest": "sha256:a38faba618202963b8e0f96ce7227701cb921c271f0740e379c7c9fd61db745b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2020-2.json",
+      "fetchedAt": "2026-09-04T22:02:50.366221Z",
+      "contentDigest": "sha256:a793822414998ed841289d3aa90cf8ff14f48514028fe94184cbe7073b99b913"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2020-3.json",
+      "fetchedAt": "2026-09-04T22:02:50.451301Z",
+      "contentDigest": "sha256:75c4daaa749fbac349f11405ba33ff82eae5be1858f8db054e8434ddc0492f9d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2020-4.json",
+      "fetchedAt": "2026-09-04T22:02:50.431230Z",
+      "contentDigest": "sha256:090e9308d08e023786576031ba1c577b467d8f4a03affb8a939b292a4fc7a290"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2020-5.json",
+      "fetchedAt": "2026-09-04T22:02:50.438236Z",
+      "contentDigest": "sha256:9b4a1259dad4c3e42ffcc6b8c085447d6b99809fbb00bc92ea2dadbd6b050cdc"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2020-6.json",
+      "fetchedAt": "2026-09-04T22:02:50.441776Z",
+      "contentDigest": "sha256:6f1479e64b3c38bb58a8ebaf6035a4106a7105012fe627593208ff604c71186d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2020-7.json",
+      "fetchedAt": "2026-09-04T22:02:50.460170Z",
+      "contentDigest": "sha256:48b08c1de082bb64a218fe5ea0fe757b2897cda7f821415dd7073db4c7e4cd95"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2020-8.json",
+      "fetchedAt": "2026-09-04T22:02:50.458448Z",
+      "contentDigest": "sha256:929605313bd873a182ad569bf2c1d77c8cedc18a8b9ce80df29e0164d7033182"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2021-1.json",
+      "fetchedAt": "2026-09-04T22:02:50.464734Z",
+      "contentDigest": "sha256:5552bb04cef26931ab707f7e66f4f52a73e5c1b83308853ea031378f6fc41028"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2021-2.json",
+      "fetchedAt": "2026-09-04T22:02:50.545187Z",
+      "contentDigest": "sha256:cc878c6494be2ede34b273e6bae99a5887a8fc226732a545eb954593f8c54804"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2021-3.json",
+      "fetchedAt": "2026-09-04T22:02:50.603936Z",
+      "contentDigest": "sha256:46f06d4bbb02f74097f372958a9b6cd5a5a2feb06aa7f691916569686221b7bb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2021-4.json",
+      "fetchedAt": "2026-09-04T22:02:50.665943Z",
+      "contentDigest": "sha256:5d4adcb44360b2bb8b38a8dd45fcf436f9d1d034e7f095ff730de10876493bc9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2021-5.json",
+      "fetchedAt": "2026-09-04T22:02:50.667052Z",
+      "contentDigest": "sha256:0fdcc878512b4cc382e6227e985429209e1d3db0bb310ba4a688ec51dd101b4a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-1.json",
+      "fetchedAt": "2026-09-04T22:02:50.666828Z",
+      "contentDigest": "sha256:46bdb2ff1fdee4f1a77b9a5519ce8d747b6bf94686be8796847eb7ef1cef673c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-10.json",
+      "fetchedAt": "2026-09-04T22:02:50.667802Z",
+      "contentDigest": "sha256:5814bb03c205012129c19dbf2f5e7faecc82b7f7d72c3650a6a19eab9853ae0d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-11.json",
+      "fetchedAt": "2026-09-04T22:02:50.666474Z",
+      "contentDigest": "sha256:1c8ae3725d68821ee3d55ec44c5b43d0fd5c3824795a65992a26fb552021d89d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-2.json",
+      "fetchedAt": "2026-09-04T22:02:50.668040Z",
+      "contentDigest": "sha256:23f81969d1e20ba79d69b237361ed89f76a8bdce51d3b81c727bcfef4f4f7f89"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-3.json",
+      "fetchedAt": "2026-09-04T22:02:50.745249Z",
+      "contentDigest": "sha256:87604c82e7576ff7e165589eb83ecd7b727e92e67168ae3f7a4d8aef18d2b615"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-4.json",
+      "fetchedAt": "2026-09-04T22:02:50.826923Z",
+      "contentDigest": "sha256:4b073481b505d8f5b90a79c845675dc5dd97eb9814f315becd21bec777f19ce9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-5.json",
+      "fetchedAt": "2026-09-04T22:02:50.846334Z",
+      "contentDigest": "sha256:45614c3c3fc25565b3dfec3ad5a8270cedb04b0ae1bee375783c79251fccd1fe"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-6.json",
+      "fetchedAt": "2026-09-04T22:02:50.873427Z",
+      "contentDigest": "sha256:3fd1be7656eb06738d07fd1f287941cfb380846b255700edd1dee2d8e36076aa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-7.json",
+      "fetchedAt": "2026-09-04T22:02:50.870045Z",
+      "contentDigest": "sha256:a77bc4760c19fb30ba4b518e87efbeed22341945b456ec8bbcbedc27d5a06673"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-8.json",
+      "fetchedAt": "2026-09-04T22:02:50.866955Z",
+      "contentDigest": "sha256:aa6ed23274349835c051df5e9e73c0c00d701ef60d0f85079f6eded3ad17935c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2022-9.json",
+      "fetchedAt": "2026-09-04T22:02:50.897109Z",
+      "contentDigest": "sha256:f1c26db0dc7af6e32c60040e5b3e00210f422eb6fbb7c4fb8518a50ff7fb52a2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-1.json",
+      "fetchedAt": "2026-09-04T22:02:50.865742Z",
+      "contentDigest": "sha256:edc52e03de8ffef64f2a44fe8c1c2f24251d4388d4e4a884c94488af6b8f819c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-10.json",
+      "fetchedAt": "2026-09-04T22:02:50.921310Z",
+      "contentDigest": "sha256:282eac075483b606b491c88dc115d7f0c06de772f68046f46a67301897e029f4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-11.json",
+      "fetchedAt": "2026-09-04T22:02:51.001044Z",
+      "contentDigest": "sha256:667672480932ab8253fdc8d6214efe8dd4c8285c337e3977a60c17f6149437aa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-12.json",
+      "fetchedAt": "2026-09-04T22:02:51.038519Z",
+      "contentDigest": "sha256:dfdb16597b18cd94ee1a069ac5ed5090fc5acc4909bdd12e5766da8c4b1150a1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-2.json",
+      "fetchedAt": "2026-09-04T22:02:51.027194Z",
+      "contentDigest": "sha256:e3bedc5bbfb23746d54a0b50e7db31f779563220a7a16f2c711600a8e6aa534a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-3.json",
+      "fetchedAt": "2026-09-04T22:02:51.027725Z",
+      "contentDigest": "sha256:98f6614d85dcf1599cc37c4d0b9b5c3d0aeb1d97c2a0c9c22ba68be6a3b83a45"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-4.json",
+      "fetchedAt": "2026-09-04T22:02:51.059097Z",
+      "contentDigest": "sha256:ae7dc39a27c9522d209eecb921bdd5774a34ec8d4cc2bd2ddaa865c1a54d2796"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-5.json",
+      "fetchedAt": "2026-09-04T22:02:51.049517Z",
+      "contentDigest": "sha256:4fa217cfe001f05d7e91d6ba2144d02eae6c33d65520a55f7967887af1631f56"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-6.json",
+      "fetchedAt": "2026-09-04T22:02:51.061022Z",
+      "contentDigest": "sha256:392f6ab5225333dd94178493fc68c81068e76bbabbbbafe72a2c496dab5a02bc"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-7.json",
+      "fetchedAt": "2026-09-04T22:02:51.087880Z",
+      "contentDigest": "sha256:77001e24cdf5ab104f772c2d9365749d236c1ce7e1e4a254fcff337e27f4ffaa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-8.json",
+      "fetchedAt": "2026-09-04T22:02:51.182288Z",
+      "contentDigest": "sha256:6fdd221fbbd2db1550166696eb45596ed8fc811a9ab4cba08ce292604cb23027"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2023-9.json",
+      "fetchedAt": "2026-09-04T22:02:51.411920Z",
+      "contentDigest": "sha256:bfdc9b1de13638dff71039f14cc1ed51c8c58396f88520639069ca0ec512f457"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-1.json",
+      "fetchedAt": "2026-09-04T22:02:51.198913Z",
+      "contentDigest": "sha256:d1153726e9969c0dd640c57065425c4c60ca750a2f4dda3f073a104ab6ed3987"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-10.json",
+      "fetchedAt": "2026-09-04T22:02:51.202469Z",
+      "contentDigest": "sha256:9d847e150e0eda80e54fe63629ea681da99af576f595ce7c51ad6e9e19da6adb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-11.json",
+      "fetchedAt": "2026-09-04T22:02:51.223984Z",
+      "contentDigest": "sha256:1434ec378f0395b6274e4a1ba6412aef517bcdba2b8438d6342e3755f2b174ef"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-12.json",
+      "fetchedAt": "2026-09-04T22:02:51.251643Z",
+      "contentDigest": "sha256:c182ea0d6e92a1c2430468e943b719aa470acdfc548b8ae8a28c88b6934cbdc4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-13.json",
+      "fetchedAt": "2026-09-04T22:02:51.251446Z",
+      "contentDigest": "sha256:02b05bc052688bffbe7c3de658b952be30630b6c3c5111957b5079d603f54b2f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-14.json",
+      "fetchedAt": "2026-09-04T22:02:51.267076Z",
+      "contentDigest": "sha256:5a5cb8aa55099851b6f81d953a25b574cfd465dcd88c9b1b43903e962868dca0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-2.json",
+      "fetchedAt": "2026-09-04T22:02:51.362713Z",
+      "contentDigest": "sha256:93a6ff25114dcd62d71f7cb235ae8f83ada5b317c0e738c1948a50c08a523fad"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-3.json",
+      "fetchedAt": "2026-09-04T22:02:51.404174Z",
+      "contentDigest": "sha256:531d50c3b002b3aa38f5ddd4fc6381970db21740918a2c37f01933b73357599f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-4.json",
+      "fetchedAt": "2026-09-04T22:02:51.371817Z",
+      "contentDigest": "sha256:0bb1c7dc0368a7edd5bba71fcc4fe67cd6934c0c60d6b212adfb96cad97e0984"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-5.json",
+      "fetchedAt": "2026-09-04T22:02:51.407277Z",
+      "contentDigest": "sha256:60c90fc3d62816f6b2c33def2882db59603bf7ca5b2e7f7d182dfce1a280050f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-6.json",
+      "fetchedAt": "2026-09-04T22:02:51.429868Z",
+      "contentDigest": "sha256:474fcaf031b427cf67fa175cc68b8fd54a0e5369ad88461b4bff8ba8a647d095"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-7.json",
+      "fetchedAt": "2026-09-04T22:02:51.429576Z",
+      "contentDigest": "sha256:1be909c4da0e5060756a7205f318162d6122b736dd5e1fbb631538cce7a7a769"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-8.json",
+      "fetchedAt": "2026-09-04T22:02:51.449809Z",
+      "contentDigest": "sha256:dd97dacbd54628ab2c50ce6226c33c3c74cdb45ba821348a307f6bb748762215"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2024-9.json",
+      "fetchedAt": "2026-09-04T22:02:51.529803Z",
+      "contentDigest": "sha256:20ab8089f4a118d39880f3d086ca55d76115cf63111dd72bbc7701287d3e7be7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-1.json",
+      "fetchedAt": "2026-09-04T22:02:51.548111Z",
+      "contentDigest": "sha256:cd1e2eedde2edc45a2f9c08bf2ae14b934d5280bf189cd90358a8e2b3f0a289c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-10.json",
+      "fetchedAt": "2026-09-04T22:02:51.576797Z",
+      "contentDigest": "sha256:125010326a371849247e1f3951eae42f375ec1ab4074bb74649fd484627ad0af"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-11.json",
+      "fetchedAt": "2026-09-04T22:02:51.582597Z",
+      "contentDigest": "sha256:552b9a5c4c7f1a4cff5a65bfb588a79b8ac5df796f6746d5e78a2d1966675e54"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-12.json",
+      "fetchedAt": "2026-09-04T22:02:51.589528Z",
+      "contentDigest": "sha256:7d4c5fa9a46c707c3d4c8457bb909358a4febcc097efb9454c3e4901a077e42a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-13.json",
+      "fetchedAt": "2026-09-04T22:02:51.593651Z",
+      "contentDigest": "sha256:78ad14179e93f4a7df21da25d2ef27a84291f3a5c4bf39efd515c95d306ae0db"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-14.json",
+      "fetchedAt": "2026-09-04T22:02:51.593726Z",
+      "contentDigest": "sha256:9d9b0e68c09368abb8c13aa0e01fbae16461bbf72388754ae2d86a20443d9bc4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-15.json",
+      "fetchedAt": "2026-09-04T22:02:51.625599Z",
+      "contentDigest": "sha256:5e429ec11cb0d2182ca2bb8b563351989861ac93676490768a9e92336d42073e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-16.json",
+      "fetchedAt": "2026-09-04T22:02:51.703818Z",
+      "contentDigest": "sha256:51f97245f091824ae4ff0e97add2cb75763f1995cb001a8afecbb2399ee5503e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-2.json",
+      "fetchedAt": "2026-09-04T22:02:51.735830Z",
+      "contentDigest": "sha256:43255e01ad62b22268facc600f7bb4580add871f3acc22fec124d62482288c91"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-3.json",
+      "fetchedAt": "2026-09-04T22:02:51.745539Z",
+      "contentDigest": "sha256:95a52232f1ba5f58fa1512ceaefb20ebab0605b48ba58a48482d17e2879f11bc"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-4.json",
+      "fetchedAt": "2026-09-04T22:02:51.754585Z",
+      "contentDigest": "sha256:b9afc16f6284dcaedd18a403e530c29397beb7c291c2ffa4e6eb82a213034944"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-5.json",
+      "fetchedAt": "2026-09-04T22:02:51.777156Z",
+      "contentDigest": "sha256:f6b2aadf649caad179df6f85357eff0407b8c47acab4f7af63b6d6d367facb89"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-6.json",
+      "fetchedAt": "2026-09-04T22:02:51.773362Z",
+      "contentDigest": "sha256:313de2053f4d20a80ef0f6e30c3a7b7c3b5517a30b514fd6a6d33f629e6126fe"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-7.json",
+      "fetchedAt": "2026-09-04T22:02:51.764987Z",
+      "contentDigest": "sha256:9ed453d8596bf8a9c671e98f28e8498520fe9311d08773264bbee6b7c57d69ca"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-8.json",
+      "fetchedAt": "2026-09-04T22:02:51.800014Z",
+      "contentDigest": "sha256:5d9812e0a90125554040818ac080eefcd833d0d71b81933513fe984db9ee0858"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2025-9.json",
+      "fetchedAt": "2026-09-04T22:02:51.887298Z",
+      "contentDigest": "sha256:b3a385bc5d3aa66a6684e34ff84b8bbc3ac5ce196980aef3c97674eddbe3f971"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-1.json",
+      "fetchedAt": "2026-09-04T22:02:51.929302Z",
+      "contentDigest": "sha256:db16ed142f027e77552ebc47dc8fef7ac5b5f55a637d45e0b734aafbd30b5ce6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-10.json",
+      "fetchedAt": "2026-09-04T22:02:51.939484Z",
+      "contentDigest": "sha256:2c331dc63dc14b65d1f9b21df2c247a98a2baf5c13ec417195c214aa811041f4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-11.json",
+      "fetchedAt": "2026-09-04T22:02:51.935301Z",
+      "contentDigest": "sha256:bbc49d0685079e0d3cae96339776e410b146799e5ca716e96f80fde76b70fddb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-12.json",
+      "fetchedAt": "2026-09-04T22:02:51.960968Z",
+      "contentDigest": "sha256:f4a193ef9727b17a7d937d29011127b98498375ea9f6a2e2bd0898be1f61c17e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-13.json",
+      "fetchedAt": "2026-09-04T22:02:51.961453Z",
+      "contentDigest": "sha256:4454ac9b86b01360d39c3d8cca5dd0223540755b4fa07370987de33785f04093"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-14.json",
+      "fetchedAt": "2026-09-04T22:02:51.961108Z",
+      "contentDigest": "sha256:551c5150d1d6a14abe9a3072bf478f9302e117adf19a7adf7f88bc1073c933aa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-15.json",
+      "fetchedAt": "2026-09-04T22:02:52.001751Z",
+      "contentDigest": "sha256:7922c20123d0fdbee6ce1c8254b81b20ac220df77a9eaae6da948bcd72187b91"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-16.json",
+      "fetchedAt": "2026-09-04T22:02:52.271620Z",
+      "contentDigest": "sha256:fdf8ef61c8c49b796e1e2077716d9c4b3259c712c83593ec8964d807bbcfef5e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-17.json",
+      "fetchedAt": "2026-09-04T22:02:52.114302Z",
+      "contentDigest": "sha256:0b815ced26522d09667a6a1763e2ccccb68368f76d8628efe1a72c511c8d13e4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-18.json",
+      "fetchedAt": "2026-09-04T22:02:52.113044Z",
+      "contentDigest": "sha256:8ecfbf5b05172f197aa84f0cc7c2f663050af3334a32baba2a6f2e5fbe9df31f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-19.json",
+      "fetchedAt": "2026-09-04T22:02:52.112852Z",
+      "contentDigest": "sha256:9665aa9f63942070d55d45c1a75bab1c3238a148f706c15fb018a127b4dda271"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-2.json",
+      "fetchedAt": "2026-09-04T22:02:52.133014Z",
+      "contentDigest": "sha256:7a54229b865771821264f39238c69d7fd9bafbf19fdf04c66f9b44439511603c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-20.json",
+      "fetchedAt": "2026-09-04T22:02:52.147548Z",
+      "contentDigest": "sha256:5788862ee513cf0e21daf3edacbbcba904141ac183dc9217b6fcfb84167f4563"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-21.json",
+      "fetchedAt": "2026-09-04T22:02:52.147770Z",
+      "contentDigest": "sha256:c3fbadc8e06b779560508229c079bee59df4ae4e6a7a13bbdb69fc3cb0f9e3d2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-22.json",
+      "fetchedAt": "2026-09-04T22:02:52.218297Z",
+      "contentDigest": "sha256:b50500b5a868c84dda0c48354cc84356f35aa1674ea7589793c91140180faca4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-23.json",
+      "fetchedAt": "2026-09-04T22:02:52.514594Z",
+      "contentDigest": "sha256:d83c882c381d1eb7406ae89751f0d05e52b5a79c7ffaecc074c44110abf84765"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-24.json",
+      "fetchedAt": "2026-09-04T22:02:52.303375Z",
+      "contentDigest": "sha256:24b692619dc7b34bf228805645448d7892cbd8c3f45cf611d33e6725ae6d6df5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-25.json",
+      "fetchedAt": "2026-09-04T22:02:52.291412Z",
+      "contentDigest": "sha256:866ab5755db315dcafe0443b2e803842692ac622f3a132461ba08e0ee2ba710d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-26.json",
+      "fetchedAt": "2026-09-04T22:02:52.321512Z",
+      "contentDigest": "sha256:a27c7efc4ed1f10e7c99ff444989add9ebb11297d241488e410261543c62e4ca"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-27.json",
+      "fetchedAt": "2026-09-04T22:02:52.310296Z",
+      "contentDigest": "sha256:fc091fa44c60d9fa52943c56390d68fc4348d9364c83a927fdd95c5816db8ffc"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-28.json",
+      "fetchedAt": "2026-09-04T22:02:52.321885Z",
+      "contentDigest": "sha256:dfee9d8916afba17253b8bb5d7539468afd9b2dd72ee4d5c032ef002033fd084"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-29.json",
+      "fetchedAt": "2026-09-04T22:02:52.401103Z",
+      "contentDigest": "sha256:d3887bf5b0cc28b3741455e4358d6d84886c61b455065a52fe9f1e8fc383dea0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-3.json",
+      "fetchedAt": "2026-09-04T22:02:52.434329Z",
+      "contentDigest": "sha256:89f70919893e26cadcb37fc0fca251b63e33fcb84ca6c0acfb186724e9642726"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-30.json",
+      "fetchedAt": "2026-09-04T22:02:52.460490Z",
+      "contentDigest": "sha256:0b5095b12fcdff75a5d04558856b12e3b821ec56966bca4d2d08a0f4a716f401"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-31.json",
+      "fetchedAt": "2026-09-04T22:02:52.690749Z",
+      "contentDigest": "sha256:6f71a8a47bfc36dd8002bd755ea53cf957a3547db72a5e45e28faf6b0052858b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-32.json",
+      "fetchedAt": "2026-09-04T22:02:52.493015Z",
+      "contentDigest": "sha256:2605f11c0191aaac7309f7e941982d55aaeb9139483fb4614aa0535fb3863af0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-33.json",
+      "fetchedAt": "2026-09-04T22:02:52.696463Z",
+      "contentDigest": "sha256:a96e7c0f4293aadf2ff4774d2a59e8ab2331138387f3d0f2d73a75b4d0ee6a71"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-34.json",
+      "fetchedAt": "2026-09-04T22:02:52.721541Z",
+      "contentDigest": "sha256:bae161075642d8c9765c3b22ccebf564148880ef1a7f743172f7725fd78157f9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-35.json",
+      "fetchedAt": "2026-09-04T22:02:52.564394Z",
+      "contentDigest": "sha256:9313ee6f767203deb864cbb69ee928de747b3036db3459a63817ee9cb4273d07"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-36.json",
+      "fetchedAt": "2026-09-04T22:02:52.608698Z",
+      "contentDigest": "sha256:fa21a072af75521ab4119a0e7674928d191ba3deffd732be83527023070c36c7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-37.json",
+      "fetchedAt": "2026-09-04T22:02:52.624794Z",
+      "contentDigest": "sha256:284d86cb490cc064089a6de93bbda709c158b0a7d9bfac654121cf203dfdf86b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-38.json",
+      "fetchedAt": "2026-09-04T22:02:52.676878Z",
+      "contentDigest": "sha256:c3a6e83f4b95331a499fb7f0cbd7e4d8db8f582f463b43b6adea74def783f0c7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-39.json",
+      "fetchedAt": "2026-09-04T22:02:52.691074Z",
+      "contentDigest": "sha256:edc62dcbfddc7a3723818f41e8d79d9c16e501586813fde5b8bc672acea0235a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-4.json",
+      "fetchedAt": "2026-09-04T22:02:52.730587Z",
+      "contentDigest": "sha256:004c59718c5ba13220ff8c8ec9a029b0bab2a734678bc6ec0cd8cc3ddb3f542f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-5.json",
+      "fetchedAt": "2026-09-04T22:02:52.783164Z",
+      "contentDigest": "sha256:e36e8a9f221b72ae9cf876755cbd5a0672e1cfbc9ba3a58250b86880385396c8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-6.json",
+      "fetchedAt": "2026-09-04T22:02:52.805310Z",
+      "contentDigest": "sha256:ed3d63960c5093f5bad2b4fabf67024857a641e6614da2f7a727d023f54e613f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-7.json",
+      "fetchedAt": "2026-09-04T22:02:52.855718Z",
+      "contentDigest": "sha256:f21c08c1a4db11a19d33a61f716d9b6a65b07dfc4d55a3c0a9e9db8450d9e0a0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-8.json",
+      "fetchedAt": "2026-09-04T22:02:52.862766Z",
+      "contentDigest": "sha256:1d4aa477533b4e316db9a6414b2aab1fc2235f0ec20608ae5392e61dbd4ffada"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/e903d0b393696d7f14f52fe9200d68c6fde0a715/advisories/python/PSF-2026-9.json",
+      "fetchedAt": "2026-09-04T22:02:52.867766Z",
+      "contentDigest": "sha256:305cac1eaa09c0a5517627426c380a89325d77be772191679f533be8b1ecf790"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/psf/advisory-database/main/README.md",
+      "fetchedAt": "2026-09-04T22:01:40.487642Z",
+      "contentDigest": "sha256:5a737b33184be6fa308bb30593e102dbfd20fab5f93320f0032dd449b1e2b8bd"
+    },
+    {
+      "url": "https://security-tracker.debian.org/tracker/data/json",
+      "fetchedAt": "2026-09-04T22:01:14.469178Z",
+      "contentDigest": "sha256:4b170c4745d92db1c3630a9660dfd5c919088dd8886749fe44baf11c9f8236a8"
+    },
+    {
+      "url": "https://security-team.debian.org/security_tracker.html",
+      "fetchedAt": "2026-09-04T22:31:06.505037+00:00",
+      "contentDigest": "sha256:620493356fd802b98f34188dc7803a7e36dd591277456e747d1d60b6d8120b15"
+    },
+    {
+      "url": "https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1145891;mbox=yes",
+      "fetchedAt": "2026-09-04T22:31:06.827755+00:00",
+      "contentDigest": "sha256:7f0a806fe21ef6f6dd3d8343a25473c7413acffbb9cdba049fcfce1636e80f6d"
+    },
+    {
+      "url": "https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1145880;mbox=yes",
+      "fetchedAt": "2026-09-04T22:31:08.115202+00:00",
+      "contentDigest": "sha256:ece8cb9c00883356b2492420c58e0283e6052c396215d111230b3474146d1964"
+    },
+    {
+      "url": "https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1145987;mbox=yes",
+      "fetchedAt": "2026-09-04T22:31:08.361976+00:00",
+      "contentDigest": "sha256:892c8c48a06020d8f4fc296c2f4f2426d39ea7a0cfdb6285cf3f7f01b256c9dc"
+    },
+    {
+      "url": "https://bugzilla.redhat.com/rest/bug/2523258",
+      "fetchedAt": "2026-09-04T22:32:19.773012+00:00",
+      "contentDigest": "sha256:b79786f52d7d5e0ecac465f4b11a676754a20356fa084d32014fa8b981069eea"
+    }
+  ],
+  "coverage": [
+    {
+      "package": {
+        "digest": "sha256:73b68fc2dac176af16098180a2c98a03ee9f1f1b02db25d42d44d782e79e2330",
+        "ecosystem": "CPython",
+        "name": "cpython",
+        "version": "3.13.15"
+      },
+      "status": "complete",
+      "sourceUrl": "https://api.github.com/repos/psf/advisory-database/git/trees/main?recursive=1",
+      "advisories": [
+        {
+          "id": "CVE-2026-15806",
+          "severity": "medium",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15806.json"
+        },
+        {
+          "id": "CVE-2026-17084",
+          "severity": "medium",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/17xxx/CVE-2026-17084.json"
+        },
+        {
+          "id": "CVE-2026-19672",
+          "severity": "medium",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/19xxx/CVE-2026-19672.json"
+        },
+        {
+          "id": "CVE-2026-15310",
+          "severity": "low",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/15xxx/CVE-2026-15310.json"
+        },
+        {
+          "id": "CVE-2025-15367",
+          "severity": "medium",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/15xxx/CVE-2025-15367.json"
+        }
+      ]
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "base-passwd",
+        "sourceName": "base-passwd",
+        "sourceVersion": "3.6.8",
+        "version": "3.6.8"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "ca-certificates",
+        "sourceName": "ca-certificates",
+        "sourceVersion": "20250419~deb12u1",
+        "version": "20250419~deb12u1"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libbz2-1.0",
+        "sourceName": "bzip2",
+        "sourceVersion": "1.0.8-5",
+        "version": "1.0.8-5+b1"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": [
+        {
+          "id": "CVE-2026-42250",
+          "severity": "medium",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42250.json"
+        }
+      ]
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc-bin",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libc6",
+        "sourceName": "glibc",
+        "sourceVersion": "2.43-4",
+        "version": "2.43-4"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": [
+        {
+          "id": "CVE-2026-18374",
+          "severity": "medium",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/18xxx/CVE-2026-18374.json"
+        },
+        {
+          "id": "CVE-2026-19499",
+          "severity": "medium",
+          "sourceUrl": "https://bugzilla.redhat.com/rest/bug/2523258"
+        }
+      ]
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libdb5.3",
+        "sourceName": "db5.3",
+        "sourceVersion": "5.3.28+dfsg2-1",
+        "version": "5.3.28+dfsg2-1"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libffi8",
+        "sourceName": "libffi",
+        "sourceVersion": "3.4.4-1",
+        "version": "3.4.4-1"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libgdbm6",
+        "sourceName": "gdbm",
+        "sourceVersion": "1.23-3",
+        "version": "1.23-3"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "liblzma5",
+        "sourceName": "xz-utils",
+        "sourceVersion": "5.4.1-1+deb12u1",
+        "version": "5.4.1-1+deb12u1"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libncursesw6",
+        "sourceName": "ncurses",
+        "sourceVersion": "6.6+20260608-2",
+        "version": "6.6+20260608-2"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libreadline8",
+        "sourceName": "readline",
+        "sourceVersion": "8.2-1.3",
+        "version": "8.2-1.3"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libsqlite3-0",
+        "sourceName": "sqlite3",
+        "sourceVersion": "3.53.4-2",
+        "version": "3.53.4-2"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libssl3",
+        "sourceName": "openssl",
+        "sourceVersion": "3.0.20-1~deb12u2",
+        "version": "3.0.20-1~deb12u2"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": [
+        {
+          "id": "CVE-2025-27587",
+          "severity": "medium",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/27xxx/CVE-2025-27587.json"
+        },
+        {
+          "id": "CVE-2026-42767",
+          "severity": "low",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/42xxx/CVE-2026-42767.json"
+        },
+        {
+          "id": "CVE-2026-54874",
+          "severity": "low",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/54xxx/CVE-2026-54874.json"
+        },
+        {
+          "id": "CVE-2026-63072",
+          "severity": "moderate",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63072.json"
+        },
+        {
+          "id": "CVE-2026-63074",
+          "severity": "low",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63074.json"
+        },
+        {
+          "id": "CVE-2026-63076",
+          "severity": "moderate",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/63xxx/CVE-2026-63076.json"
+        },
+        {
+          "id": "CVE-2026-75803",
+          "severity": "low",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/75xxx/CVE-2026-75803.json"
+        }
+      ]
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libtinfo6",
+        "sourceName": "ncurses",
+        "sourceVersion": "6.6+20260608-2",
+        "version": "6.6+20260608-2"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "libuuid1",
+        "sourceName": "util-linux",
+        "sourceVersion": "2.42.2-4",
+        "version": "2.42.2-4"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": [
+        {
+          "id": "CVE-2022-0563",
+          "severity": "medium",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2022/0xxx/CVE-2022-0563.json"
+        }
+      ]
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "tzdata",
+        "sourceName": "tzdata",
+        "sourceVersion": "2026b-0+deb12u1",
+        "version": "2026b-0+deb12u1"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": []
+    },
+    {
+      "package": {
+        "ecosystem": "Debian",
+        "name": "zlib1g",
+        "sourceName": "zlib",
+        "sourceVersion": "1:1.2.13.dfsg-1",
+        "version": "1:1.2.13.dfsg-1"
+      },
+      "status": "complete",
+      "sourceUrl": "https://security-tracker.debian.org/tracker/data/json",
+      "advisories": [
+        {
+          "id": "CVE-2026-27171",
+          "severity": "low",
+          "sourceUrl": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/27xxx/CVE-2026-27171.json"
+        }
+      ]
+    }
+  ]
+}
