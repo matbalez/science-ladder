@@ -467,6 +467,15 @@ test("educational explorer link is secondary and bound to the exact registered s
     "href",
     "/showcase/quiet-echoes/index.html",
   );
+  const setup = page
+    .locator(".content-section")
+    .filter({
+      has: page.getByRole("heading", { name: "Bring your own agent." }),
+    })
+    .locator(".code-block");
+  await expect(setup).toContainText("python3 tools/reproduce.py --check");
+  await expect(setup).toContainText("python3 -m unittest discover -s tests -v");
+  await expect(setup).not.toContainText("sl challenge test");
   await expect(
     page.getByText("No verified improvement yet", { exact: true }),
   ).toBeVisible();

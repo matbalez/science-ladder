@@ -110,8 +110,13 @@ test("solver bootstrap binds exact metadata and preserves generic artifact paths
   assert.ok(!prompt.includes("512 ASCII"));
   assert.ok(prompt.includes("'fixtures/seed'\\''s data'"));
   assert.ok(
-    prompt.indexOf("sl challenge test") <
-      prompt.indexOf("3. BUILD A REAL CANDIDATE"),
+    prompt.includes(
+      "Use the native setup, baseline and public-test commands documented by this exact challenge",
+    ),
+  );
+  assert.ok(
+    prompt.indexOf("sl challenge test") >
+      prompt.indexOf("OPTIONAL EXACT-RUNTIME CONTAINER CHECK"),
   );
   assert.ok(
     prompt.includes("sl auth login --api 'https://science-ladder.fly.dev'"),
@@ -123,4 +128,78 @@ test("solver bootstrap binds exact metadata and preserves generic artifact paths
   });
   assert.ok(!untrusted.includes("git checkout"));
   assert.ok(!untrusted.includes("--artifact '../escape'"));
+});
+
+test("native Quiet Echoes setup is exact-source scoped and defers CLI/container setup", async () => {
+  const { solverInstructions, challengeSetupCommands } =
+    await import("./solver-prompt.ts");
+  const c = {
+    slug: "quiet-echoes-labs512",
+    title: "Test-only metadata",
+    versionId: "test-version",
+    repository: "matbalez/science-ladder-quiet-echoes",
+    sourceCommit: "f42f527e97563b1c068a1835732c6da44f21223f",
+    status: "published",
+    summary: "Test",
+    metric: {
+      name: "Energy",
+      direction: "minimize",
+      quantum: "1",
+      baselineTicks: "17996",
+    },
+    milestones: [],
+    manifest: {
+      fixtures: [{ name: "baseline", path: "fixtures/baseline" }],
+      submission: { allowedPaths: ["sequence.txt"], license: "CC-BY-4.0" },
+    },
+  } as unknown as import("./types.ts").Challenge;
+  const prompt = solverInstructions(c);
+  assert.ok(prompt.includes("Python 3.13 or newer on macOS or Linux"));
+  assert.equal(
+    (prompt.match(/python3 tools\/reproduce.py --check/g) || []).length,
+    2,
+  );
+  assert.equal(
+    (prompt.match(/python3 -m unittest discover -s tests -v/g) || []).length,
+    2,
+  );
+  assert.ok(
+    prompt.includes(
+      'SL_BASELINE_RUN="$(mktemp -d "$PWD/.local/baseline.XXXXXX")"',
+    ),
+  );
+  assert.ok(
+    prompt.includes(
+      'SL_CANDIDATE_RUN="$(mktemp -d "$PWD/.local/candidate.XXXXXX")"',
+    ),
+  );
+  assert.ok(
+    prompt.includes(
+      'python3 checker.py --submission ../candidate-artifact --suite suite --output "$SL_CANDIDATE_RUN/result.json"',
+    ),
+  );
+  assert.ok(
+    prompt.indexOf("go install") >
+      prompt.indexOf("Before final submission, repeat the full native checks"),
+  );
+  assert.ok(
+    prompt.indexOf("sl challenge test") >
+      prompt.indexOf("OPTIONAL EXACT-RUNTIME CONTAINER CHECK"),
+  );
+  assert.ok(!prompt.includes("Docker running for local checks"));
+  const snippet = challengeSetupCommands(c);
+  assert.ok(snippet.includes("python3 tools/reproduce.py --check"));
+  assert.ok(snippet.includes("python3 -m unittest discover -s tests -v"));
+  assert.ok(!snippet.includes("sl challenge test"));
+  for (const other of [
+    { ...c, repository: "other/repo" },
+    { ...c, sourceCommit: "b".repeat(40) },
+  ]) {
+    assert.ok(
+      !solverInstructions(other).includes("python3 checker.py --submission"),
+    );
+    assert.ok(
+      !challengeSetupCommands(other).includes("python3 tools/reproduce.py"),
+    );
+  }
 });

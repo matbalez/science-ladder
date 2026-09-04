@@ -8,8 +8,8 @@ Public MIT source: [matbalez/science-ladder](https://github.com/matbalez/science
 | Component or evidence | Current state |
 | --- | --- |
 | Web deployment | Published on Fly.io with prominent Participate instructions and the Quiet Echoes educational explorer |
-| API deployment | Revision `49c0143` deployed; expired platform-policy leases can retry on the available host with fresh fencing |
-| Dedicated verifier | Running; signed hardware isolation checks and the reviewed runtime advisory scan passed |
+| API deployment | Revision `727dd76` deployed, including preserved-history researcher context; expired platform-policy leases can retry on the available host with fresh fencing |
+| Dedicated verifier | Running and connected to the API at the latest check; signed hardware isolation checks and the reviewed runtime advisory scan passed |
 | Quiet Echoes hosted preflight 2 | Signed machine checks passed, including repeated fixture execution in fresh microVMs |
 | Publication review | Actual human approval recorded separately from the preserved automated reviews; challenge version locked and published |
 | Initial candidate attempts | Three public platform-verified attempts: energies 20,604; 26,964; and 25,544. Each has a primary and fresh-confirmation run |
@@ -25,6 +25,28 @@ group; physical redundancy alone does not establish scientific novelty. The depl
 external security, key-custody and production release gates. See
 [host evidence](security/host-commissioning-2026-09-04.md) and
 [release gates](release-gates.md).
+
+## Post-publication presentation
+
+Quiet Echoes now includes **Researchers to know**, populated through the editorial
+form with three source-backed profiles. The text explicitly distinguishes research
+relevance from sponsorship, endorsement or confirmed interest. No outreach was
+sent. Editorial metadata has its own immutable history; a live comparison confirmed
+the scientific contract, submitted artifacts, scores and existing receipt history
+were unchanged.
+
+The native solver workflow was tested on macOS using Python 3.14.5 with no
+third-party packages or containers: baseline energy 17,996 and all 16 checker tests
+passed against the exact frozen source. Solver instructions target macOS/Linux;
+Windows support is deferred. Docker is available for optional pinned-runtime
+checks, and hosted verification remains authoritative.
+
+Scaleway's console still reports **Error**, with no explanation in its displayed
+provider event log (latest event: 27 August). Direct checks found the runner and
+host signer active, and the runner exchanging traffic with the API. Separate OS
+failures concern cloud-init's absent datasource and a firmware-daemon/library
+version mismatch; neither stopped verification. The provider label's cause is
+unresolved. No provider-state reset, reinstall or support message was performed.
 
 ## Persistence
 

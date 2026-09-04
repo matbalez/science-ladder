@@ -47,7 +47,10 @@ import {
 import { SubmissionTable } from "./submission";
 import { Participate } from "./participate";
 import { ResearcherSection } from "./researchers";
-import { solverInstructions } from "@/lib/solver-prompt";
+import {
+  challengeSetupCommands,
+  solverInstructions,
+} from "@/lib/solver-prompt";
 export function ChallengeDetail({ slug }: { slug: string }) {
   const session = useSession();
   const {
@@ -402,9 +405,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                   improve the allowed artifact. Official validation fetches your
                   exact pushed commit.
                 </p>
-                <CodeBlock
-                  code={`git clone https://github.com/${c.repository}.git\ncd ${c.repository.split("/").pop()}\ngit checkout ${c.sourceCommit}\nsl challenge lint science-ladder.yaml\nsl challenge test --manifest science-ladder.yaml --unsafe-local`}
-                />
+                <CodeBlock code={challengeSetupCommands(c)} />
                 <details className="prompt-details">
                   <summary>
                     <Terminal size={16} />

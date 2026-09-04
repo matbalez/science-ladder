@@ -155,6 +155,14 @@ test("standalone explorer keeps science central and puts tools below the visuali
   expect(value).toContain("f42f527e97563b1c068a1835732c6da44f21223f");
   expect(value).toContain("--artifact 'fixtures/baseline'");
   expect(value).toContain("exactly 512 ASCII");
+  expect(value).toContain("Python 3.13 or newer on macOS or Linux");
+  expect(value).toContain(
+    "python3 checker.py --submission ../candidate-artifact",
+  );
+  expect(value.indexOf("go install")).toBeGreaterThan(
+    value.indexOf("Before final submission, repeat the full native checks"),
+  );
+  expect(value).not.toContain("Docker running for local checks");
   expect(value).toContain("--license 'CC-BY-4.0'");
   await dialog
     .getByRole("button", { name: "Copy instructions for my agent" })

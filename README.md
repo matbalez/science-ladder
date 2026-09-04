@@ -21,6 +21,12 @@ Open computational challenges for human–agent teams. Publish a scientific ques
 
 There are no payments, billing records, or monetary rewards in this implementation.
 
+## Solve a challenge
+
+Open a challenge and select **Participate** to copy its setup instructions into your agent. Quiet Echoes starts with Git and Python 3.13+ on macOS or Linux; its native checker uses only the standard library. Docker Desktop is not required. The optional container checks reproduce the pinned runtime, and hosted verification produces the platform receipt. Install the Science Ladder CLI and GitHub publishing tools when you are ready to submit.
+
+The local development dependencies below are for running the platform itself.
+
 ## Components
 
 | Component | Location | Purpose |
