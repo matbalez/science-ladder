@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { formatTicks, plotRatio, safeWebUrl } from "./scientific.ts";
+import { dateLabel, formatTicks, plotRatio, safeWebUrl } from "./scientific.ts";
 import { readBinaryPulse, pulseStatistics } from "./signals.ts";
 
 test("binary pulse preview preserves exact artifact grammar", () => {
@@ -42,4 +42,72 @@ test("manifest links cannot execute javascript or data URLs", () => {
     safeWebUrl("https://arxiv.org/abs/1234.56789"),
     "https://arxiv.org/abs/1234.56789",
   );
+});
+
+test("date-only citations keep their day west and east of UTC", () => {
+  const original = process.env.TZ;
+  try {
+    for (const zone of [
+      "America/Vancouver",
+      "Pacific/Honolulu",
+      "Pacific/Kiritimati",
+    ]) {
+      process.env.TZ = zone;
+      assert.equal(dateLabel("2024-09-11"), "Sep 11, 2024");
+      assert.equal(dateLabel("2026-09-04"), "Sep 4, 2026");
+    }
+    process.env.TZ = "America/Vancouver";
+    assert.equal(dateLabel("2026-09-04T00:00:00Z"), "Sep 3, 2026");
+  } finally {
+    if (original === undefined) delete process.env.TZ;
+    else process.env.TZ = original;
+  }
+});
+
+test("solver bootstrap binds exact metadata and preserves generic artifact paths", async () => {
+  const { solverInstructions, CLI_SOURCE } = await import("./solver-prompt.ts");
+  const challenge = {
+    slug: "test-only",
+    title: "Test-only construction",
+    versionId: "test-version",
+    repository: "test-owner/test-repo",
+    sourceCommit: "a".repeat(40),
+    status: "draft",
+    reviewStatus: "pending",
+    intakeStatus: "closed",
+    summary: "Synthetic test fixture",
+    metric: {
+      name: "Test energy",
+      direction: "minimize",
+      quantum: "1",
+      baselineTicks: "9",
+    },
+    milestones: [{ label: "Test tier", thresholdTicks: "8" }],
+    manifest: {
+      fixtures: [{ name: "baseline", path: "fixtures/seed's data" }],
+      submission: { allowedPaths: ["matrix.csv"], license: "MIT" },
+    },
+  } as unknown as import("./types.ts").Challenge;
+  const prompt = solverInstructions(challenge);
+  assert.ok(prompt.includes(`cmd/sl@${CLI_SOURCE}`));
+  assert.ok(prompt.includes("git checkout --detach '" + "a".repeat(40) + "'"));
+  assert.ok(prompt.includes("--version 'test-version'"));
+  assert.ok(prompt.includes("Test tier: 8"));
+  assert.ok(prompt.includes("matrix.csv"));
+  assert.ok(!prompt.includes("512 ASCII"));
+  assert.ok(prompt.includes("'fixtures/seed'\\''s data'"));
+  assert.ok(
+    prompt.indexOf("sl challenge test") <
+      prompt.indexOf("3. BUILD A REAL CANDIDATE"),
+  );
+  assert.ok(
+    prompt.includes("sl auth login --api 'https://science-ladder.fly.dev'"),
+  );
+  const untrusted = solverInstructions({
+    ...challenge,
+    sourceCommit: "$(touch /tmp/no)",
+    manifest: { fixtures: [{ name: "baseline", path: "../escape" }] },
+  });
+  assert.ok(!untrusted.includes("git checkout"));
+  assert.ok(!untrusted.includes("--artifact '../escape'"));
 });

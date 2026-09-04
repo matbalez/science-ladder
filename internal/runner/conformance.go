@@ -21,16 +21,7 @@ func (b *Builder) isolationCorpus(ctx context.Context, parent protocol.RunnerJob
 		return false, err
 	}
 	defer os.RemoveAll(root)
-	m := parent.Manifest
-	m.HardGates = []string{"isolation"}
-	m.Metric = protocol.Metric{Name: "isolation fixture", Direction: "maximize", Unit: "checks", Quantum: "1", BaselineTicks: "0", MinimumDeltaTicks: "1", ToleranceTicks: "0"}
-	m.Milestones = []protocol.Milestone{{ID: "fixture", Title: "Internal fixture", ThresholdTicks: "1", Rationale: "Noncompetitive host conformance fixture"}}
-	m.Submission = protocol.SubmissionContract{AllowedPaths: []string{"data/"}, AllowedExtensions: []string{".txt"}, MaxBytes: 1 << 20, MaxFiles: 4, License: "MIT"}
-	m.Validator.Entrypoint = []string{"/usr/local/bin/python3", "/sl/challenge/probe.py"}
-	m.Suite = protocol.Suite{Visibility: "public", Path: "suite"}
-	m.Resources.TimeoutSeconds = 3
-	m.Resources.VCPU = 1
-	m.Resources.MemoryMB = 256
+	m := isolationManifest(parent.Manifest)
 	artifactFiles := map[string][]byte{"data/input.txt": []byte("INTERNAL_CONFORMANCE_ONLY")}
 	_, artifactDigest, _ := protocol.ArtifactFromFiles(artifactFiles, m.Submission)
 	artifactRoot := filepath.Join(root, "artifact")
@@ -128,6 +119,13 @@ func (b *Builder) isolationCorpus(ctx context.Context, parent protocol.RunnerJob
 		}
 	}
 	return true, nil
+}
+
+// The fixed corpus has its own coherent manifest, including fixture expectations.
+// Inherit only the runtime image being checked, never a creator's scores, suite,
+// resource budget, or fixtures. The signed child still binds the parent job.
+func isolationManifest(parent protocol.Manifest) protocol.Manifest {
+	return hostProbeManifest(parent.Validator.RuntimeImageDigest)
 }
 
 const isolationProbe = `import json, os, signal, socket, time

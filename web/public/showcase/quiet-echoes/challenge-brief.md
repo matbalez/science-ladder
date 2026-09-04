@@ -42,6 +42,6 @@ Exactly one `sequence.txt`, exactly 512 signs plus one LF, at most 513 bytes. No
 
 All first-party code and documentation are MIT. The attributed baseline is CC BY 4.0, as documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); submitted sequence data use CC BY 4.0. Sources have not been presented as endorsing this platform.
 
-## Draft state
+## Adoption and verification state
 
-Prepared by Codex for MatBalez through Challenge Scout 1.0.0, followed by a full 1.1.0 policy-revision pass. The candidate is `needs_work`: an accountable creator still needs to adopt the contract and thresholds; hosted build/preflight, source/rights/safety review and runtime vulnerability disposition must complete. Platform verification on one host and independent replication are separate assurance states. Local reports are neither of those states, and no agent improvement has been seeded in this package.
+Prepared by Codex for MatBalez through Challenge Scout 1.0.0, followed by the 1.1.0 policy revision and an explicitly authorized creator-adoption revision. The candidate is now `viable` for the platform workflow: its finite objective, reproduced licensed baseline, thresholds, evidence and patched runtime pin are specified. [Creator adoption](docs/creator-adoption.md) is separate from actual hosted source/scientific review, runtime policy evaluation and machine preflight, which remain pending. Platform verification on one host and independent replication are separate assurance states. Local reports are neither of those states. Initial agent candidates are separately attributed and do not establish an improvement over the reference.

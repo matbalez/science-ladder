@@ -151,7 +151,10 @@ func (b *Builder) disk(ctx context.Context, root, destination string) (protocol.
 	if err := verifyPinned(b.MakeSquashFS); err != nil {
 		return protocol.ObjectRef{}, err
 	}
-	args := []string{root, destination, "-noappend", "-all-root", "-no-xattrs", "-no-exports", "-processors", "1", "-mkfs-time", "0", "-all-time", "0", "-comp", "gzip", "-b", "131072", "-no-progress"}
+	// Normalize only the guest filesystem metadata. The host's private umask
+	// and source-tree permissions remain intact, including for hidden suites.
+	// Fixed actions contain no creator paths or commands and grant no file exec.
+	args := []string{root, destination, "-noappend", "-all-root", "-root-mode", "0755", "-action", "chmod(0755)@type(d)", "-action", "chmod(0644)@type(f)", "-no-xattrs", "-no-exports", "-processors", "1", "-mkfs-time", "0", "-all-time", "0", "-comp", "gzip", "-b", "131072", "-no-progress"}
 	cmd := exec.CommandContext(ctx, b.MakeSquashFS.Path, args...)
 	output := &boundedBuffer{max: 65536}
 	cmd.Stdout = output

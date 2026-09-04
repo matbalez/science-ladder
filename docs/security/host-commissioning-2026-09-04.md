@@ -12,6 +12,7 @@ It is not independent replication or an official production launch certification
 ## Evidence
 
 - [Unmodified signed host conformance receipt](host-conformance-2026-09-04.json)
+- [Unmodified signed repeat under deployment service restrictions](host-conformance-service-2026-09-04.json)
 - [Host public verification key](host-conformance-public-keys.json)
 - [Fixed platform corpus source](../../internal/runner/conformance.go)
 - [Guest isolation and teardown source](../../internal/runner/guest_linux.go)
@@ -40,6 +41,14 @@ probe receipts and filesystem housekeeping entries stay outside that delivery
 directory. This preserves strict replay parsing; the signed host configuration
 binds the delivery path separately from the unchanged execution profile.
 
+A second complete hardware corpus passed in **10.375 seconds** under the deployed
+service's `UMask=0077`, `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome`,
+`PrivateTmp` and restricted writable paths. It verifies the corrected host builder:
+guest disk permissions are normalized inside SquashFS without changing private
+host source permissions, and the fixed corpus uses a complete first-party fixture
+contract rather than inheriting a creator's expected scores. The original receipt
+is retained. The guest init, root filesystem and execution profile did not change.
+
 ## Commissioned artifact identities
 
 | Artifact | SHA-256 |
@@ -49,7 +58,9 @@ binds the delivery path separately from the unchanged execution profile.
 | Complete retained runtime component inventory | `188492919acca87e0b11fde5b24464a2511e886a551d987a9f8583e879745226` |
 | Runtime package inventory | `0dbe6e677aecaf5ee204bd49d4f167f6496bcbb37c6d8348daf23dd2657bcd2a` |
 | Guest root filesystem | `1646f4a0089ffaa94d77e65df6d3a3044de0e016eea911de8dbb8a61fed5fbea` |
-| Linux amd64 runner / guest init binary | `a7a1676400d0aabf2d5bf5a933d74ad7725a98981230a9810b8bc8ee6c1ec153` |
+| Embedded Linux amd64 guest init binary | `a7a1676400d0aabf2d5bf5a933d74ad7725a98981230a9810b8bc8ee6c1ec153` |
+| Corrected Linux amd64 host runner binary | `6a2cc321b6ae3a3a81b62665480c3bc58faf595d370e2de5e2d312bb0c52f29c` |
+| Deployed host runner with trust-expiry admission guard | `5a0222c765ba4bcea3be967d877ed2756fc6d7d674d4ab3b0edeff0cc52fc82e` |
 | Guest Linux kernel 6.1.182 | `9b7e715caab6629caa881a481a091dc33a65ec901ff1486904b5ac905a5f8578` |
 | Firecracker 1.16.1 | `2fd0171309af7e24cf8dafc8a6f921c1434c49b5f9349bb996b7ed0a4deb8aa7` |
 | Jailer 1.16.1 | `1f3a0c1fe86212d0001819bfe0819071c01208b3ccc9398c3b3bc1b84cf21edd` |
@@ -72,6 +83,14 @@ The [rootfs build procedure](../../internal/runner/README.md) constructs immutab
 guest inputs from pinned platform components. First-party code is MIT; retained
 upstream runtime components keep their own licenses.
 
+The subsequent host-only admission guard stops new claims twenty minutes before
+signed host or advisory trust expires, without changing guest execution or the
+profile. Its unit tests cover expired, near-expiry and current signed policies,
+tampering, clock advance/rollback and HTTP claim ordering. It was installed after
+the hosted preflight passed and the worker drained. See the
+[operator renewal runbook](../runner-renewal.md) for the actual deadlines and
+remaining manual renewal process. No trust lifetime was extended.
+
 The probe intentionally records `advisoryGateSatisfied: false`: this hardware
 corpus does not perform dependency review. A separate platform-controlled signed
 advisory snapshot covers the exact runtime packages. The accompanying public
@@ -85,6 +104,9 @@ From the repository root:
 ```sh
 go run ./cmd/sl receipt verify \
   --receipt docs/security/host-conformance-2026-09-04.json \
+  --keys docs/security/host-conformance-public-keys.json
+go run ./cmd/sl receipt verify \
+  --receipt docs/security/host-conformance-service-2026-09-04.json \
   --keys docs/security/host-conformance-public-keys.json
 ```
 

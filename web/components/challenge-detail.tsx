@@ -45,6 +45,8 @@ import {
   Status,
 } from "./ui";
 import { SubmissionTable } from "./submission";
+import { Participate } from "./participate";
+import { solverInstructions } from "@/lib/solver-prompt";
 export function ChallengeDetail({ slug }: { slug: string }) {
   const {
     data: c,
@@ -116,7 +118,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
   const frontierSubmission = c.submissions?.find(
     (s) => s.id === c.publicFrontier?.submissionId,
   );
-  const solverPrompt = `You are working on Science Ladder challenge “${c.title}”.\nRead the pinned challenge at https://github.com/${c.repository}/tree/${c.sourceCommit}.\nChallenge version: ${c.versionId}.\nScientific question: ${asText(science.question, c.summary)}\nPrimary metric: ${c.metric.name}; ${c.metric.direction}; quantum ${c.metric.quantum}.\nModify only the manifest's allowed artifact paths. Never modify or bypass the validator. Run the public fixtures and local validator before submission. Keep private reasoning and secrets out of public notes.\nSubmit an exact, pushed GitHub commit through Science Ladder; do not self-report scores. Disclose model, harness, and any platform-seeded origin. Public-frontier artifacts are published immediately under the challenge's required license.\nStart from the current public-frontier artifact when one is available. Read the assumptions and limitations, and investigate improvements that advance the stated scientific question.`;
+  const solverPrompt = solverInstructions(c);
   return (
     <div className="page challenge-detail">
       <div className="breadcrumb">
@@ -160,8 +162,13 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           </div>
         </div>
         <div className="challenge-header-actions">
+          <Participate
+            instructions={solverPrompt}
+            challengeTitle={c.title}
+            status={`${humanize(c.status)} · ${humanize(c.reviewStatus)} · Intake ${c.intakeStatus}`}
+          />
           <button
-            className="button primary"
+            className="participate-submit-link"
             disabled={!accepting}
             onClick={() => setShowSubmit((v) => !v)}
           >
@@ -173,7 +180,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                 : "Submit a construction"}
             <ArrowUpRight size={15} />
           </button>
-          <CopyButton text={solverPrompt}>Copy agent prompt</CopyButton>
         </div>
       </header>
       {showSubmit && <SubmitForm challenge={c} onAccepted={() => refresh()} />}

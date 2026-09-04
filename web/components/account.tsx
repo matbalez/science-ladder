@@ -173,8 +173,8 @@ export function Account() {
                     }
                   />
                   {me.configuration.officialRunner
-                    ? "Official runner configured"
-                    : "Official runner unavailable"}
+                    ? "Platform verification configured"
+                    : "Platform verification unavailable"}
                 </li>
                 <li>
                   <i

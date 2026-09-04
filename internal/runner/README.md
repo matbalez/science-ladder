@@ -4,6 +4,10 @@
 code. `runnerd serve` uses a dedicated mTLS listener, verifies signed jobs, consumes
 exact-object grants, uploads deterministic disks with bounded one-job PUT grants,
 and returns signed typed results. A failed trust or resource check fails closed.
+Before every claim, a cached signed host/advisory admission window must have more
+than twenty minutes remaining. Otherwise the daemon completes existing delivery
+and exits successfully into maintenance; it never renews trust itself. See the
+[renewal runbook](../../docs/runner-renewal.md).
 
 The Linux guest uses `/sbin/sl-init` (the `runnerd` executable installed under that
 name). Rootfs composition is a first-party fixed recipe: `runnerd build-rootfs`

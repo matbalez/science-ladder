@@ -99,8 +99,10 @@ func run(args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := config.CheckHost(keys); err != nil {
-		return err
+	if args[0] != "serve" {
+		if err := config.CheckHost(keys); err != nil {
+			return err
+		}
 	}
 	if args[0] == "host-check" {
 		fmt.Println("Host configuration, pinned components and signed inventory attestation passed.")
@@ -172,6 +174,10 @@ func run(args []string) error {
 	if args[0] != "serve" {
 		return errors.New("unknown runnerd command")
 	}
+	admission, err := runner.LoadAdmissionWindow(config, keys)
+	if err != nil {
+		return err
+	}
 	client, err := mtlsClient(*certPath, *privatePath, *caPath)
 	if err != nil {
 		return err
@@ -184,12 +190,21 @@ func run(args []string) error {
 	if err := replayResults(ctx, client, base, config.ResultSpool); err != nil {
 		return err
 	}
+	// Delivery of already signed results is allowed during trust maintenance.
+	// No execution or claim is allowed until both admission and host checks pass.
+	if err := admission.Check(time.Now()); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return nil
+	}
+	if err := config.CheckHost(keys); err != nil {
+		return err
+	}
 	for ctx.Err() == nil {
-		var claim struct {
-			Job         *protocol.Envelope `json:"job"`
-			ResultToken string             `json:"resultToken"`
+		claim, err := claimIfAdmitted(ctx, client, base, func() error { return admission.Check(time.Now()) })
+		if errors.Is(err, runner.ErrAdmissionMaintenance) {
+			fmt.Fprintln(os.Stderr, err)
+			return nil
 		}
-		err := request(ctx, client, "POST", base+"/internal/v1/runner/jobs/claim", map[string]any{}, &claim)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "runner claim unavailable; retrying without accepting work")
 			if !pause(ctx, 10*time.Second) {
