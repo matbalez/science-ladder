@@ -94,6 +94,19 @@ test("solver bootstrap binds exact metadata and preserves generic artifact paths
   assert.ok(prompt.includes("--version 'test-version'"));
   assert.ok(prompt.includes("Test tier: 8"));
   assert.ok(prompt.includes("matrix.csv"));
+  assert.ok(prompt.includes("404 before publication"));
+  const published = solverInstructions({
+    ...challenge,
+    status: "published",
+    reviewStatus: "human_approved",
+    intakeStatus: "open",
+  });
+  assert.ok(!published.includes("404 before publication"));
+  assert.ok(!published.includes("awaiting review or publication"));
+  assert.ok(
+    published.includes("Inspect the frozen version and current intake"),
+  );
+
   assert.ok(!prompt.includes("512 ASCII"));
   assert.ok(prompt.includes("'fixtures/seed'\\''s data'"));
   assert.ok(

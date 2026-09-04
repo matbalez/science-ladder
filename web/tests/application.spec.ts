@@ -19,6 +19,7 @@ const session = {
 const source = {
   url: "https://example.org/test-paper",
   title: "TEST ONLY primary source",
+  identifier: "arXiv:TEST-ONLY",
   evidence: "An explicitly synthetic source used in this browser test.",
   location: "Section 4",
   accessedAt: "2026-09-04",
@@ -112,6 +113,13 @@ test("flat canonical manifest renders real evidence, gates, and exact score deci
     page.getByRole("heading", { name: manifest.scientificQuestion }),
   ).toBeVisible();
   await expect(page.getByText(source.evidence)).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Read primary source" }),
+  ).toHaveAttribute("href", source.url);
+  await expect(
+    page.getByRole("link", { name: "Explore the pulse and its echoes" }),
+  ).toHaveCount(0);
+
   await expect(
     page.getByText("900,719,925,474,099.312345", { exact: false }).first(),
   ).toBeVisible();
@@ -413,4 +421,70 @@ test("audit panel distinguishes absent evidence from independently witnessed quo
   await expect(
     page.getByText("Host reports witness quorum", { exact: true }),
   ).toHaveCount(0);
+});
+
+test("educational explorer link is secondary and bound to the exact registered science source", async ({
+  page,
+}) => {
+  await base(page);
+  let registered = true;
+  await page.route("**/v1/challenges/quiet-echoes-labs512", (r) =>
+    r.fulfill({
+      json: {
+        ...challenge,
+        slug: "quiet-echoes-labs512",
+        submissions: registered
+          ? [
+              {
+                id: "test-completed",
+                versionId: challenge.versionId,
+                sequence: 1,
+                status: "finalized",
+                outcome: "valid",
+                verificationStatus: "platform_verified",
+                scoreTicks: "900719925474099312355",
+                public: true,
+                createdAt: challenge.createdAt,
+                attribution: {},
+                claims: [],
+                runs: [],
+              },
+            ]
+          : [],
+
+        repository: "matbalez/science-ladder-quiet-echoes",
+        sourceCommit: registered
+          ? "f42f527e97563b1c068a1835732c6da44f21223f"
+          : "b".repeat(40),
+      },
+    }),
+  );
+  await page.goto("/challenges/quiet-echoes-labs512");
+  const link = page.getByRole("link", {
+    name: "Explore the pulse and its echoes",
+  });
+  await expect(link).toHaveAttribute(
+    "href",
+    "/showcase/quiet-echoes/index.html",
+  );
+  await expect(
+    page.getByText("No verified improvement yet", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".challenge-header-actions .primary:visible"),
+  ).toHaveCount(1);
+  await link.click();
+  await expect(
+    page.getByRole("heading", { name: "Quiet Echoes." }),
+  ).toBeVisible();
+  await expect(page.locator("#pulse")).toBeVisible();
+  registered = false;
+  await page.goto("/challenges/quiet-echoes-labs512");
+  await expect(
+    page.getByRole("heading", { name: manifest.scientificQuestion }),
+  ).toBeVisible();
+  await expect(link).toHaveCount(0);
+  await expect(
+    page.getByText("Awaiting validation", { exact: true }),
+  ).toBeVisible();
 });

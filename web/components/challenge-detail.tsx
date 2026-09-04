@@ -118,6 +118,20 @@ export function ChallengeDetail({ slug }: { slug: string }) {
   const frontierSubmission = c.submissions?.find(
     (s) => s.id === c.publicFrontier?.submissionId,
   );
+  // This explorer explains one immutable scientific source, not arbitrary later versions.
+  const explorerUrl =
+    c.repository === "matbalez/science-ladder-quiet-echoes" &&
+    c.sourceCommit === "f42f527e97563b1c068a1835732c6da44f21223f"
+      ? "/showcase/quiet-echoes/index.html"
+      : undefined;
+  const hasVerifiedAttempt = c.submissions?.some(
+    (submission) =>
+      submission.outcome === "valid" &&
+      /^-?\d+$/.test(submission.scoreTicks || "") &&
+      ["platform_verified", "independently_replicated"].includes(
+        submission.verificationStatus || "",
+      ),
+  );
   const solverPrompt = solverInstructions(c);
   return (
     <div className="page challenge-detail">
@@ -206,7 +220,11 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             {formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}
           </strong>
           <span>
-            {c.verifiedBest ? "Validation complete" : "Awaiting validation"}
+            {c.verifiedBest
+              ? "Validation complete"
+              : hasVerifiedAttempt
+                ? "No verified improvement yet"
+                : "Awaiting validation"}
           </span>
         </div>
         <div>
@@ -268,6 +286,20 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                     "The creator’s scientific rationale is recorded in the immutable challenge manifest.",
                   )}
                 </p>
+                {explorerUrl && (
+                  <p>
+                    <Link
+                      href={explorerUrl}
+                      style={{
+                        color: "var(--lime)",
+                        textDecoration: "underline",
+                        textUnderlineOffset: 4,
+                      }}
+                    >
+                      Explore the pulse and its echoes →
+                    </Link>
+                  </p>
+                )}
                 <h3>Why this metric matters</h3>
                 <p>
                   {asText(
@@ -292,6 +324,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                       asText(cite.url),
                     );
                     const url =
+                      safeWebUrl(cite.url) ||
                       safeWebUrl(identifier) ||
                       (identifier.startsWith("10.")
                         ? `https://doi.org/${encodeURIComponent(identifier)}`

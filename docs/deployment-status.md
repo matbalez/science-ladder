@@ -1,21 +1,26 @@
 # Deployment status
 
-Status recorded **4 September 2026**, while the creator's human scientific-review
-decision is pending. Public site: [science-ladder.fly.dev](https://science-ladder.fly.dev).
+Status recorded **4 September 2026**, after the creator's authenticated human
+scientific-review approval and challenge publication.
+Public site: [science-ladder.fly.dev](https://science-ladder.fly.dev).
 Public MIT source: [matbalez/science-ladder](https://github.com/matbalez/science-ladder).
 
 | Component or evidence | Current state |
 | --- | --- |
-| Web deployment | Revision `2c87` deployed |
+| Web deployment | Published on Fly.io with prominent Participate instructions and the Quiet Echoes educational explorer |
 | API deployment | Revision `49c0143` deployed; expired platform-policy leases can retry on the available host with fresh fencing |
 | Dedicated verifier | Running; signed hardware isolation checks and the reviewed runtime advisory scan passed |
 | Quiet Echoes hosted preflight 2 | Signed machine checks passed, including repeated fixture execution in fresh microVMs |
-| Scientific review 2 | Requires an actual human decision; awaiting the creator's response |
-| Initial candidate attempts | Three real prepared attempts are ready; none has been accepted yet |
+| Publication review | Actual human approval recorded separately from the preserved automated reviews; challenge version locked and published |
+| Initial candidate attempts | Three public platform-verified attempts: energies 20,604; 26,964; and 25,544. Each has a primary and fresh-confirmation run |
+| Submission queue | Six logical units configured for three outstanding submissions; each reserves primary and fresh-confirmation capacity |
 
-Publication and candidate acceptance remain pending that review decision. These
-are single-host **platform verification** results. Independent replication requires
-a different physical host group. The deployment remains `controlled-demo` with
+[Quiet Echoes](https://science-ladder.fly.dev/challenges/quiet-echoes-labs512) is
+published. All three actual seeded attempts are finalized and public; none beats
+the published reference of 17,996, and no milestone was claimed. The deployment
+uses single-host **platform verification**.
+The protocol's independent-replication status requires a different physical host
+group; physical redundancy alone does not establish scientific novelty. The deployment remains `controlled-demo` with
 `officialAcceptance: false`; successful mechanical checks do not complete the
 external security, key-custody and production release gates. See
 [host evidence](security/host-commissioning-2026-09-04.md) and

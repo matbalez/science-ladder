@@ -17,6 +17,39 @@ fly deploy . --config deploy/fly.web.toml
 
 The API release command applies transactional migrations before a rollout. A failed migration stops deployment. Health checks distinguish a live process from database readiness. Use a clean, tested source snapshot for deployment so concurrent development cannot enter a build partway through a change.
 
+## Initial submission capacity
+
+Migrations create the logical queue limit with `maximum_units = 0`, so submission
+acceptance returns `503 capacity_unavailable` until an operator configures intake.
+Each accepted submission reserves **two units** for its primary run and fresh
+confirmation. A limit of **six units** permits three outstanding submissions on a
+serial single-host verifier; it does not promise six simultaneous microVMs or
+independent hosts.
+
+After enrolling an enabled, approved verifier with current trust evidence, an
+operator with infrastructure database access can initialize a new deployment:
+
+```sql
+BEGIN;
+SELECT maximum_units, reserved_units FROM capacity WHERE id = 1 FOR UPDATE;
+UPDATE capacity
+SET maximum_units = 6
+WHERE id = 1 AND maximum_units = 0 AND reserved_units = 0
+RETURNING maximum_units, reserved_units;
+COMMIT;
+```
+
+The guarded update must return `(6, 0)`. If it returns no row, inspect the existing
+configuration instead of resetting it. Record the previous limit, new limit,
+operator, time, and reason in the deployment audit. Later limit changes must
+preserve outstanding reservations and remain at least `reserved_units`. **Never
+edit `reserved_units` or `capacity_reservations` manually**; acceptance and
+resolution transactions maintain them.
+
+This is operator infrastructure configuration. It does not approve a scientific
+review, publish a challenge, accept a candidate, or change a result. Continue those
+operations through the authenticated application workflow and its signed evidence.
+
 ## GitHub and OpenAI
 
 Science Ladder uses a GitHub App with read-only repository contents/metadata. Install it only on repositories intended for challenge or submission ingestion. The public app callback is `/v1/auth/github/callback`; the webhook is `/v1/webhooks/github`.
