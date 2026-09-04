@@ -87,6 +87,13 @@ func (s *Server) editorDecision(w http.ResponseWriter, r *http.Request, u *User)
 		case "pause":
 			sql = `UPDATE challenge_versions SET intake_status='paused' WHERE id=$1 AND status='published'`
 		case "resume":
+			var pending bool
+			if err := tx.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM challenge_versions WHERE predecessor_id=$1 AND transition_kind='security_migration' AND status NOT IN('published','closed','superseded','compromised','rejected'))`, in.VersionID).Scan(&pending); err != nil {
+				return 0, nil, err
+			}
+			if pending {
+				return 0, nil, fail(409, "migration_pending", "Resolve the staged security migration before reopening predecessor intake")
+			}
 			sql = `UPDATE challenge_versions SET intake_status='open' WHERE id=$1 AND status='published' AND intake_status='paused' AND deadline>now()`
 		case "resolve_unscorable":
 			var faults int

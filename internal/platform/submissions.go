@@ -132,12 +132,46 @@ func (s *Server) acceptIntent(w http.ResponseWriter, r *http.Request, u *User) e
 		if active >= s.Config.ActiveLimit {
 			return 0, nil, fail(429, "active_limit", "Resolve an active submission before accepting another")
 		}
-		var groups int
-		if err = tx.QueryRow(ctx, `SELECT count(DISTINCT host_group) FROM runner_hosts WHERE enabled`).Scan(&groups); err != nil {
+		var m protocol.Manifest
+		if err = json.Unmarshal(manifest, &m); err != nil {
 			return 0, nil, err
 		}
-		if groups < 2 {
-			return 0, nil, fail(503, "independent_runners_unavailable", "Official acceptance requires two trusted independent runner groups")
+		var executionProfile, policy string
+		if err = tx.QueryRow(ctx, `SELECT document->>'executionProfileDigest',COALESCE(NULLIF(document->>'verificationPolicy',''),'independent') FROM locks WHERE digest=$1`, lockDigest).Scan(&executionProfile, &policy); err != nil {
+			return 0, nil, fail(503, "execution_profile_unavailable", "The immutable execution profile is unavailable")
+		}
+		rows, err := tx.Query(ctx, `SELECT id,host_group,public_key FROM runner_hosts WHERE enabled AND execution_profile_digest=$1 AND 'submission'=ANY(purposes) AND 'confirmation'=ANY(purposes) AND ($2 OR encryption_public_key<>'')`, executionProfile, m.Suite.Visibility != "hidden")
+		if err != nil {
+			return 0, nil, err
+		}
+		independent := map[string]bool{}
+		for rows.Next() {
+			var host runnerIdentity
+			if err = rows.Scan(&host.ID, &host.Group, &host.PublicKey); err != nil {
+				rows.Close()
+				return 0, nil, err
+			}
+			if s.verifyHostDelegation(host, time.Now()) == nil {
+				independent[host.Group] = true
+			}
+		}
+		rows.Close()
+		if err = rows.Err(); err != nil {
+			return 0, nil, err
+		}
+		groups := len(independent)
+		if !protocol.ValidVerificationPolicy(policy) {
+			return 0, nil, fail(409, "verification_policy_invalid", "Locked verification policy is unknown")
+		}
+		minimumGroups := 1
+		if policy == protocol.VerificationIndependent {
+			minimumGroups = 2
+		}
+		if groups < minimumGroups {
+			if minimumGroups == 2 {
+				return 0, nil, fail(503, "independent_runners_unavailable", "This immutable challenge requires two trusted independent runner groups")
+			}
+			return 0, nil, fail(503, "platform_runner_unavailable", "A trusted platform runner matching the locked profile is required")
 		}
 		var duplicate, owner string
 		err = tx.QueryRow(ctx, `SELECT id,owner_id FROM submissions WHERE version_id=$1 AND artifact_digest=$2`, version, artifact).Scan(&duplicate, &owner)
@@ -155,11 +189,7 @@ func (s *Server) acceptIntent(w http.ResponseWriter, r *http.Request, u *User) e
 			return 0, nil, err
 		}
 		if tag.RowsAffected() != 1 {
-			return 0, nil, fail(503, "capacity_unavailable", "Primary and independent confirmation capacity are not available; no sequence has been assigned")
-		}
-		var m protocol.Manifest
-		if err = json.Unmarshal(manifest, &m); err != nil {
-			return 0, nil, err
+			return 0, nil, fail(503, "capacity_unavailable", "Primary and fresh confirmation capacity are not available; no sequence has been assigned")
 		}
 		var in IntentRequest
 		if err = json.Unmarshal(request, &in); err != nil {
@@ -170,7 +200,7 @@ func (s *Server) acceptIntent(w http.ResponseWriter, r *http.Request, u *User) e
 		created := time.Now().UTC()
 		salt := secret()
 		commitment := hash(salt + "\x00" + artifact)
-		receipt := protocol.Receipt{DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "SubmissionAcceptanceReceipt", ID: ID(), CreatedAt: created, Producer: "science-ladder", SubjectDigest: artifact, EconomicMode: "none", Data: map[string]any{"submissionId": submission, "versionId": version, "challengeLockDigest": lockDigest, "sequence": formatInt(sequence), "grantId": grant, "artifactDigest": artifact, "submissionDiskDigest": disk, "resourceClass": m.Resources.Class, "parentFrontierDigest": in.ParentFrontierDigest, "attribution": in.Attribution}}
+		receipt := protocol.Receipt{VerificationPolicy: policy, DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: s.Config.DeploymentMode == "production", APIVersion: protocol.APIVersion, Kind: "SubmissionAcceptanceReceipt", ID: ID(), CreatedAt: created, Producer: "science-ladder", SubjectDigest: artifact, EconomicMode: "none", Data: map[string]any{"submissionId": submission, "versionId": version, "challengeLockDigest": lockDigest, "sequence": formatInt(sequence), "grantId": grant, "artifactDigest": artifact, "commitment": commitment, "commitmentSalt": salt, "submissionDiskDigest": disk, "resourceClass": m.Resources.Class, "parentFrontierDigest": in.ParentFrontierDigest, "attribution": in.Attribution}}
 		digest, err := protocol.Digest(receipt)
 		if err != nil {
 			return 0, nil, err
@@ -207,13 +237,54 @@ func (s *Server) acceptIntent(w http.ResponseWriter, r *http.Request, u *User) e
 }
 func (s *Server) publishSubmission(w http.ResponseWriter, r *http.Request, u *User) error {
 	return s.mutate(w, r, u, func(tx pgx.Tx) (int, any, error) {
-		var status, outcome, version string
-		err := tx.QueryRow(r.Context(), `SELECT status,outcome,version_id FROM submissions WHERE id=$1 AND owner_id=$2 FOR UPDATE`, r.PathValue("id"), u.ID).Scan(&status, &outcome, &version)
+		ctx := r.Context()
+		var status, outcome, version, score string
+		var manifest []byte
+		var frontierID *string
+		// Match the adjudicator's lock order: version before submission.
+		err := tx.QueryRow(ctx, `SELECT v.id,v.manifest,v.public_frontier_id FROM challenge_versions v JOIN submissions ss ON ss.version_id=v.id WHERE ss.id=$1 AND ss.owner_id=$2 FOR UPDATE OF v`, r.PathValue("id"), u.ID).Scan(&version, &manifest, &frontierID)
+		if err != nil {
+			return 0, nil, err
+		}
+		var alreadyPublic bool
+		err = tx.QueryRow(ctx, `SELECT status,outcome,COALESCE(score_ticks::text,''),public FROM submissions WHERE id=$1 AND owner_id=$2 FOR UPDATE`, r.PathValue("id"), u.ID).Scan(&status, &outcome, &score, &alreadyPublic)
 		if err != nil {
 			return 0, nil, err
 		}
 		if status != "finalized" || outcome != "valid" {
 			return 0, nil, fail(409, "publication_not_ready", "Only a finalized valid artifact can be voluntarily published")
+		}
+		if alreadyPublic {
+			return 200, map[string]any{"id": r.PathValue("id"), "public": true}, nil
+		}
+		var m protocol.Manifest
+		if err = json.Unmarshal(manifest, &m); err != nil {
+			return 0, nil, err
+		}
+		frontier := m.Metric.BaselineTicks
+		if frontierID != nil {
+			if err = tx.QueryRow(ctx, `SELECT score_ticks::text FROM submissions WHERE id=$1`, *frontierID).Scan(&frontier); err != nil {
+				return 0, nil, err
+			}
+		}
+		advance := meaningful(score, frontier, m.Metric)
+		if advance {
+			if _, err = tx.Exec(ctx, `UPDATE challenge_versions SET public_frontier_id=$2 WHERE id=$1`, version, r.PathValue("id")); err != nil {
+				return 0, nil, err
+			}
+		}
+		var mode, artifact, policy string
+		var official bool
+		if err = tx.QueryRow(ctx, `SELECT r.payload->>'deploymentMode',COALESCE((r.payload->>'officialAcceptance')::boolean,false),ss.artifact_digest,COALESCE(NULLIF(r.payload->>'verificationPolicy',''),'independent') FROM submissions ss JOIN receipts r ON r.digest=ss.receipt_digest WHERE ss.id=$1`, r.PathValue("id")).Scan(&mode, &official, &artifact, &policy); err != nil {
+			return 0, nil, err
+		}
+		receipt := protocol.Receipt{APIVersion: protocol.APIVersion, Kind: "SolutionPublicationReceipt", VerificationPolicy: policy, VerificationStatus: verifiedStatus(policy, "valid"), ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", SubjectDigest: artifact, EconomicMode: "none", DeploymentMode: mode, OfficialAcceptance: official, Data: map[string]any{"versionId": version, "submissionId": r.PathValue("id"), "scoreTicks": score, "publicFrontierAdvanced": advance}}
+		digest, err := protocol.Digest(receipt)
+		if err != nil {
+			return 0, nil, err
+		}
+		if err = saveReceipt(r, tx, digest, receipt, u.ID, true); err != nil {
+			return 0, nil, err
 		}
 		if _, err = tx.Exec(r.Context(), `UPDATE submissions SET public=true,publish_requested=true WHERE id=$1`, r.PathValue("id")); err != nil {
 			return 0, nil, err
@@ -227,7 +298,7 @@ func (s *Server) publishSubmission(w http.ResponseWriter, r *http.Request, u *Us
 		if _, err = tx.Exec(r.Context(), `UPDATE receipts SET public=true WHERE digest IN(SELECT rr.digest FROM runner_results rr JOIN runner_jobs j ON j.id=rr.job_id WHERE j.submission_id=$1)`, r.PathValue("id")); err != nil {
 			return 0, nil, err
 		}
-		if err = audit(r.Context(), tx, version, "solution.published", map[string]any{"submissionId": r.PathValue("id")}); err != nil {
+		if err = audit(r.Context(), tx, version, "solution.published", map[string]any{"submissionId": r.PathValue("id"), "receiptDigest": digest, "publicFrontierAdvanced": advance}); err != nil {
 			return 0, nil, err
 		}
 		return 200, map[string]any{"id": r.PathValue("id"), "public": true}, nil

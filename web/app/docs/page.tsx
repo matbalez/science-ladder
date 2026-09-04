@@ -244,9 +244,11 @@ export default function Page() {
             <p>
               Official validators run in isolated infrastructure with no
               network, no platform secrets, bounded resources, and a constrained
-              result channel. Potential frontier and milestone results need
-              confirmation on independent clean workers. Missing or conflicting
-              evidence fails closed.
+              result channel. The MVP uses platform verification with fresh-VM
+              confirmation on a dedicated host. Challenges can instead lock an
+              independent policy requiring a different physical host group.
+              Results state whether they are platform verified or independently
+              replicated. Missing or conflicting evidence pauses adjudication.
             </p>
             <p>
               Anyone can report a concern from a challenge page. Flags include

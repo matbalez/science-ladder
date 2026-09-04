@@ -47,3 +47,11 @@ func Apply(ctx context.Context, db *pgxpool.Pool) error {
 	}
 	return tx.Commit(ctx)
 }
+
+func Latest() string {
+	entries, err := files.ReadDir(".")
+	if err != nil || len(entries) == 0 {
+		return ""
+	}
+	return entries[len(entries)-1].Name()
+}

@@ -39,7 +39,7 @@ func TestScoreComparisonAndConfirmation(t *testing.T) {
 	}
 }
 func TestSourceNetworkPolicy(t *testing.T) {
-	for _, ip := range []string{"127.0.0.1", "::1", "10.1.2.3", "192.168.1.1", "169.254.169.254", "100.100.100.200", "100.64.0.1", "198.18.0.1", "0.1.2.3", "224.0.0.1", "fc00::1", "::ffff:127.0.0.1"} {
+	for _, ip := range []string{"127.0.0.1", "::1", "10.1.2.3", "192.168.1.1", "169.254.169.254", "100.100.100.200", "100.64.0.1", "198.18.0.1", "0.1.2.3", "224.0.0.1", "fc00::1", "::ffff:127.0.0.1", "64:ff9b::c0a8:1", "64:ff9b:1::a00:1", "2002:7f00:1::1", "2001::7f00:1", "::192.168.0.1"} {
 		if publicIP(net.ParseIP(ip)) {
 			t.Errorf("unsafe source IP accepted: %s", ip)
 		}
@@ -79,16 +79,24 @@ func testDB(t *testing.T) *Server {
 	t.Cleanup(func() { db.Close(); base.Exec(ctx, `DROP SCHEMA `+schema+` CASCADE`); base.Close() })
 	return s
 }
-func seed(t *testing.T, s *Server) (*User, string) {
+func seed(t *testing.T, s *Server, policy ...string) (*User, string) {
 	t.Helper()
 	ctx := context.Background()
 	u := &User{ID: ID(), GitHubID: 42, Login: "test-user", Invited: true, Role: "member", Quota: 20}
 	candidate, ch, version := ID(), ID(), ID()
 	m := protocol.Manifest{APIVersion: protocol.APIVersion, Kind: "Challenge", ID: ID(), EconomicMode: "none", Slug: "test-challenge", Title: "Test", Metric: protocol.Metric{Direction: "maximize", BaselineTicks: "0", Quantum: "1", MinimumDeltaTicks: "1", ToleranceTicks: "0"}, Resources: protocol.Resources{Class: "cpu-small"}, Milestones: []protocol.Milestone{{ID: "m1", Title: "First", ThresholdTicks: "10"}, {ID: "m2", Title: "Second", ThresholdTicks: "20"}}}
+	lockDigest := "lock"
+	lockDocument := []byte(`{"executionProfileDigest":"profile"}`)
+	if len(policy) != 0 {
+		m.VerificationPolicy = policy[0]
+		lock := protocol.Lock{VerificationPolicy: policy[0], Manifest: m, ExecutionProfileDigest: "profile", ValidatorDiskDigest: protocol.DigestBytes([]byte("validator")), SuiteDigest: protocol.DigestBytes([]byte("suite")), SuiteDiskDigest: protocol.DigestBytes([]byte("suite"))}
+		lockDigest, _ = protocol.Digest(lock)
+		lockDocument = raw(lock)
+	}
 	commands := []struct {
 		sql  string
 		args []any
-	}{{`INSERT INTO users(id,github_id,login,invited,validation_quota) VALUES($1,42,'test-user',true,20)`, []any{u.ID}}, {`INSERT INTO candidates(id,owner_id,digest,document,status) VALUES($1,$2,'candidate','{}','ready')`, []any{candidate, u.ID}}, {`INSERT INTO challenges(id,slug,owner_id,candidate_id) VALUES($1,'test-challenge',$2,$3)`, []any{ch, u.ID, candidate}}, {`INSERT INTO challenge_versions(id,challenge_id,repository,repository_id,source_commit,source_digest,manifest,status,intake_status,deadline,lock_digest) VALUES($1,$2,'test/repo',1,$3,'source',$4,'published','open',now()+interval '1 day','lock')`, []any{version, ch, strings.Repeat("a", 40), raw(m)}}, {`INSERT INTO milestone_tiers(id,version_id,title,threshold_ticks) VALUES('m1',$1,'First',10),('m2',$1,'Second',20)`, []any{version}}, {`UPDATE capacity SET maximum_units=100 WHERE id=1`, nil}, {`INSERT INTO runner_hosts(id,host_group,public_key,certificate_fingerprint,enabled) VALUES('r1','group1','key1','fp1',true),('r2','group2','key2','fp2',true)`, nil}}
+	}{{`INSERT INTO users(id,github_id,login,invited,validation_quota) VALUES($1,42,'test-user',true,20)`, []any{u.ID}}, {`INSERT INTO candidates(id,owner_id,digest,document,status) VALUES($1,$2,'candidate','{}','ready')`, []any{candidate, u.ID}}, {`INSERT INTO challenges(id,slug,owner_id,candidate_id) VALUES($1,'test-challenge',$2,$3)`, []any{ch, u.ID, candidate}}, {`INSERT INTO challenge_versions(id,challenge_id,repository,repository_id,source_commit,source_digest,manifest,status,intake_status,deadline,lock_digest) VALUES($1,$2,'test/repo',1,$3,'source',$4,'published','open',now()+interval '1 day',$5)`, []any{version, ch, strings.Repeat("a", 40), raw(m), lockDigest}}, {`INSERT INTO locks(digest,version_id,document) VALUES($2,$1,$3)`, []any{version, lockDigest, lockDocument}}, {`INSERT INTO milestone_tiers(id,version_id,title,threshold_ticks) VALUES('m1',$1,'First',10),('m2',$1,'Second',20)`, []any{version}}, {`UPDATE capacity SET maximum_units=100 WHERE id=1`, nil}, {`INSERT INTO runner_hosts(id,host_group,public_key,certificate_fingerprint,enabled,execution_profile_digest) VALUES('r1','group1','key1','fp1',true,'profile'),('r2','group2','key2','fp2',true,'profile')`, nil}}
 	for _, cmd := range commands {
 		if _, err := s.DB.Exec(ctx, cmd.sql, cmd.args...); err != nil {
 			t.Fatal(err)

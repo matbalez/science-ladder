@@ -29,7 +29,16 @@ func TestCanonicalRejectsAmbiguity(t *testing.T) {
 	}
 }
 
-func TestScoutCanTruthfullyAbstainWithoutInventingSources(t *testing.T){c:=Candidate{APIVersion:APIVersion,Kind:"ChallengeCandidate",ID:"abstention-fixture",CreatedAt:time.Now(),Producer:"protocol-test",PromptVersion:ScoutVersion,Disposition:"rejected",Sources:[]Source{},Uncertainties:[]string{"Necessary primary evidence could not be inspected"}};if err:=ValidateCandidate(c);err!=nil{t.Fatal(err)};c.Disposition="viable";if ValidateCandidate(c)==nil{t.Fatal("viable candidate accepted without evidence or manifest")}}
+func TestScoutCanTruthfullyAbstainWithoutInventingSources(t *testing.T) {
+	c := Candidate{APIVersion: APIVersion, Kind: "ChallengeCandidate", ID: "abstention-fixture", CreatedAt: time.Now(), Producer: "protocol-test", PromptVersion: ScoutVersion, Disposition: "rejected", Sources: []Source{}, Uncertainties: []string{"Necessary primary evidence could not be inspected"}}
+	if err := ValidateCandidate(c); err != nil {
+		t.Fatal(err)
+	}
+	c.Disposition = "viable"
+	if ValidateCandidate(c) == nil {
+		t.Fatal("viable candidate accepted without evidence or manifest")
+	}
+}
 
 func TestStrictYAML(t *testing.T) {
 	for _, input := range []string{"a: 1\na: 2", "a: &x hello\nb: *x", "a: !!str hi", "date: 2026-01-01", "score: .nan", "n: 0x10", "a: 1\n---\nb: 2"} {
@@ -154,6 +163,29 @@ func TestArtifactDigestStableAndSensitive(t *testing.T) {
 	_, b, _ = ArtifactFromFiles(reordered, contract())
 	if a == b {
 		t.Fatal("mutation failed to change digest")
+	}
+}
+
+func TestArchiveTrailerIntegrityAndFramingBudget(t *testing.T) {
+	content := bytes.Repeat([]byte("x"), 2048)
+	c := contract()
+	c.MaxBytes = int64(len(content))
+	c.MaxFiles = 1
+	header := &tar.Header{Name: "data/input.txt", Typeflag: tar.TypeReg, Mode: 0644, Size: int64(len(content))}
+	raw := archive(t, []*tar.Header{header}, [][]byte{content}, false)
+	if _, _, _, err := ReadArtifactArchive(bytes.NewReader(raw), c); err != nil {
+		t.Fatal("valid payload at limit lost its framing budget", err)
+	}
+	if _, _, _, err := ReadArtifactArchive(bytes.NewReader(append(raw, []byte("smuggled")...)), c); err == nil {
+		t.Fatal("nonzero trailing data accepted")
+	}
+	gz := archive(t, []*tar.Header{header}, [][]byte{content}, true)
+	if _, _, _, err := ReadArtifactArchive(bytes.NewReader(gz), c); err != nil {
+		t.Fatal(err)
+	}
+	gz[len(gz)-8] ^= 1
+	if _, _, _, err := ReadArtifactArchive(bytes.NewReader(gz), c); err == nil {
+		t.Fatal("corrupt gzip CRC accepted")
 	}
 }
 

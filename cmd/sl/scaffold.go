@@ -36,6 +36,7 @@ func scaffold(args []string) error {
 		return fmt.Errorf("destination must not exist: %w", err)
 	}
 	m := candidate.Manifest
+	m.VerificationPolicy = protocol.ManifestVerificationPolicy(*m)
 	manifest, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return err

@@ -38,7 +38,7 @@ func TestBoundedGuestFrames(t *testing.T) {
 }
 
 func TestSourceSnapshotRejectsHostileFiles(t *testing.T) {
-	for _, files := range []map[string][]byte{{"../escape.py": nil}, {"safe.py": []byte("-----BEGIN PRIVATE KEY-----")}, {".env": []byte("TOKEN=x")}, {"Dockerfile": []byte("FROM ubuntu")}, {"checker.sh": nil}, {"A.py": nil, "a.py": nil}} {
+	for _, files := range []map[string][]byte{{"../escape.py": nil}, {".GIT/config": nil}, {"safe.py": []byte("-----BEGIN PRIVATE KEY-----")}, {".env": []byte("TOKEN=x")}, {"Dockerfile": []byte("FROM ubuntu")}, {"checker.sh": nil}, {"A.py": nil, "a.py": nil}} {
 		snapshot := SourceSnapshot{RepositoryID: 1, SourceCommit: strings.Repeat("a", 40), Files: files}
 		data, _ := json.Marshal(snapshot)
 		if _, err := ReadSourceSnapshot(data); err == nil {

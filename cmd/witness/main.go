@@ -129,6 +129,11 @@ func run() error {
 			return
 		}
 		out.Header().Set("Content-Type", "application/json")
+		if signature.Payload == "" {
+			out.WriteHeader(http.StatusAccepted)
+			json.NewEncoder(out).Encode(map[string]any{"retained": true, "signed": false})
+			return
+		}
 		json.NewEncoder(out).Encode(map[string]any{"envelope": signature})
 	})
 	server := &http.Server{Addr: *listen, Handler: mux, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 8192}

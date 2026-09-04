@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/matbalez/science-ladder/pkg/protocol"
 	"net/http"
+	"time"
 )
 
 func (s *Server) signer() (crypto.Signer, error) {
@@ -88,6 +89,53 @@ func (s *Server) keys(w http.ResponseWriter, r *http.Request, u *User) error {
 	if err != nil {
 		return err
 	}
-	respond(w, 200, map[string]any{"apiVersion": protocol.APIVersion, "keys": []any{map[string]any{"id": s.Config.ReceiptKeyID, "algorithm": "ECDSA-P256-SHA256", "publicKeyPem": string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der})), "roles": []string{"control-plane-receipt"}, "custody": "configured-online-key"}}, "deploymentMode": s.Config.DeploymentMode, "keyHistory": s.KeyHistory, "witnessQuorum": false, "officialAcceptance": false, "limitations": []string{"Root delegation, external witness quorum, and independent security review are required before production competition."}})
+	custody := "configured-online-key"
+	if s.Config.ReceiptKMSKeyID != "" {
+		custody = "managed-kms"
+	}
+	keys := []any{map[string]any{"id": s.Config.ReceiptKeyID, "algorithm": "ECDSA-P256-SHA256", "publicKeyPem": string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der})), "roles": []string{"control-plane-receipt", "audit-checkpoint"}, "custody": custody}}
+	rows, err := s.DB.Query(r.Context(), `SELECT id,host_group,public_key,enabled FROM runner_hosts ORDER BY id`)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var id, group, pub string
+		var enabled bool
+		if err = rows.Scan(&id, &group, &pub, &enabled); err != nil {
+			rows.Close()
+			return err
+		}
+		if _, err = parseRunnerKey(pub); err != nil {
+			continue
+		}
+		keys = append(keys, map[string]any{"id": id, "hostId": id, "hostGroup": group, "algorithm": "ECDSA-P256-SHA256", "publicKeyPem": pub, "roles": []string{"validation-run"}, "enabled": enabled, "custody": "operator-enrolled-host-key"})
+	}
+	rows.Close()
+	if err = rows.Err(); err != nil {
+		return err
+	}
+	var witnessed *time.Time
+	if err = s.DB.QueryRow(r.Context(), `SELECT max(issued_at) FROM audit_checkpoints WHERE quorum_verified_at IS NOT NULL`).Scan(&witnessed); err != nil {
+		return err
+	}
+	quorum := witnessed != nil && time.Since(*witnessed) <= time.Hour
+	official := false
+	limitations := []string{"Root delegation, external witness quorum, and independent security review are required before production competition."}
+	if s.Config.DeploymentMode == "production" {
+		tx, err := s.DB.Begin(r.Context())
+		if err != nil {
+			return err
+		}
+		gateErr := s.checkProductionAdmission(r.Context(), tx)
+		tx.Rollback(r.Context())
+		official = gateErr == nil
+		if official {
+			limitations = []string{}
+		} else {
+			limitations = []string{"Production admission is paused because a required signed release, custody, delegation, or witness freshness gate is unavailable."}
+		}
+	}
+	respond(w, 200, map[string]any{"apiVersion": protocol.APIVersion, "keys": keys, "deploymentMode": s.Config.DeploymentMode, "keyHistory": s.KeyHistory, "witnessQuorum": quorum, "officialAcceptance": official, "limitations": limitations})
+
 	return nil
 }

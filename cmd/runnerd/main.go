@@ -3,8 +3,11 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/ecdh"
+	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -26,7 +29,7 @@ import (
 func main() {
 	if filepath.Base(os.Args[0]) == "sl-init" || len(os.Args) > 1 && os.Args[1] == "guest-init" {
 		if err := runner.GuestInit(); err != nil {
-			fmt.Fprintln(os.Stderr, "SL_BOOT_ERROR")
+			fmt.Fprintln(os.Stderr, "SL_BOOT_ERROR:", err)
 			os.Exit(1)
 		}
 		return
@@ -42,11 +45,23 @@ func run(args []string) error {
 		fmt.Print(help)
 		return nil
 	}
+	if args[0] == "generate-host-encryption-key" {
+		return generateHostEncryptionKey(args[1:])
+	}
 	if args[0] == "build-rootfs" {
 		return buildRootfs(args[1:])
 	}
 	if args[0] == "local-preflight" {
 		return localPreflight(args[1:])
+	}
+	if args[0] == "runtime-inventory" {
+		return runtimeInventory(args[1:])
+	}
+	if args[0] == "dependency-inventory" {
+		return dependencyInventory(args[1:])
+	}
+	if args[0] == "advisory-check" {
+		return advisoryCheck(args[1:])
 	}
 	f := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	configPath := f.String("config", "", "host configuration JSON")
@@ -54,6 +69,7 @@ func run(args []string) error {
 	hostKeysPath := f.String("host-keys", "", "certified host public keys JSON")
 	keyID := f.String("key-id", "", "host signing key ID")
 	socket := f.String("signer-socket", "", "private host signing agent socket")
+	encryptionKeyPath := f.String("encryption-key", "", "private base64 X25519 host decryption key")
 	jobPath := f.String("job", "", "signed job JSON")
 	out := f.String("out", "", "signed receipt destination")
 	api := f.String("api", "", "runner API origin")
@@ -99,8 +115,38 @@ func run(args []string) error {
 		return errors.New("host signing key not found")
 	}
 	runtime := &runner.Runtime{Config: config, Keys: keys, KeyID: *keyID, Signer: &runner.SocketSigner{KeyID: *keyID, PublicKey: public, SocketPath: *socket}}
+	if *encryptionKeyPath != "" {
+		info, err := os.Stat(*encryptionKeyPath)
+		if err != nil || info.Mode().Perm()&0077 != 0 {
+			return errors.New("private mode 0600 host encryption key required")
+		}
+		data, err := os.ReadFile(*encryptionKeyPath)
+		if err != nil {
+			return err
+		}
+		key, err := base64.StdEncoding.Strict().DecodeString(strings.TrimSpace(string(data)))
+		protocol.ZeroBytes(data)
+		if err != nil || len(key) != 32 {
+			return errors.New("invalid host X25519 private key")
+		}
+		runtime.EncryptionPrivateKey = key
+		defer protocol.ZeroBytes(key)
+	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
+	if args[0] == "hardware-probe" {
+		if *out == "" {
+			return errors.New("--out required")
+		}
+		receipt, probeErr := runtime.HardwareProbe(ctx, os.Stderr)
+		if receipt.Payload == "" {
+			return probeErr
+		}
+		if err := writeNewJSON(*out, receipt); err != nil {
+			return err
+		}
+		return probeErr
+	}
 	if args[0] == "run" {
 		data, err := os.ReadFile(*jobPath)
 		if err != nil {
@@ -305,6 +351,7 @@ func localPreflight(args []string) error {
 	tool := f.String("mksquashfs", "", "pinned mksquashfs executable")
 	digest := f.String("mksquashfs-digest", "", "pinned tool digest")
 	unsafe := f.Bool("unsafe-local", false, "nonofficial local build")
+	scanConfig := f.String("scan-config", "", "platform scan policy config with pinned runtimeInventory, advisorySnapshot and advisoryKeys")
 	if err := f.Parse(args); err != nil {
 		return err
 	}
@@ -332,6 +379,17 @@ func localPreflight(args []string) error {
 	}
 	job := protocol.RunnerJob{Manifest: m, SourceSnapshot: &protocol.ObjectRef{Digest: protocol.DigestBytes(data), Size: int64(len(data))}}
 	builder := runner.Builder{UnsafeLocal: true, MakeSquashFS: runner.PinnedFile{Path: *tool, Digest: *digest}}
+	if *scanConfig != "" {
+		data, err := os.ReadFile(*scanConfig)
+		if err != nil {
+			return err
+		}
+		var config runner.Config
+		if err := protocol.DecodeStrict(data, &config); err != nil {
+			return err
+		}
+		builder.Runtime = &runner.Runtime{Config: config}
+	}
 	report, err := builder.Preflight(context.Background(), job, snapshot, *output)
 	_ = runner.WriteJSON(os.Stdout, map[string]any{"official": false, "report": report})
 	return err
@@ -339,14 +397,19 @@ func localPreflight(args []string) error {
 
 const help = `Science Ladder isolated validation daemon
 
+  runnerd runtime-inventory --image IMAGE@sha256:DIGEST --out NEW_FILE
+  runnerd dependency-inventory --runtime-inventory FILE --snapshot FILE --out NEW_FILE
+  runnerd advisory-check --runtime-inventory FILE --snapshot UNSIGNED_DRAFT --out NEW_FILE
+  runnerd generate-host-encryption-key --private-out NEW_PRIVATE_FILE --public-out NEW_PUBLIC_FILE
   runnerd build-rootfs --python-image IMAGE@sha256:DIGEST --tools-image IMAGE@sha256:DIGEST
       --guest-init ./runnerd-linux-amd64 --out NEW_DIRECTORY
   runnerd config-digest --config host.json
   runnerd host-check --config host.json --keys platform-keys.json
   runnerd serve --config host.json --keys platform-keys.json --host-keys host-keys.json
-      --key-id HOST_KEY --signer-socket /run/science-ladder/sign.sock
+      --key-id HOST_KEY --signer-socket /run/science-ladder/sign.sock --encryption-key host-x25519.key
       --api https://RUNNER-API --tls-cert host.crt --tls-key host.key --tls-ca ca.crt
   runnerd run [same host/signing options] --job signed-job.json --out receipt.json
+  runnerd hardware-probe [same host/signing options] --out NEW_RECEIPT_FILE
   runnerd local-preflight --unsafe-local --manifest science-ladder.yaml
       --snapshot source-snapshot.json --out NEW_DIRECTORY
       --mksquashfs /absolute/path --mksquashfs-digest sha256:...
@@ -367,4 +430,36 @@ func buildRootfs(args []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
 	return runner.BuildRootFS(ctx, *python, *tools, *guest, *out)
+}
+
+func generateHostEncryptionKey(args []string) error {
+	f := flag.NewFlagSet("generate-host-encryption-key", flag.ContinueOnError)
+	privateOut := f.String("private-out", "", "new private key file")
+	publicOut := f.String("public-out", "", "new public key file")
+	if err := f.Parse(args); err != nil {
+		return err
+	}
+	if *privateOut == "" || *publicOut == "" {
+		return errors.New("both output paths required")
+	}
+	key, err := ecdh.X25519().GenerateKey(rand.Reader)
+	if err != nil {
+		return err
+	}
+	private, err := os.OpenFile(*privateOut, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	_, err = private.WriteString(base64.StdEncoding.EncodeToString(key.Bytes()) + "\n")
+	_ = private.Close()
+	if err != nil {
+		return err
+	}
+	public, err := os.OpenFile(*publicOut, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer public.Close()
+	_, err = public.WriteString(base64.StdEncoding.EncodeToString(key.PublicKey().Bytes()) + "\n")
+	return err
 }

@@ -47,7 +47,7 @@ func ValidatePath(value string) error {
 		}
 	}
 	for _, part := range strings.Split(value, "/") {
-		if part == ".git" || strings.HasPrefix(part, ".git") || strings.HasSuffix(part, ".") || strings.HasSuffix(part, " ") {
+		if strings.EqualFold(part, ".git") || strings.HasSuffix(part, ".") || strings.HasSuffix(part, " ") {
 			return errors.New("reserved path component")
 		}
 	}
@@ -213,7 +213,10 @@ func ReadArtifactArchive(input io.Reader, c SubmissionContract) (map[string][]by
 	if err := ValidateSubmissionContract(c); err != nil {
 		return nil, ArtifactTree{}, "", err
 	}
-	counted := &countingReader{r: io.LimitReader(input, c.MaxBytes+1)}
+	// Payload bytes and archive framing have separate budgets. A file at the
+	// declared payload limit still needs room for its tar headers and end blocks.
+	archiveBudget := c.MaxBytes + int64(c.MaxFiles)*4096 + 1024
+	counted := &countingReader{r: io.LimitReader(input, archiveBudget+1)}
 	buffered := bufio.NewReader(counted)
 	magic, _ := buffered.Peek(2)
 	var stream io.Reader = buffered
@@ -227,7 +230,8 @@ func ReadArtifactArchive(input io.Reader, c SubmissionContract) (map[string][]by
 		stream = gz
 		compressed = true
 	}
-	t := tar.NewReader(io.LimitReader(stream, c.MaxBytes+int64(c.MaxFiles)*4096+1))
+	decoded := &io.LimitedReader{R: stream, N: archiveBudget + 1}
+	t := tar.NewReader(decoded)
 	files := map[string][]byte{}
 	seen := map[string]bool{}
 	var total int64
@@ -277,7 +281,24 @@ func ReadArtifactArchive(input io.Reader, c SubmissionContract) (map[string][]by
 			return fail(errors.New("archive decompression ratio exceeds 100"))
 		}
 	}
-	if counted.n > c.MaxBytes {
+	// Drain bounded zero padding to verify a gzip trailer/CRC. tar.Reader stops
+	// at its own end blocks, before gzip necessarily validates the checksum.
+	padding := make([]byte, 8192)
+	for {
+		n, readErr := decoded.Read(padding)
+		for _, value := range padding[:n] {
+			if value != 0 {
+				return fail(errors.New("nonzero data after tar end marker"))
+			}
+		}
+		if readErr == io.EOF {
+			break
+		}
+		if readErr != nil {
+			return fail(readErr)
+		}
+	}
+	if decoded.N == 0 || counted.n > archiveBudget {
 		return fail(errors.New("compressed archive exceeds limit"))
 	}
 	tree, digest, err := treeFor(files, c)

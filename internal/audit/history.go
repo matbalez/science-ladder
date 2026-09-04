@@ -38,6 +38,17 @@ type History struct {
 	Witnesses               []WitnessIdentity `json:"witnesses"`
 	WitnessQuorum           int               `json:"witnessQuorum"`
 	OutageGraceSeconds      int               `json:"outageGraceSeconds"`
+	priorWitnesses          *witnessMembership
+}
+
+// This lineage is reconstructed only while verifying the complete signed chain.
+// It is deliberately absent from the signed JSON, and owns copies of membership
+// lists so later caller changes cannot rewrite a verified historical epoch.
+type witnessMembership struct {
+	issuedAt  time.Time
+	witnesses []WitnessIdentity
+	genesis   bool
+	previous  *witnessMembership
 }
 
 func ParsePublicKey(text string) (crypto.PublicKey, error) {
@@ -159,6 +170,12 @@ func VerifyHistory(envelope protocol.Envelope, rootID string, root crypto.Public
 				return h, errors.New("a revocation cannot be withdrawn or rewritten")
 			}
 		}
+		h.priorWitnesses = &witnessMembership{
+			issuedAt:  previous.IssuedAt,
+			witnesses: append([]WitnessIdentity(nil), previous.Witnesses...),
+			genesis:   previous.PreviousDigest == Genesis,
+			previous:  previous.priorWitnesses,
+		}
 	}
 	return h, nil
 }
@@ -184,6 +201,28 @@ func (h History) WitnessOperators() map[string]string {
 		m[w.KeyID] = w.Operator
 	}
 	return m
+}
+
+// WitnessOperatorsAt selects the root-authorized membership effective when the
+// checkpoint was issued. The bootstrap membership also covers its pinned genesis,
+// which can precede issuance of the first history; key validity is checked by
+// KeysAt separately. A non-bootstrap history without its verified lineage cannot
+// establish membership for earlier checkpoints.
+func (h History) WitnessOperatorsAt(at time.Time) map[string]string {
+	witnesses, issuedAt := h.Witnesses, h.IssuedAt
+	genesis, previous := h.PreviousDigest == Genesis, h.priorWitnesses
+	for at.Before(issuedAt) && previous != nil {
+		witnesses, issuedAt, genesis = previous.witnesses, previous.issuedAt, previous.genesis
+		previous = previous.previous
+	}
+	result := map[string]string{}
+	if at.Before(issuedAt) && !genesis {
+		return result
+	}
+	for _, witness := range witnesses {
+		result[witness.KeyID] = witness.Operator
+	}
+	return result
 }
 
 // IntakeAllowed applies the one-hour grace only after a verified quorum has

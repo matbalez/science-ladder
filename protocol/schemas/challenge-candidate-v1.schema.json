@@ -52,7 +52,10 @@
           "type": "string"
         },
         "promptVersion": {
-          "const": "1.0.0"
+          "enum": [
+            "1.1.0",
+            "1.0.0"
+          ]
         },
         "rejectedAlternatives": {
           "items": {
@@ -236,6 +239,12 @@
         },
         "validator": {
           "$ref": "#/$defs/Validator"
+        },
+        "verificationPolicy": {
+          "enum": [
+            "platform",
+            "independent"
+          ]
         }
       },
       "required": [
@@ -403,7 +412,15 @@
           "maxLength": 131072,
           "type": "string"
         },
+        "identifier": {
+          "maxLength": 131072,
+          "type": "string"
+        },
         "location": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "publicationDate": {
           "maxLength": 131072,
           "type": "string"
         },

@@ -37,7 +37,9 @@ func Schema(name string) (map[string]any, error) {
 		case reflect.Interface:
 			return map[string]any{}
 		case reflect.Slice:
-			if t.Elem().Kind()==reflect.Uint8{return map[string]any{"type":"string","contentEncoding":"base64","maxLength":8192}}
+			if t.Elem().Kind() == reflect.Uint8 {
+				return map[string]any{"type": "string", "contentEncoding": "base64", "maxLength": 8192}
+			}
 			return map[string]any{"type": "array", "items": describe(t.Elem()), "maxItems": 4096}
 		case reflect.Map:
 			return map[string]any{"type": "object", "additionalProperties": describe(t.Elem()), "maxProperties": 128}
@@ -73,6 +75,12 @@ func Schema(name string) (map[string]any, error) {
 					if key == "deploymentMode" {
 						property = map[string]any{"enum": []string{"controlled-demo", "production"}}
 					}
+					if key == "verificationPolicy" {
+						property = map[string]any{"enum": []string{VerificationPlatform, VerificationIndependent}}
+					}
+					if key == "verificationStatus" {
+						property = map[string]any{"enum": []string{StatusPlatformVerified, StatusIndependentlyReplicated}}
+					}
 					properties[key] = property
 				}
 				definitions[t.Name()] = map[string]any{"type": "object", "additionalProperties": false, "properties": properties, "required": required}
@@ -98,7 +106,7 @@ func Schema(name string) (map[string]any, error) {
 	for typ, kind := range map[string]string{"Candidate": "ChallengeCandidate", "Manifest": "ChallengeManifest", "ValidatorResult": "ValidatorResult", "RunnerJob": "ValidationJob", "RunReceipt": "ValidationRunReceipt", "Lock": "ChallengeLockReceipt", "ArtifactTree": "ScienceLadderArtifactTree"} {
 		set(typ, "kind", map[string]any{"const": kind})
 	}
-	set("Candidate", "promptVersion", map[string]any{"const": ScoutVersion})
+	set("Candidate", "promptVersion", map[string]any{"enum": []string{ScoutVersion, "1.0.0"}})
 	set("Candidate", "disposition", map[string]any{"enum": []string{"viable", "needs_work", "rejected"}})
 	if c, ok := definitions["Candidate"].(map[string]any); ok {
 		c["allOf"] = []any{map[string]any{"if": map[string]any{"properties": map[string]any{"disposition": map[string]any{"const": "viable"}}}, "then": map[string]any{"required": []string{"manifest"}}}}

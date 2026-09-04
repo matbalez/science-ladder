@@ -1,0 +1,21 @@
+[Unit]
+Description=Science Ladder host-specific signing service
+Requires=science-ladder-host-controls.service
+After=science-ladder-host-controls.service
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/science-ladder/host-signer.env
+ExecStart=/opt/science-ladder/host-signer --socket /run/science-ladder-signer/sign.sock --mode controlled-demo --key-id ${HOST_KEY_ID} --key-file /etc/science-ladder/host-signing.pem
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/run/science-ladder-signer
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Server) queuePreparation(ctx context.Context, tx pgx.Tx, purpose, id, version, source, artifact string, m protocol.Manifest) error {
-	job := protocol.RunnerJob{DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "ValidationJob", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", Purpose: purpose, ArtifactDigest: artifact, RunnerEpoch: "1", FencingToken: 1, Manifest: m, SourceSnapshot: &protocol.ObjectRef{Digest: source}}
+	job := protocol.RunnerJob{VerificationPolicy: protocol.ManifestVerificationPolicy(m), DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "ValidationJob", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", Purpose: purpose, ArtifactDigest: artifact, RunnerEpoch: "1", FencingToken: 1, Manifest: m, SourceSnapshot: &protocol.ObjectRef{Digest: source}}
 	if purpose == "preflight" {
 		_, err := tx.Exec(ctx, `INSERT INTO runner_jobs(id,purpose,version_id,preflight_id,payload) SELECT $1,'preflight',$2,$3,$4 WHERE NOT EXISTS(SELECT 1 FROM runner_jobs WHERE preflight_id=$3)`, job.ID, version, id, raw(job))
 		return err
@@ -33,7 +33,7 @@ func (s *Server) runnerObject(w http.ResponseWriter, r *http.Request, host runne
 	if err := readJSON(r, &in); err != nil {
 		return err
 	}
-	if in.Role != "validatorDisk" && in.Role != "challengeDisk" && in.Role != "suiteDisk" && in.Role != "submissionDisk" {
+	if in.Role != "validatorDisk" && in.Role != "challengeDisk" && in.Role != "suiteDisk" && in.Role != "submissionDisk" && in.Role != "sbom" {
 		return fail(422, "object_role_invalid", "Prepared object role is not allowed")
 	}
 	if in.Size <= 0 || in.Size > 1<<30 {
@@ -72,7 +72,7 @@ func (s *Server) verifyBuildObjects(ctx context.Context, jobID string, build *pr
 	if build == nil {
 		return fail(422, "build_report_required", "Preparation requires a typed signed build report")
 	}
-	refs := map[string]*protocol.ObjectRef{"validatorDisk": build.ValidatorDisk, "challengeDisk": build.ChallengeDisk, "suiteDisk": build.SuiteDisk, "submissionDisk": build.SubmissionDisk}
+	refs := map[string]*protocol.ObjectRef{"validatorDisk": build.ValidatorDisk, "challengeDisk": build.ChallengeDisk, "suiteDisk": build.SuiteDisk, "submissionDisk": build.SubmissionDisk, "sbom": build.SBOM}
 	for role, ref := range refs {
 		if ref == nil {
 			continue
@@ -112,11 +112,20 @@ func validateBuild(job protocol.RunnerJob, run protocol.RunReceipt) error {
 		}
 		return nil
 	}
-	if b.ValidatorDisk == nil || b.ChallengeDisk == nil || b.SuiteDisk == nil || b.ValidatorDisk.Digest != b.ValidatorDiskDigest || b.SuiteDisk.Digest != b.SuiteDigest || b.ValidatorDiskDigest != b.RebuiltValidatorDiskDigest || !b.OfflineRebuild || !b.HostileCorpusPassed {
+	if b.ValidatorDisk == nil || b.ChallengeDisk == nil || b.SuiteDisk == nil || b.ValidatorDisk.Digest != b.ValidatorDiskDigest || (job.Manifest.Suite.Visibility == "public" && b.SuiteDisk.Digest != b.SuiteDigest) || (job.Manifest.Suite.Visibility == "hidden" && b.SuiteDigest != job.Manifest.Suite.Commitment) || b.ValidatorDiskDigest != b.RebuiltValidatorDiskDigest || !b.OfflineRebuild || !b.HostileCorpusPassed {
 		return fail(422, "reproducibility_failed", "Preflight requires matching offline rebuilds, immutable disk bindings, and the hostile corpus")
 	}
 	if b.ValidatorImageDigest != job.Manifest.Validator.RuntimeImageDigest {
 		return fail(422, "runtime_image_mismatch", "Preflight runtime differs from the locked validator runtime")
+	}
+	scan := b.VulnerabilityScan
+	if b.SBOM == nil || scan == nil || scan.Status != "pass" || scan.PolicyVersion != "offline-advisory-v1" || scan.PackagesChecked < 1 || scan.AdvisorySnapshotDigest != job.AdvisorySnapshotDigest || scan.RuntimeInventoryDigest != job.RuntimeInventoryDigest || scan.SBOMDigest != b.SBOM.Digest || !protocol.ValidDigest(scan.AdvisorySnapshotDigest) || !protocol.ValidDigest(scan.RuntimeInventoryDigest) || scan.ScannedAt.After(time.Now().Add(5*time.Minute)) || scan.ScannedAt.Before(time.Now().Add(-7*24*time.Hour)) {
+		return fail(422, "vulnerability_scan_required", "Preflight requires a current passing signed vulnerability report over the complete runtime inventory and uploaded SBOM")
+	}
+	for _, finding := range scan.Findings {
+		if finding.Severity == "high" || finding.Severity == "critical" {
+			return fail(422, "vulnerability_policy_failed", "Unresolved high or critical vulnerabilities block publication")
+		}
 	}
 	fixtures := map[string]protocol.FixtureReport{}
 	for _, f := range b.Fixtures {
@@ -169,7 +178,7 @@ func (s *Server) commitBuild(ctx context.Context, tx pgx.Tx, job protocol.Runner
 			return err
 		}
 	}
-	refs := []*protocol.ObjectRef{b.ValidatorDisk, b.ChallengeDisk, b.SuiteDisk, b.SubmissionDisk}
+	refs := []*protocol.ObjectRef{b.ValidatorDisk, b.ChallengeDisk, b.SuiteDisk, b.SubmissionDisk, b.SBOM}
 	for _, ref := range refs {
 		if ref == nil {
 			continue
@@ -181,7 +190,12 @@ func (s *Server) commitBuild(ctx context.Context, tx pgx.Tx, job protocol.Runner
 		if !verified {
 			return fail(409, "object_verification_pending", "Uploaded disk must be independently verified")
 		}
-		if _, err := tx.Exec(ctx, `INSERT INTO artifacts(digest,blob_digest,size,media_type,owner_id) VALUES($1,$1,$2,'application/vnd.squashfs',$3) ON CONFLICT DO NOTHING`, ref.Digest, ref.Size, owner); err != nil {
+		if _, err := tx.Exec(ctx, `INSERT INTO artifacts(digest,blob_digest,size,media_type,owner_id) VALUES($1,$1,$2,$4,$3) ON CONFLICT DO NOTHING`, ref.Digest, ref.Size, owner, func() string {
+			if ref == b.SBOM {
+				return "application/spdx+json"
+			}
+			return "application/vnd.squashfs"
+		}()); err != nil {
 			return err
 		}
 	}
@@ -195,33 +209,45 @@ func (s *Server) commitBuild(ctx context.Context, tx pgx.Tx, job protocol.Runner
 	if preflight == nil {
 		return errors.New("preflight id missing")
 	}
-	var previous []byte
-	var previousDigest string
-	err := tx.QueryRow(ctx, `SELECT rr.result,rr.digest FROM runner_results rr JOIN runner_jobs j ON j.id=rr.job_id WHERE j.preflight_id=$1 AND j.id<>$2 ORDER BY rr.created_at LIMIT 1`, *preflight, job.ID).Scan(&previous, &previousDigest)
-	if errors.Is(err, pgx.ErrNoRows) {
-		next := job
-		next.ID = ID()
-		next.CreatedAt = time.Now().UTC()
-		next.RequiredHostGroup = ""
-		next.ExcludedHostIDs = []string{run.HostID}
-		next.FencingToken = 1
-		if _, err = tx.Exec(ctx, `INSERT INTO runner_jobs(id,purpose,version_id,preflight_id,payload,excluded_group) VALUES($1,'preflight',$2,$3,$4,$5)`, next.ID, version, *preflight, raw(next), run.HostGroup); err != nil {
+	policy := protocol.JobVerificationPolicy(job)
+	if !protocol.ValidVerificationPolicy(policy) {
+		return fail(422, "verification_policy_invalid", "Unknown signed verification policy")
+	}
+	runDigests := []string{digest}
+	groups := []string{run.HostGroup}
+	status := "platform_verified"
+	if policy == protocol.VerificationIndependent {
+		var previous []byte
+		var previousDigest string
+		err := tx.QueryRow(ctx, `SELECT rr.result,rr.digest FROM runner_results rr JOIN runner_jobs j ON j.id=rr.job_id WHERE j.preflight_id=$1 AND j.id<>$2 ORDER BY rr.created_at LIMIT 1`, *preflight, job.ID).Scan(&previous, &previousDigest)
+		if errors.Is(err, pgx.ErrNoRows) {
+			next := job
+			next.ID = ID()
+			next.CreatedAt = time.Now().UTC()
+			next.RequiredHostGroup = ""
+			next.ExcludedHostIDs = []string{run.HostID}
+			next.FencingToken = 1
+			if _, err = tx.Exec(ctx, `INSERT INTO runner_jobs(id,purpose,version_id,preflight_id,payload,excluded_group) VALUES($1,'preflight',$2,$3,$4,$5)`, next.ID, version, *preflight, raw(next), run.HostGroup); err != nil {
+				return err
+			}
+			_, err = tx.Exec(ctx, `UPDATE preflights SET status='independent_confirmation',reports=$2 WHERE id=$1`, *preflight, raw(b))
 			return err
 		}
-		_, err = tx.Exec(ctx, `UPDATE preflights SET status='independent_confirmation' WHERE id=$1`, *preflight)
-		return err
+		if err != nil {
+			return err
+		}
+		var first protocol.RunReceipt
+		if err = json.Unmarshal(previous, &first); err != nil {
+			return err
+		}
+		if first.VerificationPolicy != run.VerificationPolicy || first.Outcome != "valid" || first.HostGroup == run.HostGroup || first.HostID == run.HostID || first.BuildReport == nil || first.BuildReport.SuiteDisk == nil || first.BuildReport.SuiteDisk.Digest != b.SuiteDisk.Digest || first.BuildReport.ValidatorDiskDigest != b.ValidatorDiskDigest || first.BuildReport.SuiteDigest != b.SuiteDigest || first.ExecutionProfileDigest != run.ExecutionProfileDigest {
+			return fail(422, "independent_build_disagreement", "Independent preflight hosts must agree on immutable build outputs")
+		}
+		runDigests = []string{previousDigest, digest}
+		groups = []string{first.HostGroup, run.HostGroup}
+		status = "independently_replicated"
 	}
-	if err != nil {
-		return err
-	}
-	var first protocol.RunReceipt
-	if err = json.Unmarshal(previous, &first); err != nil {
-		return err
-	}
-	if first.HostGroup == run.HostGroup || first.BuildReport == nil || first.BuildReport.ValidatorDiskDigest != b.ValidatorDiskDigest || first.BuildReport.SuiteDigest != b.SuiteDigest || first.ExecutionProfileDigest != run.ExecutionProfileDigest {
-		return fail(422, "independent_build_disagreement", "Independent preflight hosts disagree on immutable build outputs")
-	}
-	receipt := protocol.Receipt{DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "MachineConformanceReceipt", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", SubjectDigest: job.SourceSnapshot.Digest, EconomicMode: "none", Data: map[string]any{"versionId": version, "buildReport": b, "runDigests": []string{previousDigest, digest}, "independentHostGroups": []string{first.HostGroup, run.HostGroup}}}
+	receipt := protocol.Receipt{VerificationPolicy: policy, VerificationStatus: status, DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "MachineConformanceReceipt", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", SubjectDigest: job.SourceSnapshot.Digest, EconomicMode: "none", Data: map[string]any{"versionId": version, "buildReport": b, "runDigests": runDigests, "hostGroups": groups, "independentReplication": policy == protocol.VerificationIndependent}}
 	receiptDigest, err := protocol.Digest(receipt)
 	if err != nil {
 		return err

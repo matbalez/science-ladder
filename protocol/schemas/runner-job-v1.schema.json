@@ -28,6 +28,63 @@
       ],
       "type": "object"
     },
+    "HiddenSuiteGrant": {
+      "additionalProperties": false,
+      "properties": {
+        "commitment": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "keyCapsule": {
+          "$ref": "#/$defs/KeyCapsule"
+        },
+        "source": {
+          "$ref": "#/$defs/ObjectRef"
+        }
+      },
+      "required": [
+        "source",
+        "commitment",
+        "keyCapsule"
+      ],
+      "type": "object"
+    },
+    "KeyCapsule": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "ciphertext": {
+          "contentEncoding": "base64",
+          "maxLength": 8192,
+          "type": "string"
+        },
+        "contextDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "ephemeralPublicKey": {
+          "contentEncoding": "base64",
+          "maxLength": 8192,
+          "type": "string"
+        },
+        "nonce": {
+          "contentEncoding": "base64",
+          "maxLength": 8192,
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "ephemeralPublicKey",
+        "nonce",
+        "ciphertext",
+        "contextDigest"
+      ],
+      "type": "object"
+    },
     "Manifest": {
       "additionalProperties": false,
       "properties": {
@@ -135,6 +192,12 @@
         },
         "validator": {
           "$ref": "#/$defs/Validator"
+        },
+        "verificationPolicy": {
+          "enum": [
+            "platform",
+            "independent"
+          ]
         }
       },
       "required": [
@@ -322,6 +385,10 @@
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
         },
+        "advisorySnapshotDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
         "apiVersion": {
           "const": "science-ladder/v1"
         },
@@ -367,6 +434,9 @@
           "minimum": 0,
           "type": "integer"
         },
+        "hiddenSuite": {
+          "$ref": "#/$defs/HiddenSuiteGrant"
+        },
         "id": {
           "maxLength": 131072,
           "type": "string"
@@ -379,6 +449,10 @@
         },
         "officialAcceptance": {
           "type": "boolean"
+        },
+        "parentJobDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
         },
         "producer": {
           "maxLength": 131072,
@@ -400,6 +474,10 @@
           "maxLength": 131072,
           "type": "string"
         },
+        "runtimeInventoryDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
         "sourceSnapshot": {
           "$ref": "#/$defs/ObjectRef"
         },
@@ -419,6 +497,12 @@
         },
         "validatorDisk": {
           "$ref": "#/$defs/ObjectRef"
+        },
+        "verificationPolicy": {
+          "enum": [
+            "platform",
+            "independent"
+          ]
         }
       },
       "required": [
@@ -458,7 +542,15 @@
           "maxLength": 131072,
           "type": "string"
         },
+        "identifier": {
+          "maxLength": 131072,
+          "type": "string"
+        },
         "location": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "publicationDate": {
           "maxLength": 131072,
           "type": "string"
         },

@@ -48,6 +48,13 @@ func BuildRootFS(ctx context.Context, pythonImage, toolsImage, guestInit, output
 	if err := os.WriteFile(filepath.Join(work, "build.sh"), rootfsScript, 0400); err != nil {
 		return err
 	}
+	initBytes, err := os.ReadFile(guestInit)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(work, "sl-init"), initBytes, 0500); err != nil {
+		return err
+	}
 	name := fmt.Sprintf("sl-rootfs-source-%d", time.Now().UnixNano())
 	logs := &boundedBuffer{max: 65536}
 	run := func(args ...string) error {
@@ -72,9 +79,9 @@ func BuildRootFS(ctx context.Context, pythonImage, toolsImage, guestInit, output
 			return errors.New("unsupported build mount path")
 		}
 	}
-	args := []string{"run", "--rm", "--network=none", "--read-only", "--cap-drop=ALL", "--security-opt=no-new-privileges", "--pids-limit=128", "--memory=3g", "--cpus=2", "--platform=linux/amd64", "--tmpfs", "/work:rw,nosuid,nodev,size=2g", "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m", "--mount", "type=bind,src=" + work + ",dst=/input,readonly", "--mount", "type=bind,src=" + guestInit + ",dst=/input/sl-init,readonly", "--mount", "type=bind,src=" + output + ",dst=/output", "--entrypoint", "/bin/sh", toolsImage, "/input/build.sh"}
+	args := []string{"run", "--rm", "--network=none", "--read-only", "--cap-drop=ALL", "--security-opt=no-new-privileges", "--pids-limit=128", "--memory=3g", "--cpus=2", "--platform=linux/amd64", "--tmpfs", "/work:rw,nosuid,nodev,size=2g", "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m", "--mount", "type=bind,src=" + work + ",dst=/input,readonly", "--mount", "type=bind,src=" + output + ",dst=/output", "--entrypoint", "/bin/sh", toolsImage, "/input/build.sh"}
 	if err := run(args...); err != nil {
-		return fmt.Errorf("platform rootfs composition failed: %w", err)
+		return fmt.Errorf("platform rootfs composition failed: %w: %s", err, logs.b.String())
 	}
 	image := filepath.Join(output, "rootfs.ext4")
 	info, err = os.Lstat(image)

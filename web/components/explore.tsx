@@ -197,6 +197,23 @@ export function Explore() {
         </div>
       </section>
       <section className="challenge-directory">
+        <div className="panel" style={{ marginBottom: "2rem" }}>
+          <div className="section-kicker">
+            FIRST SHOWCASE · MATHEMATICS & SIGNAL PHYSICS
+          </div>
+          <h2>Quiet Echoes: 512 signs, cleaner signals.</h2>
+          <p>
+            Explore a reproduced published pulse, see its ghost echoes, and load
+            your own candidate. The challenge ranks exact sidelobe energy; every
+            milestone asks for an improvement over the reference.
+          </p>
+          <a
+            className="button primary"
+            href="/showcase/quiet-echoes/index.html"
+          >
+            Explore the signal <ArrowUpRight size={16} />
+          </a>
+        </div>
         <div className="section-title">
           <h2>
             Explore challenges{" "}

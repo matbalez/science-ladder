@@ -185,7 +185,10 @@ func (s *Server) checkpointTick(ctx context.Context) error {
 	return err
 }
 func (s *Server) publicCheckpoints(w http.ResponseWriter, r *http.Request, u *User) error {
-	after, _ := strconv.ParseInt(r.URL.Query().Get("after"), 10, 64)
+	after, parseErr := strconv.ParseInt(r.URL.Query().Get("after"), 10, 64)
+	if r.URL.Query().Get("after") != "" && (parseErr != nil || after < 0) {
+		return fail(400, "cursor_invalid", "Checkpoint cursor must be a nonnegative integer")
+	}
 	if digest := r.URL.Query().Get("afterDigest"); digest != "" {
 		if r.URL.Query().Get("after") != "" {
 			return fail(400, "cursor_ambiguous", "Use afterDigest or after, not both")
@@ -282,7 +285,7 @@ func (s *Server) witnessReceipt(w http.ResponseWriter, r *http.Request, u *User)
 		return fail(401, "witness_signature_invalid", "Witness signature or delegation is invalid")
 	}
 	id := in.Envelope.Signatures[0].KeyID
-	if s.TrustHistory.WitnessOperators()[id] == "" {
+	if s.TrustHistory.WitnessOperatorsAt(issued)[id] == "" {
 		return fail(403, "witness_not_registered", "Witness is not part of the configured independent quorum")
 	}
 	tx, err := s.DB.Begin(r.Context())
@@ -308,7 +311,7 @@ func (s *Server) witnessReceipt(w http.ResponseWriter, r *http.Request, u *User)
 		}
 		witnesses = append(witnesses, e)
 	}
-	quorum := logaudit.VerifyQuorum(platformEnvelope, witnesses, keys, s.TrustHistory.WitnessOperators(), 2) == nil
+	quorum := logaudit.VerifyQuorum(platformEnvelope, witnesses, keys, s.TrustHistory.WitnessOperatorsAt(issued), 2) == nil
 	if quorum {
 		if _, err = tx.Exec(r.Context(), `UPDATE audit_checkpoints SET quorum_verified_at=COALESCE(quorum_verified_at,now()) WHERE digest=$1`, r.PathValue("digest")); err != nil {
 			return err

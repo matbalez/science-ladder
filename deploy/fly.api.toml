@@ -15,6 +15,19 @@ kill_timeout = "30s"
   S3_BUCKET = "science-ladder-cas"
   S3_REGION = "auto"
   S3_ENDPOINT = "https://t3.storage.dev"
+  RUNNER_LISTEN_ADDR = ":8443"
+  RUNNER_TLS_CERT = "/app/runner-server.crt"
+  RUNNER_TLS_KEY = "/app/runner-server.key"
+
+[[files]]
+  guest_path = "/app/runner-server.crt"
+  secret_name = "RUNNER_TLS_CERT_B64"
+  processes = ["api"]
+
+[[files]]
+  guest_path = "/app/runner-server.key"
+  secret_name = "RUNNER_TLS_KEY_B64"
+  processes = ["api"]
 
 [processes]
   api = "/app/api"
@@ -46,3 +59,16 @@ kill_timeout = "30s"
   cpus = 1
   memory = "512mb"
   processes = ["api", "worker"]
+
+# Raw TCP preserves TLS 1.3 client-certificate verification in the Go service.
+[[services]]
+  protocol = "tcp"
+  internal_port = 8443
+  processes = ["api"]
+  [[services.ports]]
+    port = 8443
+    handlers = []
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "20s"

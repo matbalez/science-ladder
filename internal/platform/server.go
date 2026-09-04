@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	logaudit "github.com/matbalez/science-ladder/internal/audit"
+	secretbox "github.com/matbalez/science-ladder/internal/secrets"
 	"github.com/matbalez/science-ladder/internal/signing"
 	"github.com/matbalez/science-ladder/internal/storage"
 	"github.com/matbalez/science-ladder/migrations"
@@ -25,6 +27,7 @@ import (
 )
 
 type Server struct {
+	SuiteSealer     SecretSealer
 	TrustedRootKey  crypto.PublicKey
 	ReleaseEnvelope *protocol.Envelope
 	TrustHistory    *logaudit.History
@@ -86,6 +89,25 @@ func New(ctx context.Context, c Config) (*Server, error) {
 		return nil, err
 	}
 	server := &Server{DB: db, Store: st, Config: c, HTTP: &http.Client{Timeout: c.HTTPTimeout}, ReceiptSigner: receiptSigner}
+	if c.HiddenSuiteKMSKeyID != "" {
+		server.SuiteSealer, err = secretbox.NewAWS(ctx, c.HiddenSuiteKMSRegion, c.HiddenSuiteKMSKeyID)
+		if err != nil {
+			db.Close()
+			return nil, err
+		}
+	} else if c.HiddenSuiteMasterKey != "" {
+		key, e := base64.StdEncoding.Strict().DecodeString(c.HiddenSuiteMasterKey)
+		if e != nil || len(key) != 32 {
+			db.Close()
+			return nil, errors.New("HIDDEN_SUITE_MASTER_KEY must be a base64 32-byte key")
+		}
+		server.SuiteSealer, err = secretbox.NewLocal(key, c.DeploymentMode)
+		if err != nil {
+			db.Close()
+			return nil, err
+		}
+	}
+
 	if err = server.loadTrust(); err != nil {
 		db.Close()
 		return nil, err
@@ -296,6 +318,11 @@ func (s *Server) Handler() http.Handler {
 		defer cancel()
 		if err := s.DB.Ping(ctx); err != nil {
 			respond(w, 503, map[string]string{"status": "database_unavailable"})
+			return
+		}
+		var migrated bool
+		if err := s.DB.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM schema_migrations WHERE version=$1)`, migrations.Latest()).Scan(&migrated); err != nil || !migrated {
+			respond(w, 503, map[string]string{"status": "migration_required"})
 			return
 		}
 		respond(w, 200, map[string]string{"status": "ready"})

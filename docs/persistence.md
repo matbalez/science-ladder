@@ -12,6 +12,8 @@ The GitHub repository hosts source code and reviewable challenge packages. A for
 
 The reference application uses a dedicated Fly Managed Postgres 17 cluster in `sjc`, with the web/API/worker in the same region. Tigris is S3-compatible and billed through Fly.io. The application keeps no authoritative data on a Fly Machine's ephemeral filesystem.
 
+Tigris snapshot support is enabled for the private artifact bucket. Its vendor API uses a bucket-type setting rather than the ordinary S3 versioning toggle; `scripts/tigris-snapshots.go` performs an authenticated update and reads back the resulting setting. Retention and restore exercises remain separate operational requirements.
+
 Configure the managed database connection through a Fly secret. Database credentials are never present in the web app. Only the control API and worker have broad object-store credentials; verification hosts receive short-lived reads for the exact job inputs.
 
 ## Recovery procedure

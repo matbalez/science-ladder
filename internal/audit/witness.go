@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -18,28 +19,38 @@ import (
 const MaxBundleBytes = 8 << 20
 
 type witnessedRecord struct {
-	Bundle    Bundle            `json:"bundle"`
-	Signature protocol.Envelope `json:"signature"`
+	Bundle     Bundle             `json:"bundle"`
+	Signature  *protocol.Envelope `json:"signature,omitempty"`
+	Historical bool               `json:"historical,omitempty"`
 }
 
 // Witness serializes observations, pins its predecessor durably, and will never
 // countersign two competing successors. Its journal belongs to its own operator.
 type Witness struct {
-	mu         sync.Mutex
-	journal    *os.File
-	keyID      string
-	key        crypto.Signer
-	history    History
-	last       *Checkpoint
-	lastRecord *witnessedRecord
-	poisoned   bool
+	mu          sync.Mutex
+	journal     *os.File
+	syncJournal func() error
+	keyID       string
+	key         crypto.Signer
+	history     History
+	last        *Checkpoint
+	lastRecord  *witnessedRecord
+	poisoned    bool
 }
 
 func OpenWitness(path, keyID string, key crypto.Signer, verifiedHistory History) (*Witness, error) {
+	return openWitness(path, keyID, key, verifiedHistory, syncDirectory)
+}
+
+func openWitness(path, keyID string, key crypto.Signer, verifiedHistory History, syncDir func(string) error) (*Witness, error) {
 	if key == nil {
 		return nil, errors.New("witness signing key required")
 	}
-	expected := verifiedHistory.KeysAt("audit-witness", time.Now())[keyID]
+	now := time.Now()
+	if verifiedHistory.WitnessOperatorsAt(now)[keyID] == "" {
+		return nil, errors.New("active registered witness identity required")
+	}
+	expected := verifiedHistory.KeysAt("audit-witness", now)[keyID]
 	a, e := Fingerprint(expected)
 	if e != nil {
 		return nil, errors.New("active witness delegation required")
@@ -62,7 +73,30 @@ func OpenWitness(path, keyID string, key crypto.Signer, verifiedHistory History)
 		f.Close()
 		return nil, errors.New("another witness process owns this journal")
 	}
-	w := &Witness{journal: f, keyID: keyID, key: key, history: verifiedHistory}
+	w := &Witness{journal: f, syncJournal: f.Sync, keyID: keyID, key: key, history: verifiedHistory}
+	// Persist both the journal inode and every directory entry that may have
+	// just been created. Syncing only file contents can lose the journal's name
+	// after a crash, allowing a restarted witness to forget a released vote.
+	if e = f.Sync(); e != nil {
+		w.Close()
+		return nil, errors.New("cannot persist witness journal initialization")
+	}
+	directory, e := filepath.Abs(filepath.Dir(path))
+	if e != nil {
+		w.Close()
+		return nil, e
+	}
+	for {
+		if e = syncDir(directory); e != nil {
+			w.Close()
+			return nil, errors.New("cannot persist witness journal directory chain")
+		}
+		parent := filepath.Dir(directory)
+		if parent == directory {
+			break
+		}
+		directory = parent
+	}
 	info, e := f.Stat()
 	if e != nil {
 		w.Close()
@@ -88,10 +122,22 @@ func OpenWitness(path, keyID string, key crypto.Signer, verifiedHistory History)
 			w.Close()
 			return nil, e
 		}
-		payload, e := protocol.Verify(record.Signature, verifiedHistory.KeysAt("audit-witness", cp.IssuedAt))
-		if e != nil || Hash(payload) != mustDigest(cp) || record.Signature.Payload != record.Bundle.Checkpoint.Payload {
-			w.Close()
-			return nil, errors.New("witness journal signature does not match checkpoint")
+		if record.Historical {
+			if record.Signature != nil {
+				w.Close()
+				return nil, errors.New("historical observation cannot claim a witness signature")
+			}
+		} else {
+			if record.Signature == nil || len(record.Signature.Signatures) != 1 {
+				w.Close()
+				return nil, errors.New("witness journal signature missing")
+			}
+			id := record.Signature.Signatures[0].KeyID
+			payload, e := protocol.Verify(*record.Signature, verifiedHistory.KeysAt("audit-witness", cp.IssuedAt))
+			if e != nil || verifiedHistory.WitnessOperatorsAt(cp.IssuedAt)[id] == "" || Hash(payload) != mustDigest(cp) || record.Signature.Payload != record.Bundle.Checkpoint.Payload {
+				w.Close()
+				return nil, errors.New("witness journal signature does not match checkpoint")
+			}
 		}
 		w.last = &cp
 		w.lastRecord = &record
@@ -101,6 +147,15 @@ func OpenWitness(path, keyID string, key crypto.Signer, verifiedHistory History)
 		return nil, e
 	}
 	return w, nil
+}
+
+func syncDirectory(path string) error {
+	directory, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer directory.Close()
+	return directory.Sync()
 }
 func mustDigest(v any) string { d, _ := CanonicalDigest(v); return d }
 func (w *Witness) Close() error {
@@ -133,6 +188,10 @@ func (w *Witness) validate(bundle Bundle, now time.Time) (Checkpoint, error) {
 	return cp, nil
 }
 
+// Observe retains a verified successor before releasing a signature. Checkpoints
+// preceding this witness's delegation are authenticated and retained without a
+// new vote so replacements can catch up. In that case the returned envelope is
+// empty and err is nil; Latest reports an empty Witnesses list.
 func (w *Witness) Observe(bundle Bundle, now time.Time) (protocol.Envelope, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -141,48 +200,99 @@ func (w *Witness) Observe(bundle Bundle, now time.Time) (protocol.Envelope, erro
 	}
 	// Exact retries return the same persisted signature, including after restart.
 	if w.lastRecord != nil && bundle.Checkpoint.Payload == w.lastRecord.Bundle.Checkpoint.Payload {
-		if mustDigest(bundle.Events) != mustDigest(w.lastRecord.Bundle.Events) {
+		if !sameAuditEvents(bundle.Events, w.lastRecord.Bundle.Events) {
 			return protocol.Envelope{}, errors.New("checkpoint retry changed its interval events")
 		}
 		if _, e := protocol.Verify(bundle.Checkpoint, w.history.KeysAt("audit-checkpoint", w.last.IssuedAt)); e != nil {
 			return protocol.Envelope{}, e
 		}
-		return w.lastRecord.Signature, nil
+		if w.lastRecord.Signature == nil {
+			return protocol.Envelope{}, nil
+		}
+		return *w.lastRecord.Signature, nil
 	}
 	cp, e := w.validate(bundle, now)
 	if e != nil {
 		return protocol.Envelope{}, e
 	}
-	for _, at := range []time.Time{cp.IssuedAt, now} {
-		if w.history.KeysAt("audit-witness", at)[w.keyID] == nil {
-			return protocol.Envelope{}, errors.New("witness delegation is not active at checkpoint and signing time")
-		}
+	eligible := func(at time.Time) bool {
+		return w.history.KeysAt("audit-witness", at)[w.keyID] != nil && w.history.WitnessOperatorsAt(at)[w.keyID] != ""
 	}
-	signature, e := protocol.Sign(w.keyID, w.key, cp)
-	if e != nil {
-		return signature, e
+	if !eligible(now) {
+		return protocol.Envelope{}, errors.New("witness delegation is not active at observation time")
+	}
+	historical := !eligible(cp.IssuedAt)
+	if historical && !cp.IssuedAt.Before(now) {
+		return protocol.Envelope{}, errors.New("unsigned catch-up is permitted only for historical checkpoints")
 	}
 	// Other witnesses are verified by the control plane; this journal retains only
 	// the platform statement and independently observed events, not untrusted extras.
 	bundle.Witnesses = nil
-	record := witnessedRecord{bundle, signature}
-	encoded, e := json.Marshal(record)
-	if e != nil || len(encoded)+1 > MaxBundleBytes {
-		return signature, errors.New("witness journal entry exceeds bound")
+	record := witnessedRecord{Bundle: bundle, Historical: historical}
+	if !historical {
+		// Bound the complete durable record before asking the key to sign. A
+		// P-256 ASN.1 signature is at most 72 bytes (96 base64 characters).
+		estimate := record
+		estimate.Signature = &protocol.Envelope{PayloadType: protocol.PayloadType, Payload: bundle.Checkpoint.Payload, Signatures: []protocol.Signature{{KeyID: w.keyID, Sig: strings.Repeat("A", 96)}}}
+		if _, e = encodeWitnessRecord(estimate); e != nil {
+			return protocol.Envelope{}, e
+		}
+		signature, err := protocol.Sign(w.keyID, w.key, cp)
+		if err != nil {
+			return protocol.Envelope{}, err
+		}
+		record.Signature = &signature
 	}
-	encoded = append(encoded, '\n')
+	encoded, e := encodeWitnessRecord(record)
+	if e != nil {
+		return protocol.Envelope{}, e
+	}
 	n, e := w.journal.Write(encoded)
 	if e != nil || n != len(encoded) {
 		w.poisoned = true
 		return protocol.Envelope{}, errors.New("durable witness journal write failed; signing paused")
 	}
-	if e = w.journal.Sync(); e != nil {
+	if e = w.syncJournal(); e != nil {
 		w.poisoned = true
 		return protocol.Envelope{}, errors.New("durable witness journal sync failed; signing paused")
 	}
 	w.last = &cp
 	w.lastRecord = &record
-	return signature, nil
+	if record.Signature == nil {
+		return protocol.Envelope{}, nil
+	}
+	return *record.Signature, nil
+}
+
+func encodeWitnessRecord(record witnessedRecord) ([]byte, error) {
+	encoded, err := json.Marshal(record)
+	if err != nil || len(encoded)+1 > MaxBundleBytes {
+		return nil, errors.New("witness journal entry exceeds bound")
+	}
+	return append(encoded, '\n'), nil
+}
+
+// Whole intervals may exceed CanonicalJSON's per-document limit. Compare each
+// event's validated canonical digest rather than ignoring a whole-array error.
+func sameAuditEvents(a, b []Event) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, left := range a {
+		right := b[i]
+		if left.Sequence != right.Sequence || left.Kind != right.Kind || left.PreviousDigest != right.PreviousDigest || left.Digest != right.Digest {
+			return false
+		}
+		leftDigest, err := EventDigest(left.PreviousDigest, left.Kind, left.Payload)
+		if err != nil || leftDigest != left.Digest {
+			return false
+		}
+		rightDigest, err := EventDigest(right.PreviousDigest, right.Kind, right.Payload)
+		if err != nil || rightDigest != right.Digest {
+			return false
+		}
+	}
+	return true
 }
 
 func (w *Witness) Latest() (Bundle, bool) {
@@ -192,6 +302,9 @@ func (w *Witness) Latest() (Bundle, bool) {
 		return Bundle{}, false
 	}
 	b := w.lastRecord.Bundle
-	b.Witnesses = []protocol.Envelope{w.lastRecord.Signature}
+	b.Witnesses = nil
+	if w.lastRecord.Signature != nil {
+		b.Witnesses = []protocol.Envelope{*w.lastRecord.Signature}
+	}
 	return b, true
 }

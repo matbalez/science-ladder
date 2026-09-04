@@ -88,6 +88,10 @@
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
         },
+        "suiteDiskDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
         "validatorDiskDigest": {
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
@@ -95,9 +99,16 @@
         "validatorImageDigest": {
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
+        },
+        "verificationPolicy": {
+          "enum": [
+            "platform",
+            "independent"
+          ]
         }
       },
       "required": [
+        "suiteDiskDigest",
         "deploymentMode",
         "officialAcceptance",
         "apiVersion",
@@ -224,6 +235,12 @@
         },
         "validator": {
           "$ref": "#/$defs/Validator"
+        },
+        "verificationPolicy": {
+          "enum": [
+            "platform",
+            "independent"
+          ]
         }
       },
       "required": [
@@ -391,7 +408,15 @@
           "maxLength": 131072,
           "type": "string"
         },
+        "identifier": {
+          "maxLength": 131072,
+          "type": "string"
+        },
         "location": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "publicationDate": {
           "maxLength": 131072,
           "type": "string"
         },

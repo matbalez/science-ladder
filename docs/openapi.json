@@ -3,7 +3,7 @@
   "info": {
     "title": "Science Ladder API",
     "version": "0.1.0",
-    "description": "Payment-free invitation-only reference platform. All mutations require Idempotency-Key; browser mutations require same-origin Origin. Integer ticks are decimal strings. Missing infrastructure is an explicit unavailable response."
+    "description": "Payment-free, invitation-only platform. Authenticated state changes require Idempotency-Key; browser writes enforce same-origin Origin. Tick values are exact decimal strings. Missing infrastructure and trust gates fail closed. CLI device negotiation, OAuth, public read-only validation and signed witness ingress use their own authorization and replay rules."
   },
   "servers": [
     {
@@ -52,7 +52,26 @@
             "description": "A required dependency or trust gate is not ready"
           }
         },
-        "parameters": []
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1000
+            }
+          }
+        ]
       }
     },
     "/audit/checkpoints": {
@@ -96,7 +115,38 @@
             "description": "A required dependency or trust gate is not ready"
           }
         },
-        "parameters": []
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          },
+          {
+            "name": "afterDigest",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 20
+            }
+          }
+        ],
+        "description": "after and afterDigest are mutually exclusive. Unknown digest is 404. Each checkpoint includes the platform envelope, original events, independent witness envelopes, and server-reported quorumVerified. Verify externally with a separately pinned root."
       }
     },
     "/audit/checkpoints/{digest}/witness": {
@@ -345,14 +395,6 @@
           }
         },
         "parameters": [],
-        "security": [
-          {
-            "session": []
-          },
-          {
-            "token": []
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -629,27 +671,7 @@
             "description": "A required dependency or trust gate is not ready"
           }
         },
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 8,
-              "maxLength": 128,
-              "pattern": "^[A-Za-z0-9._:-]+$"
-            }
-          }
-        ],
-        "security": [
-          {
-            "session": []
-          },
-          {
-            "token": []
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1973,7 +1995,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Publication makes the artifact, original host and platform countersigned receipts public. If it exceeds the public frontier by the locked minimum delta, advance the frontier and append a SolutionPublicationReceipt without rewriting milestone claims."
       }
     },
     "/flags": {
@@ -2217,7 +2240,8 @@
                       "human_reviewed",
                       "pause",
                       "resume",
-                      "compromise"
+                      "compromise",
+                      "resolve_unscorable"
                     ]
                   },
                   "reason": {
@@ -2435,6 +2459,9 @@
           },
           "503": {
             "description": "A required dependency or trust gate is not ready"
+          },
+          "307": {
+            "description": "Large verified immutable objects redirect to a short-lived authorized S3 download capability; caller must check expected digest."
           }
         },
         "parameters": [
@@ -2515,7 +2542,8 @@
           {
             "token": []
           }
-        ]
+        ],
+        "description": "Public challenge version, signed lock/conformance/run/adjudication/publication/migration/reveal envelopes, submissions and authorized artifact descriptors. Version-specific audit is a projection; verify contiguous global history through /audit/events and witnessed checkpoints. Private artifacts remain omitted."
       }
     },
     "/challenge-versions/{id}/events": {
@@ -2577,6 +2605,338 @@
             "token": []
           }
         ]
+      }
+    },
+    "/suites": {
+      "post": {
+        "operationId": "post_suites",
+        "summary": "Encrypt and retain a creator-owned hidden suite before manifest commitment",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "document": {
+                    "type": "string",
+                    "description": "JSON object containing files: a path to base64 bytes map; at most 1 MiB decoded inert data"
+                  },
+                  "license": {
+                    "type": "string"
+                  },
+                  "provenance": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "document",
+                  "license",
+                  "provenance"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/suites/{id}/reveal": {
+      "post": {
+        "operationId": "post_suites_id_reveal",
+        "summary": "Publish suite decryption evidence only after every bound season and immutable reveal time have ended",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/challenges/{id}/versions": {
+      "post": {
+        "operationId": "post_challenges_id_versions",
+        "summary": "Create an ordinary new season or stage a paused, drained security migration",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{40}$"
+                  },
+                  "adoptionStatement": {
+                    "type": "string",
+                    "minLength": 20
+                  },
+                  "transitionKind": {
+                    "type": "string",
+                    "enum": [
+                      "season",
+                      "security_migration"
+                    ],
+                    "default": "season"
+                  }
+                },
+                "required": [
+                  "repository",
+                  "ref",
+                  "adoptionStatement"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "description": "Ordinary seasons require new global milestone IDs. Security migration requires predecessor paused or closed and fully drained, with an exact previous_frontier fixture when a public frontier exists. Existing milestone mappings transfer only after successor conformance, lock and a signed migration payload. Publishing returns migration_signing until the serializable transfer opens successor intake."
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "operationId": "get_openapi.json",
+        "summary": "Fetch this API contract",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": []
       }
     }
   },
@@ -2778,6 +3138,34 @@
             "items": {
               "type": "object"
             }
+          },
+          "commitment": {
+            "type": "string"
+          },
+          "commitmentSalt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Disclosed only for a public artifact; acceptance receipt binds the random salt."
+          },
+          "verificationPolicy": {
+            "type": "string",
+            "enum": [
+              "platform",
+              "independent"
+            ]
+          },
+          "verificationStatus": {
+            "type": "string",
+            "enum": [
+              "",
+              "platform_verified",
+              "independently_replicated"
+            ]
+          },
+          "independentReplication": {
+            "type": "boolean"
           }
         }
       },
@@ -2869,6 +3257,31 @@
             "items": {
               "$ref": "#/components/schemas/Submission"
             }
+          },
+          "predecessorId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "transitionKind": {
+            "enum": [
+              "season",
+              "security_migration"
+            ]
+          },
+          "migrationReceiptDigest": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "verificationPolicy": {
+            "type": "string",
+            "enum": [
+              "platform",
+              "independent"
+            ]
           }
         }
       },

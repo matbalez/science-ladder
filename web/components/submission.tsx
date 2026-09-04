@@ -83,6 +83,13 @@ export function SubmissionTable({
                 </td>
                 <td>
                   <Status value={s.outcome || "pending"} />
+                  {s.verificationStatus && (
+                    <small>
+                      <Badge tone="lime">
+                        {humanize(s.verificationStatus)}
+                      </Badge>
+                    </small>
+                  )}
                 </td>
                 <td>
                   <span className="inline-meta">
@@ -165,11 +172,21 @@ export function SubmissionDetail({ id }: { id: string }) {
         </div>
         <div className="inline-meta">
           <Status value={s.status} />
+          {s.verificationStatus && (
+            <Badge tone="lime">{humanize(s.verificationStatus)}</Badge>
+          )}
           <Badge>{s.public ? "Public artifact" : "Private artifact"}</Badge>
           <Badge>Payment-free</Badge>
         </div>
       </header>
       <ErrorMessage error={resource.error} retry={resource.refresh} />
+      {s.verificationStatus && (
+        <p className="note">
+          {s.verificationStatus === "independently_replicated"
+            ? "The locked checker produced matching results on different physical host groups."
+            : "The platform checked this result and confirmed it in a fresh virtual machine. Independent replication has not been recorded."}
+        </p>
+      )}
       <ol className="creation-steps receipt-steps">
         {states.map((state, i) => (
           <li

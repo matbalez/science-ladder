@@ -25,5 +25,17 @@ The hosted control plane independently resolves exact GitHub commits and constru
 the artifact. The CLI's digest is a preview, not an accepted submission. Competition
 state must only use the immutable challenge lock digest and server acceptance sequence.
 
+New manifests default to `verificationPolicy: platform`; new locks resolve and
+freeze that value explicitly. Fresh-VM repeats on one enrolled physical host may
+support `platform_verified`. `independently_replicated` is separate evidence and
+must never be inferred from repeats on that same host. Authors may choose the
+stricter `independent` policy. Historical locks or jobs without the field retain
+their earlier independent-host requirement; parsers preserve omitted fields to
+avoid changing old canonical digests. A raw execution receipt alone does not award
+either assurance status. All policies keep the advisory, isolation and review gates.
+
+Scout prompt 1.1.0 documents this distinction and source publication metadata.
+Candidates produced under 1.0.0 remain readable with their original provenance.
+
 The only economic mode is `none`; no wallet, reward, payout or billing protocol is shipped.
 See the versioned [Scout prompt](../prompts/challenge-scout-v1.md) and `sl --help`.

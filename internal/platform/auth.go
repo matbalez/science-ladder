@@ -107,6 +107,11 @@ func (s *Server) authCallback(w http.ResponseWriter, r *http.Request, u *User) e
 	return nil
 }
 func (s *Server) logout(w http.ResponseWriter, r *http.Request, u *User) error {
+	if token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "); token != "" && token != r.Header.Get("Authorization") {
+		if _, err := s.DB.Exec(r.Context(), `DELETE FROM sessions WHERE token_hash=$1`, hash(token)); err != nil {
+			return err
+		}
+	}
 	if c, e := r.Cookie("sl_session"); e == nil {
 		if _, e = s.DB.Exec(r.Context(), `DELETE FROM sessions WHERE token_hash=$1`, hash(c.Value)); e != nil {
 			return e
@@ -128,7 +133,7 @@ func (s *Server) me(w http.ResponseWriter, r *http.Request, u *User) error {
 	if err := s.DB.QueryRow(r.Context(), `SELECT count(DISTINCT host_group) FROM runner_hosts WHERE enabled`).Scan(&groups); err != nil {
 		return err
 	}
-	respond(w, 200, map[string]any{"user": u, "quotas": map[string]any{"remaining": remaining, "activeLimit": s.Config.ActiveLimit}, "capabilities": map[string]bool{"creation": write, "submission": write && groups >= 2, "review": review}, "configuration": map[string]bool{"githubAuth": s.Config.GitHubClientID != "", "scientificReview": s.Config.OpenAIKey != "", "officialRunner": groups >= 2}})
+	respond(w, 200, map[string]any{"user": u, "quotas": map[string]any{"remaining": remaining, "activeLimit": s.Config.ActiveLimit}, "capabilities": map[string]bool{"creation": write, "submission": write && groups >= 1, "review": review}, "configuration": map[string]bool{"githubAuth": s.Config.GitHubClientID != "", "scientificReview": s.Config.OpenAIKey != "", "officialRunner": groups >= 1, "platformRunner": groups >= 1, "independentRunner": groups >= 2}})
 	return nil
 }
 func (s *Server) webhook(w http.ResponseWriter, r *http.Request) error {

@@ -1,5 +1,7 @@
 # Science Ladder — Product Requirements Document
 
+> Historical specification. The approved [implementation decisions](../decisions.md) supersede its hosting, licensing, and mandatory cross-host verification recommendations. New MVP challenges default to single-host platform verification; independent replication is a separate status and optional locked policy. Existing immutable contracts retain their original meaning.
+
 **Version:** 0.2
 
 **Status:** Working draft for founder review

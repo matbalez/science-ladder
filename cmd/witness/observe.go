@@ -53,11 +53,15 @@ func observeOne(ctx context.Context, client *http.Client, base string, w *audit.
 		}
 		digest := audit.Hash(payload)
 		// Replay after every restart or lost HTTP response before advancing further.
-		if len(latest.Witnesses) != 1 {
-			return errors.New("local witness signature missing")
+		if len(latest.Witnesses) > 1 {
+			return errors.New("unexpected local witness signatures")
 		}
-		if e = exchange(ctx, client, http.MethodPost, base+"/v1/audit/checkpoints/"+url.PathEscape(digest)+"/witness", map[string]any{"envelope": latest.Witnesses[0]}, nil); e != nil {
-			return e
+		// An authenticated historical catch-up record advances the cursor but
+		// has no local vote to publish under the replacement witness's key.
+		if len(latest.Witnesses) == 1 {
+			if e = exchange(ctx, client, http.MethodPost, base+"/v1/audit/checkpoints/"+url.PathEscape(digest)+"/witness", map[string]any{"envelope": latest.Witnesses[0]}, nil); e != nil {
+				return e
+			}
 		}
 		query = "?afterDigest=" + url.QueryEscape(digest) + "&limit=1"
 	}

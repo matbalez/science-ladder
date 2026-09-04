@@ -4,6 +4,8 @@ import { Box, Download, RotateCw } from "lucide-react";
 import { formatTicks, plotRatio } from "@/lib/scientific";
 import type { Challenge, Submission } from "@/lib/types";
 import { Empty, ErrorMessage } from "./ui";
+import { readBinaryPulse } from "@/lib/signals";
+import { BinaryPulse } from "./binary-pulse";
 function chartData(challenge: Challenge) {
   const items = (challenge.submissions || [])
     .filter(
@@ -285,6 +287,7 @@ function readPoints(value: unknown): Point[] {
     );
 }
 export function ArtifactViewer({ digest }: { digest?: string }) {
+  const [pulse, setPulse] = useState<number[]>();
   const [points, setPoints] = useState<Point[]>([]);
   const [angle, setAngle] = useState(0);
   const [error, setError] = useState<Error>();
@@ -296,6 +299,7 @@ export function ArtifactViewer({ digest }: { digest?: string }) {
     setLoaded(false);
     setError(undefined);
     setPoints([]);
+    setPulse(undefined);
     (async () => {
       try {
         const r = await fetch(`/v1/artifacts/${encodeURIComponent(digest)}`, {
@@ -332,6 +336,14 @@ export function ArtifactViewer({ digest }: { digest?: string }) {
           offset += chunk.byteLength;
         }
         const value = JSON.parse(new TextDecoder().decode(all));
+        const encodedPulse = value?.files?.["sequence.txt"];
+        if (typeof encodedPulse === "string" && encodedPulse.length <= 1024) {
+          try {
+            setPulse(readBinaryPulse(atob(encodedPulse)));
+          } catch {
+            /* Other artifact formats remain downloadable. */
+          }
+        }
         let pts = readPoints(value);
         let artifactFile = "";
         if (!pts.length && value.files && typeof value.files === "object") {
@@ -417,8 +429,10 @@ export function ArtifactViewer({ digest }: { digest?: string }) {
         </div>
       ) : !loaded ? (
         <div className="loading">Reading artifact…</div>
+      ) : pulse ? (
+        <BinaryPulse pulse={pulse} />
       ) : !points.length ? (
-        <Empty title="No supported geometry in this artifact.">
+        <Empty title="No supported visualization in this artifact.">
           Download the artifact to inspect its exact contents and reproduce the
           result.
         </Empty>

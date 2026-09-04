@@ -8,6 +8,8 @@ func (s *Server) routes(m *http.ServeMux) {
 	m.HandleFunc("GET /v1/audit/events", s.wrap(false, s.publicAuditEvents))
 	m.HandleFunc("GET /v1/audit/checkpoints", s.wrap(false, s.publicCheckpoints))
 	m.HandleFunc("POST /v1/audit/checkpoints/{digest}/witness", s.wrap(false, s.witnessReceipt))
+	m.HandleFunc("POST /v1/suites", s.wrap(true, s.createSuite))
+	m.HandleFunc("POST /v1/suites/{id}/reveal", s.wrap(true, s.revealSuite))
 	m.HandleFunc("GET /v1/me", s.wrap(false, s.me))
 	m.HandleFunc("GET /v1/auth/github", s.wrap(false, s.authStart))
 	m.HandleFunc("GET /v1/auth/github/callback", s.wrap(false, s.authCallback))

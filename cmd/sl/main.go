@@ -80,6 +80,7 @@ func run(args []string) error {
 		unsafe := f.Bool("unsafe-local", false, "acknowledge local container isolation differs from production")
 		manifestPath := f.String("manifest", "science-ladder.yaml", "manifest path")
 		artifactPath := f.String("artifact", "", "artifact directory")
+		privateSuite := f.String("private-suite", "", "private creator suite directory for nonofficial local preview")
 		if err := f.Parse(args[1:]); err != nil {
 			return err
 		}
@@ -90,7 +91,7 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
-		report, err := runner.LocalValidate(context.Background(), manifest, filepath.Dir(*manifestPath), *artifactPath, *unsafe)
+		report, err := runner.LocalValidateWithSuite(context.Background(), manifest, filepath.Dir(*manifestPath), *artifactPath, *privateSuite, *unsafe)
 		_ = runner.WriteJSON(os.Stdout, report)
 		return err
 	case "artifact":
@@ -165,6 +166,8 @@ func run(args []string) error {
 			return err
 		}
 		return runner.WriteJSON(os.Stdout, map[string]any{"signatureValid": true, "payload": json.RawMessage(payload), "note": "Verify key delegation/validity and audit checkpoint history separately before granting official authority."})
+	case "suite":
+		return suiteCommand(args[1:])
 	case "auth", "submit", "status", "export":
 		return remoteCommand(args)
 	}
@@ -183,6 +186,7 @@ func conformance(args []string) error {
 	f := flag.NewFlagSet("challenge test", flag.ContinueOnError)
 	manifestPath := f.String("manifest", "science-ladder.yaml", "manifest")
 	unsafe := f.Bool("unsafe-local", false, "acknowledge local execution is nonofficial")
+	privateSuite := f.String("private-suite", "", "private creator suite directory for nonofficial local preview")
 	if err := f.Parse(args); err != nil {
 		return err
 	}
@@ -197,13 +201,13 @@ func conformance(args []string) error {
 	reports := []map[string]any{}
 	failed := false
 	for _, fixture := range m.Fixtures {
-		first, firstErr := runner.LocalValidate(context.Background(), m, root, filepath.Join(root, fixture.Path), true)
+		first, firstErr := runner.LocalValidateWithSuite(context.Background(), m, root, filepath.Join(root, fixture.Path), *privateSuite, true)
 		passed := first.Outcome == fixture.ExpectedOutcome && (fixture.ExpectedTicks == "" || first.ScoreTicks == fixture.ExpectedTicks)
 		if firstErr != nil && first.Outcome != "invalid_output" {
 			passed = false
 		}
 		if passed && first.Outcome == "valid" {
-			second, secondErr := runner.LocalValidate(context.Background(), m, root, filepath.Join(root, fixture.Path), true)
+			second, secondErr := runner.LocalValidateWithSuite(context.Background(), m, root, filepath.Join(root, fixture.Path), *privateSuite, true)
 			if secondErr != nil || second.Outcome != first.Outcome || second.ScoreTicks != first.ScoreTicks {
 				passed = false
 			}
@@ -239,6 +243,7 @@ const help = `Science Ladder · payment-free scientific challenge protocol
   sl milestone-simulate --manifest science-ladder.yaml --score 1.25
   sl receipt verify --receipt receipt.json --keys trusted-keys.json
   sl auth login --api https://YOUR-API
+  sl suite upload --api URL --files PRIVATE_DIRECTORY --license MIT --provenance "dataset provenance"
   sl submit --api URL --version ID --repository OWNER/REPO --commit FULL_SHA --license MIT
   sl status --api URL --submission ID
   sl export --api URL --version ID --out challenge-export.json

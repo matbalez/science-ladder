@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/jackc/pgx/v5"
 	"github.com/matbalez/science-ladder/pkg/protocol"
@@ -143,6 +144,9 @@ func (s *Server) createChallenge(w http.ResponseWriter, r *http.Request, u *User
 	if err != nil {
 		return fail(422, "manifest_invalid", err.Error())
 	}
+	if err = s.requireSuiteOwner(r.Context(), manifest, u); err != nil {
+		return err
+	}
 	if !manifest.Deadline.After(time.Now()) {
 		return fail(422, "deadline_passed", "Challenge deadline must be in the future")
 	}
@@ -153,6 +157,9 @@ func (s *Server) createChallenge(w http.ResponseWriter, r *http.Request, u *User
 	}
 	r.Body = io.NopCloser(strings.NewReader(string(body)))
 	return s.mutate(w, r, u, func(tx pgx.Tx) (int, any, error) {
+		if err := lockSuiteOwner(r.Context(), tx, manifest, u); err != nil {
+			return 0, nil, err
+		}
 		id, versionID := ID(), ID()
 		_, err := tx.Exec(r.Context(), `INSERT INTO artifacts(digest,blob_digest,size,media_type,owner_id) VALUES($1,$1,$2,'application/json',$3) ON CONFLICT DO NOTHING`, sourceDigest, len(sourceBytes), u.ID)
 		if err != nil {
@@ -238,6 +245,14 @@ func (s *Server) lockChallenge(w http.ResponseWriter, r *http.Request, u *User) 
 		if err != nil {
 			return 0, nil, fail(409, "machine_conformance_required", "Complete isolated machine conformance before locking")
 		}
+		var machinePolicy, machineStatus string
+		if err = tx.QueryRow(r.Context(), `SELECT COALESCE(NULLIF(payload->>'verificationPolicy',''),'independent'),COALESCE(payload->>'verificationStatus','independently_replicated') FROM receipts WHERE digest=$1 AND envelope IS NOT NULL`, machine).Scan(&machinePolicy, &machineStatus); err != nil {
+			return 0, nil, fail(409, "signed_conformance_required", "Machine conformance must be signed before locking")
+		}
+		policy := protocol.ManifestVerificationPolicy(m)
+		if !protocol.ValidVerificationPolicy(policy) || machinePolicy != policy || machineStatus != verifiedStatus(policy, "valid") {
+			return 0, nil, fail(409, "conformance_policy_mismatch", "Passing machine conformance must satisfy the new immutable verification policy")
+		}
 		manifestDigest, err := protocol.Digest(m)
 		if err != nil {
 			return 0, nil, err
@@ -262,8 +277,8 @@ func (s *Server) lockChallenge(w http.ResponseWriter, r *http.Request, u *User) 
 			return 0, nil, err
 		}
 		str := func(k string) string { v, _ := br[k].(string); return v }
-		lock := protocol.Lock{DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "ChallengeLockReceipt", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", ManifestDigest: manifestDigest, SourceSnapshotDigest: sourceDigest, ValidatorImageDigest: m.Validator.RuntimeImageDigest, ValidatorDiskDigest: str("validatorDiskDigest"), SuiteDigest: str("suiteDigest"), ExecutionProfileDigest: str("executionProfileDigest"), ReviewDigests: digests, EconomicMode: "none", Manifest: m}
-		if lock.ValidatorDiskDigest == "" || lock.SuiteDigest == "" || lock.ExecutionProfileDigest == "" {
+		lock := protocol.Lock{VerificationPolicy: protocol.ManifestVerificationPolicy(m), DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "ChallengeLockReceipt", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", ManifestDigest: manifestDigest, SourceSnapshotDigest: sourceDigest, ValidatorImageDigest: m.Validator.RuntimeImageDigest, ValidatorDiskDigest: str("validatorDiskDigest"), SuiteDigest: str("suiteDigest"), SuiteDiskDigest: func() string { ref, _ := br["suiteDisk"].(map[string]any); d, _ := ref["digest"].(string); return d }(), ExecutionProfileDigest: str("executionProfileDigest"), ReviewDigests: digests, EconomicMode: "none", Manifest: m}
+		if lock.ValidatorDiskDigest == "" || lock.SuiteDigest == "" || lock.SuiteDiskDigest == "" || lock.ExecutionProfileDigest == "" {
 			return 0, nil, fail(409, "conformance_bindings_missing", "Machine conformance must bind immutable validator, suite, and execution profile digests")
 		}
 		digest, err := protocol.Digest(lock)
@@ -285,7 +300,7 @@ func (s *Server) lockChallenge(w http.ResponseWriter, r *http.Request, u *User) 
 func (s *Server) publishChallenge(w http.ResponseWriter, r *http.Request, u *User) error {
 	return s.mutate(w, r, u, func(tx pgx.Tx) (int, any, error) {
 		id := r.PathValue("id")
-		_, status, err := ownedVersion(r, tx, u, id)
+		manifest, status, err := ownedVersion(r, tx, u, id)
 		if err != nil {
 			return 0, nil, err
 		}
@@ -299,22 +314,18 @@ func (s *Server) publishChallenge(w http.ResponseWriter, r *http.Request, u *Use
 		if !signed {
 			return 0, nil, fail(409, "signature_pending", "Challenge lock signature is pending")
 		}
-		if _, err = tx.Exec(r.Context(), `UPDATE challenge_versions SET status='published',intake_status='open' WHERE id=$1`, id); err != nil {
+		var transition string
+		if err = tx.QueryRow(r.Context(), `SELECT transition_kind FROM challenge_versions WHERE id=$1`, id).Scan(&transition); err != nil {
 			return 0, nil, err
 		}
-		if _, err = tx.Exec(r.Context(), `UPDATE artifacts SET public_at=now() WHERE digest=(SELECT source_digest FROM challenge_versions WHERE id=$1)`, id); err != nil {
-			return 0, nil, err
+		if transition == "security_migration" {
+			digest, e := s.stageMigration(r, tx, u, id, manifest)
+			if e != nil {
+				return 0, nil, e
+			}
+			return 202, map[string]any{"versionId": id, "status": "migration_signing", "migrationReceiptDigest": digest}, nil
 		}
-		if _, err = tx.Exec(r.Context(), `UPDATE receipts SET public=true WHERE digest=(SELECT lock_digest FROM challenge_versions WHERE id=$1)`, id); err != nil {
-			return 0, nil, err
-		}
-		if _, err = tx.Exec(r.Context(), `UPDATE receipts SET public=true WHERE digest IN(SELECT machine_receipt_digest FROM preflights WHERE version_id=$1 UNION SELECT rr.digest FROM runner_results rr JOIN runner_jobs j ON j.id=rr.job_id WHERE j.version_id=$1 AND j.purpose='preflight')`, id); err != nil {
-			return 0, nil, err
-		}
-		if _, err = tx.Exec(r.Context(), `UPDATE artifacts SET public_at=COALESCE(public_at,now()) WHERE digest IN(SELECT u.digest FROM runner_uploads u JOIN runner_jobs j ON j.id=u.job_id WHERE j.version_id=$1 AND j.purpose='preflight' AND u.verified)`, id); err != nil {
-			return 0, nil, err
-		}
-		if err = audit(r.Context(), tx, id, "challenge.published", map[string]any{"versionId": id, "economicMode": "none"}); err != nil {
+		if err = publishVersion(r.Context(), tx, id, manifest); err != nil {
 			return 0, nil, err
 		}
 		return 200, map[string]any{"versionId": id, "status": "published"}, nil
@@ -330,4 +341,29 @@ func saveReceipt(r *http.Request, tx pgx.Tx, digest string, payload any, owner s
 		return err
 	}
 	return enqueue(r.Context(), tx, "sign_receipt", digest)
+}
+
+func publishVersion(ctx context.Context, tx pgx.Tx, id string, manifest protocol.Manifest) error {
+	if !manifest.Deadline.After(time.Now()) {
+		return fail(409, "deadline_passed", "An expired season cannot open intake")
+	}
+	if _, err := tx.Exec(ctx, `UPDATE challenge_versions SET status='published',intake_status='open' WHERE id=$1`, id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE artifacts SET public_at=now() WHERE digest=(SELECT source_digest FROM challenge_versions WHERE id=$1)`, id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE receipts SET public=true WHERE digest=(SELECT lock_digest FROM challenge_versions WHERE id=$1)`, id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE receipts SET public=true WHERE digest IN(SELECT machine_receipt_digest FROM preflights WHERE version_id=$1 UNION SELECT rr.digest FROM runner_results rr JOIN runner_jobs j ON j.id=rr.job_id WHERE j.version_id=$1 AND j.purpose='preflight')`, id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE artifacts SET public_at=COALESCE(public_at,now()) WHERE digest IN(SELECT u.digest FROM runner_uploads u JOIN runner_jobs j ON j.id=u.job_id WHERE j.version_id=$1 AND j.purpose='preflight' AND u.verified AND (u.role<>'suiteDisk' OR $2))`, id, manifest.Suite.Visibility == "public"); err != nil {
+		return err
+	}
+	if err := audit(ctx, tx, id, "challenge.published", map[string]any{"versionId": id, "economicMode": "none"}); err != nil {
+		return err
+	}
+	return nil
 }

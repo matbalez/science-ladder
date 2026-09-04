@@ -170,7 +170,15 @@ func lockedWheelFiles(files map[string][]byte, lockPath string) (map[string][]by
 		if match == nil {
 			return nil, errors.New("lock requires exact package==version and one SHA256 hash; no URLs or build options")
 		}
-		name := strings.ToLower(strings.ReplaceAll(match[1], "-", "_")) + "-" + match[2]
+		packageName, err := normalizePythonName(match[1])
+		if err != nil {
+			return nil, err
+		}
+		version, err := normalizePythonVersion(match[2])
+		if err != nil {
+			return nil, err
+		}
+		name := packageName + "-" + version
 		if _, exists := pins[name]; exists {
 			return nil, errors.New("duplicate dependency pin")
 		}
@@ -191,7 +199,15 @@ func lockedWheelFiles(files map[string][]byte, lockPath string) (map[string][]by
 		if len(parts) != 5 {
 			return nil, errors.New("unsupported wheel filename")
 		}
-		pin := strings.ToLower(parts[0]) + "-" + parts[1]
+		packageName, err := normalizePythonName(parts[0])
+		if err != nil {
+			return nil, err
+		}
+		version, err := normalizePythonVersion(parts[1])
+		if err != nil {
+			return nil, err
+		}
+		pin := packageName + "-" + version
 		digest, ok := pins[pin]
 		if !ok || protocol.DigestBytes(data) != "sha256:"+digest || used[pin] {
 			return nil, errors.New("wheel is unpinned, duplicated or hash-mismatched")
@@ -288,9 +304,6 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 	} else {
 		report.Findings = append(report.Findings, "UNOFFICIAL local build and fixture execution; not a production conformance receipt")
 	}
-	if m.Suite.Visibility != "public" {
-		return report, errors.New("hidden-suite preflight requires an encrypted suite input grant; do not substitute public source bytes")
-	}
 	dependencies, err := lockedWheelFiles(snapshot.Files, m.Validator.DependencyLock)
 	if err != nil {
 		return report, err
@@ -305,15 +318,73 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 		}
 		validatorFiles[name] = data
 	}
-	report.ScansPassed = true
 	if err := os.MkdirAll(outputRoot, 0700); err != nil {
 		return report, err
 	}
+	scan, sbom, err := b.Scan(snapshot.Files, m, filepath.Join(outputRoot, "sbom.json"))
+	report.VulnerabilityScan = &scan
+	if sbom.Digest != "" {
+		report.SBOM = &sbom
+	}
+	if err != nil {
+		return report, err
+	}
+	report.ScansPassed = scan.Status == "pass"
 	workspace, err := os.MkdirTemp(outputRoot, "preflight-")
 	if err != nil {
 		return report, err
 	}
 	defer os.RemoveAll(workspace)
+	var suiteMaterial *protocol.SuiteKeyMaterial
+	suiteFiles := subset(snapshot.Files, m.Suite.Path)
+	if m.Suite.Visibility == "hidden" {
+		if b.Runtime == nil || job.HiddenSuite == nil {
+			return report, errors.New("encrypted hidden-suite grant and recipient host key required")
+		}
+		if len(suiteFiles) > 0 {
+			return report, errors.New("hidden suite must not be present in public challenge source")
+		}
+		material, err := b.Runtime.hiddenMaterial(job)
+		if err != nil {
+			return report, err
+		}
+		suiteMaterial = &material
+		defer protocol.ZeroBytes(material.Key)
+		defer protocol.ZeroBytes(material.Salt)
+		encryptedPath := filepath.Join(workspace, "hidden-source.enc")
+		if job.HiddenSuite.Source.Size > 96<<20 {
+			return report, errors.New("hidden source exceeds limit")
+		}
+		if err := b.Runtime.fetch(ctx, job.HiddenSuite.Source, encryptedPath); err != nil {
+			return report, err
+		}
+		encrypted, err := os.ReadFile(encryptedPath)
+		if err != nil {
+			return report, err
+		}
+		plain, err := protocol.DecryptSuiteObject(material, encrypted, "source")
+		if err != nil {
+			return report, err
+		}
+		defer protocol.ZeroBytes(plain)
+		var hidden struct {
+			Files map[string][]byte `json:"files"`
+		}
+		if err := protocol.DecodeStrictBounded(plain, &hidden, 96<<20); err != nil {
+			return report, errors.New("hidden suite schema invalid")
+		}
+		contract := protocol.SubmissionContract{AllowedPaths: []string{"*"}, AllowedExtensions: []string{".json", ".csv", ".tsv", ".txt", ".dat", ".npy", ".bin"}, MaxBytes: 64 << 20, MaxFiles: 4096, License: "private-preflight"}
+		_, _, err = protocol.ArtifactFromFiles(hidden.Files, contract)
+		if err != nil {
+			return report, errors.New("hidden suite contains invalid data artifacts")
+		}
+		suiteFiles = hidden.Files
+		defer func() {
+			for _, data := range suiteFiles {
+				protocol.ZeroBytes(data)
+			}
+		}()
+	}
 	for pass := 0; pass < 2; pass++ {
 		root := filepath.Join(workspace, fmt.Sprintf("validator-%d", pass))
 		if err := os.Mkdir(root, 0755); err != nil {
@@ -350,7 +421,6 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 		return report, err
 	}
 	report.ChallengeDisk = &challengeDisk
-	suiteFiles := subset(snapshot.Files, m.Suite.Path)
 	if len(suiteFiles) == 0 {
 		return report, errors.New("declared public suite contains no files")
 	}
@@ -365,8 +435,25 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 	if err != nil {
 		return report, err
 	}
-	report.SuiteDisk = &suiteDisk
 	report.SuiteDigest = suiteDisk.Digest
+	if suiteMaterial != nil {
+		filename := filepath.Join(outputRoot, "suite.squashfs")
+		plain, err := os.ReadFile(filename)
+		if err != nil {
+			return report, err
+		}
+		encrypted, err := protocol.EncryptSuiteObject(*suiteMaterial, plain, "disk")
+		protocol.ZeroBytes(plain)
+		if err != nil {
+			return report, err
+		}
+		if err := os.WriteFile(filename, encrypted, 0400); err != nil {
+			return report, err
+		}
+		suiteDisk = protocol.ObjectRef{Digest: protocol.DigestBytes(encrypted), Size: int64(len(encrypted))}
+		report.SuiteDigest = suiteMaterial.Commitment
+	}
+	report.SuiteDisk = &suiteDisk
 	localObjects := map[string]string{report.ValidatorDisk.Digest: filepath.Join(outputRoot, "validator-0.squashfs"), challengeDisk.Digest: filepath.Join(outputRoot, "challenge.squashfs"), suiteDisk.Digest: filepath.Join(outputRoot, "suite.squashfs")}
 	allPassed := true
 	for index, fixture := range m.Fixtures {
@@ -374,6 +461,7 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 		_, artifactDigest, artifactErr := protocol.ArtifactFromFiles(files, m.Submission)
 		fixtureReport := protocol.FixtureReport{Name: fixture.Name, ExpectedOutcome: fixture.ExpectedOutcome}
 		if artifactErr != nil {
+			fixtureReport.Stage = "artifact_parser"
 			fixtureReport.Outcome = "invalid_output"
 			fixtureReport.Passed = fixture.ExpectedOutcome == "invalid_output"
 			report.Fixtures = append(report.Fixtures, fixtureReport)
@@ -396,6 +484,7 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 		var runs []LocalReport
 		for repeat := 0; repeat < 2; repeat++ {
 			if b.UnsafeLocal {
+				fixtureReport.Stage = "local_execution"
 				local, runErr := LocalValidate(ctx, m, sourceRoot, artifactRoot, true)
 				if runErr != nil && local.Outcome == "infrastructure_fault" {
 					return report, runErr
@@ -403,6 +492,10 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 				runs = append(runs, local)
 			} else {
 				child := job
+				child.ParentJobDigest, err = protocol.Digest(job)
+				if err != nil {
+					return report, err
+				}
 				child.ID = fmt.Sprintf("preflight-%d-%d-%d", time.Now().UnixNano(), index, repeat)
 				child.Purpose = "preflight"
 				child.ArtifactDigest = artifactDigest
@@ -410,9 +503,10 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 				child.SubmissionDisk = artifactDisk
 				child.SuiteDisk = suiteDisk
 				child.ChallengeDisk = challengeDisk
-				child.SuiteDigest = suiteDisk.Digest
+				child.SuiteDigest = report.SuiteDigest
 				runRuntime := *b.Runtime
 				runRuntime.localObjects = localObjects
+				runRuntime.suiteMaterial = suiteMaterial
 				envelope, err := runRuntime.runJob(ctx, child)
 				if err != nil {
 					return report, err
@@ -426,6 +520,13 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 				if err := protocol.DecodeStrict(payload, &run); err != nil {
 					return report, err
 				}
+				if !run.Official || !run.CleanupAttested {
+					return report, errors.New("fixture run did not attest isolated execution and teardown")
+				}
+				fixtureReport.Stage = "isolated_execution"
+				fixtureReport.FreshVMRuns++
+				fixtureReport.RunReceipts = append(fixtureReport.RunReceipts, envelope)
+				report.FreshVMRuns++
 				runs = append(runs, LocalReport{Outcome: run.Outcome, ScoreTicks: run.ScoreTicks, Gates: run.Gates})
 			}
 		}
@@ -450,7 +551,7 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 		for _, item := range []struct {
 			role, path string
 			ref        **protocol.ObjectRef
-		}{{"validatorDisk", filepath.Join(outputRoot, "validator-0.squashfs"), &report.ValidatorDisk}, {"challengeDisk", filepath.Join(outputRoot, "challenge.squashfs"), &report.ChallengeDisk}, {"suiteDisk", filepath.Join(outputRoot, "suite.squashfs"), &report.SuiteDisk}} {
+		}{{"validatorDisk", filepath.Join(outputRoot, "validator-0.squashfs"), &report.ValidatorDisk}, {"challengeDisk", filepath.Join(outputRoot, "challenge.squashfs"), &report.ChallengeDisk}, {"suiteDisk", filepath.Join(outputRoot, "suite.squashfs"), &report.SuiteDisk}, {"sbom", filepath.Join(outputRoot, "sbom.json"), &report.SBOM}} {
 			uploaded, err := b.Upload(ctx, item.role, item.path, **item.ref)
 			if err != nil {
 				return report, err
@@ -462,9 +563,14 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 }
 
 func (b *Builder) PrepareArtifact(ctx context.Context, job protocol.RunnerJob, data []byte, outputRoot string) (protocol.BuildReport, error) {
-	if job.SourceSnapshot==nil{return protocol.BuildReport{},errors.New("artifact source grant required")}
-	manifestDigest,err:=protocol.Digest(job.Manifest);if err!=nil{return protocol.BuildReport{},err}
-	report := protocol.BuildReport{ManifestDigest:manifestDigest,SourceSnapshotDigest:job.SourceSnapshot.Digest,ExecutionProfileDigest: job.ExecutionProfileDigest, Findings: []string{}}
+	if job.SourceSnapshot == nil {
+		return protocol.BuildReport{}, errors.New("artifact source grant required")
+	}
+	manifestDigest, err := protocol.Digest(job.Manifest)
+	if err != nil {
+		return protocol.BuildReport{}, err
+	}
+	report := protocol.BuildReport{ManifestDigest: manifestDigest, SourceSnapshotDigest: job.SourceSnapshot.Digest, ExecutionProfileDigest: job.ExecutionProfileDigest, Findings: []string{}}
 	if !b.UnsafeLocal {
 		if b.Runtime == nil {
 			return report, errors.New("certified quarantine runtime required")

@@ -50,6 +50,8 @@ func (s *Server) workOne(ctx context.Context) error {
 		err = s.signReceipt(jobctx, resource)
 	case "preflight":
 		err = s.preflight(jobctx, resource)
+	case "complete_migration":
+		err = s.completeMigration(jobctx, resource)
 	case "scientific_review":
 		err = s.scientificReview(jobctx, resource)
 	case "validate_submission":

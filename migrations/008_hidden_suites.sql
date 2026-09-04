@@ -1,0 +1,2 @@
+CREATE TABLE hidden_suites(id uuid PRIMARY KEY,owner_id uuid NOT NULL REFERENCES users(id),commitment text NOT NULL UNIQUE,ciphertext_digest text NOT NULL REFERENCES artifacts(digest),encrypted_material bytea NOT NULL,provenance text NOT NULL,license text NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),revealed_at timestamptz,reveal_receipt_digest text REFERENCES receipts(digest));
+ALTER TABLE runner_hosts ADD COLUMN encryption_public_key text NOT NULL DEFAULT '';

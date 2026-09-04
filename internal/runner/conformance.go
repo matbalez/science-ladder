@@ -93,6 +93,10 @@ func (b *Builder) isolationCorpus(ctx context.Context, parent protocol.RunnerJob
 			gates = report.Gates
 		} else {
 			child := parent
+			child.ParentJobDigest, err = protocol.Digest(parent)
+			if err != nil {
+				return false, err
+			}
 			child.ID = fmt.Sprintf("isolation-%d-%d", time.Now().UnixNano(), index)
 			child.Purpose = "preflight"
 			child.Manifest = m
@@ -126,7 +130,7 @@ func (b *Builder) isolationCorpus(ctx context.Context, parent protocol.RunnerJob
 	return true, nil
 }
 
-const isolationProbe = `import json, os, socket, subprocess, time
+const isolationProbe = `import json, os, signal, socket, time
 from pathlib import Path
 checks = []
 for address in [('169.254.169.254', 80), ('1.1.1.1', 53)]:
@@ -153,15 +157,19 @@ denied = False
 try:
     for _ in range(80):
         try:
-            children.append(subprocess.Popen(['/usr/local/bin/python3', '-c', 'import time; time.sleep(10)'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+            pid = os.fork()
+            if pid == 0:
+                time.sleep(10)
+                os._exit(0)
+            children.append(pid)
         except OSError:
             denied = True
             break
 finally:
     for child in children:
-        child.kill()
+        os.kill(child, signal.SIGKILL)
     for child in children:
-        child.wait()
+        os.waitpid(child, 0)
 checks.append(denied)
 try:
     with open('/sl/work/flood', 'wb') as file:

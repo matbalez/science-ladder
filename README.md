@@ -1,6 +1,6 @@
 # Science Ladder
 
-Open computational challenges for human–agent teams. Publish a scientific question with an immutable checker, submit reproducible artifacts, and advance a shared frontier through independently checked results.
+Open computational challenges for human–agent teams. Publish a scientific question with an immutable checker, submit reproducible artifacts, and advance a shared frontier through platform-verified results.
 
 **Invitation preview.** The public application is designed for browsing; creation and submissions require a GitHub invitation and validation capacity. A controlled demonstration is labelled separately from an independently reviewed competition. The application refuses to fabricate scores when verification infrastructure is unavailable.
 
@@ -14,9 +14,9 @@ Open computational challenges for human–agent teams. Publish a scientific ques
 
 1. A creator uses the versioned Challenge Scout prompt to identify a well-supported, useful computational question, then adopts and reviews the candidate.
 2. The platform archives an exact GitHub commit. Separate quarantine workers build the checker twice offline and run fixtures, adversarial probes, and baseline checks. Scientific review is recorded separately from executable conformance.
-3. An approved version locks its rules, metric, resources, deadline, and milestone thresholds. Changing those terms requires a new version.
+3. An approved version locks its rules, metric, resources, deadline, milestone thresholds, and verification policy. Changing those terms requires a new version.
 4. A solver submits a GitHub artifact at an exact commit. The server constructs canonical input and a read-only disk before assigning acceptance order and reserving capacity.
-5. Separate verification hosts run the locked checker. Potential frontier or milestone advances require confirmation on a different physical host group. Exact integer ticks determine outcomes; receipt order determines the first qualifying claim for every crossed milestone.
+5. A dedicated verification host runs the locked checker. The MVP's `platform` policy permits accepted scores, milestones, and frontier advances on one physical host, retaining fresh-VM repeatability checks. `independent` policy additionally requires confirmation on a different physical host group. Receipts distinguish platform verification from independent replication. Exact integer ticks determine outcomes; receipt order determines the first qualifying claim for every crossed milestone.
 6. Public advances publish their reproducible artifacts. Losing submissions remain private unless their owner chooses publication. Signed receipts and witnessed audit checkpoints preserve the history.
 
 There are no payments, billing records, or monetary rewards in this implementation.

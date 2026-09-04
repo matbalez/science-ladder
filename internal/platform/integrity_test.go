@@ -9,6 +9,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	logaudit "github.com/matbalez/science-ladder/internal/audit"
 	"github.com/matbalez/science-ladder/pkg/protocol"
 	"net/http/httptest"
@@ -235,5 +236,134 @@ func TestOperatorCLITokenCannotAdministerAccounts(t *testing.T) {
 		if w.Code != 403 || !strings.Contains(w.Body.String(), "token_scope_forbidden") {
 			t.Fatalf("CLI gained account administration: %s %d %s", path, w.Code, w.Body.String())
 		}
+	}
+}
+
+func TestPreparationReceiptOwnerAndOriginalHostCountersignature(t *testing.T) {
+	s := testDB(t)
+	creator, version := seed(t, s)
+	ctx := context.Background()
+	solver := &User{ID: ID(), GitHubID: 77, Login: "solver", Invited: true, Role: "member"}
+	if _, err := s.DB.Exec(ctx, `INSERT INTO users(id,github_id,login,invited) VALUES($1,77,'solver',true)`, solver.ID); err != nil {
+		t.Fatal(err)
+	}
+	intent := readyIntent(t, s, solver, version, 92)
+	if _, err := s.DB.Exec(ctx, `UPDATE submission_intents SET status='quarantine_pending' WHERE id=$1`, intent); err != nil {
+		t.Fatal(err)
+	}
+	hostKey, pub := testKey(t)
+	platformKey, _ := testKey(t)
+	s.ReceiptSigner = platformKey
+	s.Config.ReceiptKeyID = "platform"
+	host := runnerIdentity{ID: "r1", Group: "group1", PublicKey: pub}
+	job := protocol.RunnerJob{APIVersion: protocol.APIVersion, Kind: "ValidationJob", ID: ID(), Purpose: "artifact_prepare", CreatedAt: time.Now().UTC(), ExpiresAt: time.Now().Add(time.Hour), FencingToken: 1, RunnerEpoch: "1", RequiredHostGroup: host.Group, DeploymentMode: "local", ArtifactDigest: "private-solver-artifact"}
+	token := "private-preparation-result"
+	if _, err := s.DB.Exec(ctx, `INSERT INTO runner_jobs(id,purpose,version_id,intent_id,payload,status,host_id,result_token_hash,lease_expires_at) VALUES($1,'artifact_prepare',$2,$3,$4,'running','r1',$5,$6)`, job.ID, version, intent, raw(job), hash(token), job.ExpiresAt); err != nil {
+		t.Fatal(err)
+	}
+	jd, _ := protocol.Digest(job)
+	run := protocol.RunReceipt{APIVersion: protocol.APIVersion, Kind: "ValidationRunReceipt", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "r1", JobID: job.ID, JobDigest: jd, ArtifactDigest: job.ArtifactDigest, RunnerEpoch: "1", FencingToken: 1, HostID: host.ID, HostGroup: host.Group, Official: true, CleanupAttested: true, DeploymentMode: "local", Outcome: "invalid_output", BuildReport: &protocol.BuildReport{Passed: false, Findings: []string{"invalid artifact format"}}}
+	env, err := protocol.Sign(host.ID, hostKey, run)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest("POST", "/internal/v1/runner/jobs/"+job.ID+"/result", strings.NewReader(string(raw(map[string]any{"envelope": env, "resultToken": token}))))
+	request.SetPathValue("id", job.ID)
+	if err = s.runnerResult(httptest.NewRecorder(), request, host); err != nil {
+		t.Fatal(err)
+	}
+	digest, _ := protocol.Digest(run)
+	if err = s.signReceipt(ctx, digest); err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		user    *User
+		allowed bool
+	}{{solver, true}, {creator, false}, {nil, false}} {
+		r := httptest.NewRequest("GET", "/v1/receipts/"+digest, nil)
+		r.SetPathValue("digest", digest)
+		w := httptest.NewRecorder()
+		err := s.getReceipt(w, r, tc.user)
+		if tc.allowed {
+			if err != nil {
+				t.Fatal(err)
+			}
+			var combined protocol.Envelope
+			if err = json.Unmarshal(w.Body.Bytes(), &combined); err != nil {
+				t.Fatal(err)
+			}
+			if len(combined.Signatures) != 2 {
+				t.Fatal("original host signature was not retained")
+			}
+			for name, key := range map[string]crypto.PublicKey{"platform": platformKey.Public(), "r1": hostKey.Public()} {
+				verified, err := protocol.Verify(combined, map[string]crypto.PublicKey{name: key})
+				if err != nil {
+					t.Fatalf("cannot independently verify %s: %v", name, err)
+				}
+				canonical, err := protocol.CanonicalJSON(verified)
+				if err != nil || "sha256:"+hash(string(canonical)) != digest {
+					t.Fatalf("verification changed immutable payload %v", err)
+				}
+			}
+		} else if err == nil {
+			t.Fatal("private solver preparation disclosed to non-owner")
+		}
+	}
+}
+
+func TestVoluntaryPublicationAdvancesFrontierWithoutReassigningClaims(t *testing.T) {
+	s := testDB(t)
+	u, v := seed(t, s)
+	ctx := context.Background()
+	subs := []string{}
+	for i, score := range []string{"30", "50"} {
+		intent := readyIntent(t, s, u, v, 100+i)
+		_, body, err := accept(t, s, u, intent, fmt.Sprintf("publish-test-%d", i))
+		if err != nil {
+			t.Fatal(err)
+		}
+		id := body["submissionId"].(string)
+		subs = append(subs, id)
+		if _, err = s.DB.Exec(ctx, `UPDATE submissions SET status='validated',outcome='valid',score_ticks=$2 WHERE id=$1`, id, score); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.adjudicate(ctx, v); err != nil {
+		t.Fatal(err)
+	}
+	var frontier string
+	if err := s.DB.QueryRow(ctx, `SELECT public_frontier_id FROM challenge_versions WHERE id=$1`, v).Scan(&frontier); err != nil || frontier != subs[0] {
+		t.Fatalf("initial frontier: %s %v", frontier, err)
+	}
+	for _, key := range []string{"publish-voluntary-1", "publish-voluntary-2"} {
+		r := httptest.NewRequest("POST", "/v1/submissions/"+subs[1]+"/publish", strings.NewReader("{}"))
+		r.SetPathValue("id", subs[1])
+		r.Header.Set("Idempotency-Key", key)
+		if err := s.publishSubmission(httptest.NewRecorder(), r, u); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.DB.QueryRow(ctx, `SELECT public_frontier_id FROM challenge_versions WHERE id=$1`, v).Scan(&frontier); err != nil || frontier != subs[1] {
+		t.Fatalf("published frontier: %s %v", frontier, err)
+	}
+	var claims, publications int
+	s.DB.QueryRow(ctx, `SELECT count(*) FROM milestone_claims WHERE submission_id=$1`, subs[0]).Scan(&claims)
+	s.DB.QueryRow(ctx, `SELECT count(*) FROM receipts WHERE payload->>'kind'='SolutionPublicationReceipt'`).Scan(&publications)
+	if claims != 2 || publications != 1 {
+		t.Fatalf("publication rewrote claims or duplicated evidence: %d %d", claims, publications)
+	}
+	r := httptest.NewRequest("GET", "/v1/exports/challenge-versions/"+v, nil)
+	r.SetPathValue("id", v)
+	w := httptest.NewRecorder()
+	if err := s.exportChallenge(w, r, nil); err != nil {
+		t.Fatal(err)
+	}
+	var exported map[string]json.RawMessage
+	if err := json.Unmarshal(w.Body.Bytes(), &exported); err != nil {
+		t.Fatal(err)
+	}
+	var artifacts []any
+	if err := json.Unmarshal(exported["artifacts"], &artifacts); err != nil || len(artifacts) != 4 {
+		t.Fatalf("public artifact export incomplete: %d %v", len(artifacts), err)
 	}
 }

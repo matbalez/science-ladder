@@ -25,6 +25,11 @@
           "maxItems": 4096,
           "type": "array"
         },
+        "freshVmRuns": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
         "hostileCorpusPassed": {
           "type": "boolean"
         },
@@ -41,6 +46,9 @@
         "rebuiltValidatorDiskDigest": {
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
+        },
+        "sbom": {
+          "$ref": "#/$defs/ObjectRef"
         },
         "scansPassed": {
           "type": "boolean"
@@ -69,6 +77,9 @@
         "validatorImageDigest": {
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
+        },
+        "vulnerabilityScan": {
+          "$ref": "#/$defs/VulnerabilityScan"
         }
       },
       "required": [
@@ -88,12 +99,42 @@
       ],
       "type": "object"
     },
+    "Envelope": {
+      "additionalProperties": false,
+      "properties": {
+        "payload": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "payloadType": {
+          "const": "application/vnd.science-ladder.v1+json"
+        },
+        "signatures": {
+          "items": {
+            "$ref": "#/$defs/Signature"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        }
+      },
+      "required": [
+        "payloadType",
+        "payload",
+        "signatures"
+      ],
+      "type": "object"
+    },
     "FixtureReport": {
       "additionalProperties": false,
       "properties": {
         "expectedOutcome": {
           "maxLength": 131072,
           "type": "string"
+        },
+        "freshVmRuns": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
         },
         "name": {
           "maxLength": 131072,
@@ -106,9 +147,20 @@
         "passed": {
           "type": "boolean"
         },
+        "runReceipts": {
+          "items": {
+            "$ref": "#/$defs/Envelope"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
         "scoreTicks": {
           "maxLength": 160,
           "pattern": "^-?(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "stage": {
+          "maxLength": 131072,
           "type": "string"
         }
       },
@@ -232,6 +284,10 @@
           "maxLength": 131072,
           "type": "string"
         },
+        "parentJobDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
         "producer": {
           "maxLength": 131072,
           "type": "string"
@@ -248,6 +304,12 @@
         "suiteDigest": {
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
+        },
+        "verificationPolicy": {
+          "enum": [
+            "platform",
+            "independent"
+          ]
         }
       },
       "required": [
@@ -272,6 +334,104 @@
         "outcome",
         "durationMillis",
         "cleanupAttested"
+      ],
+      "type": "object"
+    },
+    "Signature": {
+      "additionalProperties": false,
+      "properties": {
+        "keyid": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "sig": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyid",
+        "sig"
+      ],
+      "type": "object"
+    },
+    "VulnerabilityFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "severity": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "sourceUrl": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "id",
+        "severity",
+        "sourceUrl"
+      ],
+      "type": "object"
+    },
+    "VulnerabilityScan": {
+      "additionalProperties": false,
+      "properties": {
+        "advisorySnapshotDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/VulnerabilityFinding"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "packagesChecked": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "policyVersion": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "runtimeInventoryDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "sbomDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "scannedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "policyVersion",
+        "advisorySnapshotDigest",
+        "runtimeInventoryDigest",
+        "sbomDigest",
+        "scannedAt",
+        "packagesChecked",
+        "status",
+        "findings"
       ],
       "type": "object"
     }

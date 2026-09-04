@@ -12,6 +12,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"github.com/jackc/pgx/v5"
+	logaudit "github.com/matbalez/science-ladder/internal/audit"
 	"github.com/matbalez/science-ladder/pkg/protocol"
 	"net/http"
 	"time"
@@ -19,9 +20,10 @@ import (
 
 func (s *Server) queueSubmission(ctx context.Context, id string) error {
 	var lockBytes []byte
-	var version, artifact, disk, acceptance string
-	var grant string
-	err := s.DB.QueryRow(ctx, `SELECT l.document,ss.version_id,ss.artifact_digest,ss.disk_digest,ss.grant_id,ss.receipt_digest FROM submissions ss JOIN challenge_versions v ON v.id=ss.version_id JOIN locks l ON l.digest=v.lock_digest WHERE ss.id=$1`, id).Scan(&lockBytes, &version, &artifact, &disk, &grant, &acceptance)
+	var version, artifact, disk, acceptance, storedLockDigest, acceptancePolicy string
+	var grant, acceptedMode string
+	var acceptedOfficial bool
+	err := s.DB.QueryRow(ctx, `SELECT l.document,l.digest,COALESCE(NULLIF(a.payload->>'verificationPolicy',''),'independent'),ss.version_id,ss.artifact_digest,ss.disk_digest,ss.grant_id,ss.receipt_digest,a.payload->>'deploymentMode',COALESCE((a.payload->>'officialAcceptance')::boolean,false) FROM submissions ss JOIN receipts a ON a.digest=ss.receipt_digest JOIN challenge_versions v ON v.id=ss.version_id JOIN locks l ON l.digest=v.lock_digest WHERE ss.id=$1`, id).Scan(&lockBytes, &storedLockDigest, &acceptancePolicy, &version, &artifact, &disk, &grant, &acceptance, &acceptedMode, &acceptedOfficial)
 	if err != nil {
 		return err
 	}
@@ -29,11 +31,14 @@ func (s *Server) queueSubmission(ctx context.Context, id string) error {
 	if err = json.Unmarshal(lockBytes, &lock); err != nil {
 		return err
 	}
-	lockDigest, err := protocol.Digest(lock)
+	lockDigest, err := protocol.Digest(json.RawMessage(lockBytes))
 	if err != nil {
 		return err
 	}
-	job := protocol.RunnerJob{DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "ValidationJob", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", Purpose: "submission", SubmissionID: id, AcceptanceReceiptDigest: acceptance, ChallengeLockDigest: lockDigest, ArtifactDigest: artifact, SuiteDigest: lock.SuiteDigest, ExecutionProfileDigest: lock.ExecutionProfileDigest, RunnerEpoch: "1", FencingToken: 1, Manifest: lock.Manifest, ValidatorDisk: protocol.ObjectRef{Digest: lock.ValidatorDiskDigest}, SubmissionDisk: protocol.ObjectRef{Digest: disk}, SuiteDisk: protocol.ObjectRef{Digest: lock.SuiteDigest}, ChallengeDisk: protocol.ObjectRef{Digest: lock.ValidatorDiskDigest}}
+	if lockDigest != storedLockDigest || !protocol.ValidVerificationPolicy(acceptancePolicy) || acceptancePolicy != protocol.LockVerificationPolicy(lock) {
+		return fail(422, "acceptance_lock_mismatch", "Immutable lock bytes and verification policy must match the accepted contract")
+	}
+	job := protocol.RunnerJob{VerificationPolicy: protocol.LockVerificationPolicy(lock), DeploymentMode: acceptedMode, OfficialAcceptance: acceptedOfficial, APIVersion: protocol.APIVersion, Kind: "ValidationJob", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", Purpose: "submission", SubmissionID: id, AcceptanceReceiptDigest: acceptance, ChallengeLockDigest: lockDigest, ArtifactDigest: artifact, SuiteDigest: lock.SuiteDigest, ExecutionProfileDigest: lock.ExecutionProfileDigest, RunnerEpoch: "1", FencingToken: 1, Manifest: lock.Manifest, ValidatorDisk: protocol.ObjectRef{Digest: lock.ValidatorDiskDigest}, SubmissionDisk: protocol.ObjectRef{Digest: disk}, SuiteDisk: protocol.ObjectRef{Digest: lock.SuiteDiskDigest}, ChallengeDisk: protocol.ObjectRef{Digest: lock.ValidatorDiskDigest}}
 	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -66,8 +71,8 @@ func (s *Server) recoverRunnerLeases(ctx context.Context) error {
 }
 
 type runnerIdentity struct {
-	ID, Group, PublicKey, ExecutionProfile string
-	Purposes                               []string
+	ID, Group, PublicKey, ExecutionProfile, EncryptionKey, AdvisorySnapshotDigest, RuntimeInventoryDigest string
+	Purposes                                                                                              []string
 }
 
 func (s *Server) runnerIdentity(r *http.Request) (runnerIdentity, error) {
@@ -76,7 +81,7 @@ func (s *Server) runnerIdentity(r *http.Request) (runnerIdentity, error) {
 		return host, fail(401, "runner_mtls_required", "A trusted runner client certificate is required")
 	}
 	fp := sha256.Sum256(r.TLS.PeerCertificates[0].Raw)
-	err := s.DB.QueryRow(r.Context(), `SELECT id,host_group,public_key,execution_profile_digest,purposes FROM runner_hosts WHERE certificate_fingerprint=$1 AND enabled`, hex.EncodeToString(fp[:])).Scan(&host.ID, &host.Group, &host.PublicKey, &host.ExecutionProfile, &host.Purposes)
+	err := s.DB.QueryRow(r.Context(), `SELECT id,host_group,public_key,execution_profile_digest,purposes,encryption_public_key,advisory_snapshot_digest,runtime_inventory_digest FROM runner_hosts WHERE certificate_fingerprint=$1 AND enabled`, hex.EncodeToString(fp[:])).Scan(&host.ID, &host.Group, &host.PublicKey, &host.ExecutionProfile, &host.Purposes, &host.EncryptionKey, &host.AdvisorySnapshotDigest, &host.RuntimeInventoryDigest)
 	if err != nil {
 		return host, fail(403, "runner_untrusted", "Runner certificate is not in the active trusted inventory")
 	}
@@ -134,6 +139,9 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 	if s.Store == nil {
 		return fail(503, "storage_unavailable", "Immutable storage unavailable")
 	}
+	if err := s.verifyHostDelegation(host, time.Now().UTC()); err != nil {
+		return err
+	}
 	key, err := s.signer()
 	if err != nil {
 		return fail(503, "signing_unavailable", "Job signer unavailable")
@@ -147,7 +155,7 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 	var id string
 	var payload []byte
 	var fence int64
-	err = tx.QueryRow(ctx, `SELECT id,payload,fence FROM runner_jobs WHERE status='queued' AND purpose=ANY($2) AND NOT COALESCE(payload->'excludedHostIds','[]'::jsonb) ? $3 AND (excluded_group IS NULL OR excluded_group<>$1) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, host.Group, host.Purposes, host.ID).Scan(&id, &payload, &fence)
+	err = tx.QueryRow(ctx, `SELECT id,payload,fence FROM runner_jobs WHERE status='queued' AND purpose=ANY($2) AND (purpose IN ('preflight','artifact_prepare') OR payload->>'executionProfileDigest'=$4) AND NOT COALESCE(payload->'excludedHostIds','[]'::jsonb) ? $3 AND (excluded_group IS NULL OR excluded_group<>$1) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, host.Group, host.Purposes, host.ID, host.ExecutionProfile).Scan(&id, &payload, &fence)
 	if errors.Is(err, pgx.ErrNoRows) {
 		respond(w, 200, map[string]any{"job": nil})
 		return nil
@@ -158,6 +166,19 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 	var job protocol.RunnerJob
 	if err = json.Unmarshal(payload, &job); err != nil {
 		return err
+	}
+	if job.Purpose == "preflight" {
+		if !protocol.ValidDigest(host.AdvisorySnapshotDigest) || !protocol.ValidDigest(host.RuntimeInventoryDigest) {
+			return fail(503, "scan_policy_unconfigured", "Quarantine host requires operator-approved vulnerability and runtime inventory digests")
+		}
+		if job.AdvisorySnapshotDigest != "" && (job.AdvisorySnapshotDigest != host.AdvisorySnapshotDigest || job.RuntimeInventoryDigest != host.RuntimeInventoryDigest) {
+			return fail(503, "independent_scan_policy_mismatch", "Independent preflight hosts must use identical approved scan inputs")
+		}
+		job.AdvisorySnapshotDigest = host.AdvisorySnapshotDigest
+		job.RuntimeInventoryDigest = host.RuntimeInventoryDigest
+	}
+	if !protocol.ValidVerificationPolicy(protocol.JobVerificationPolicy(job)) {
+		return fail(422, "verification_policy_invalid", "Unknown job verification policy")
 	}
 	job.RequiredHostGroup = host.Group
 	job.FencingToken = fence
@@ -191,6 +212,9 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 		if err != nil {
 			return err
 		}
+	}
+	if err = s.grantHiddenSuite(ctx, &job, host); err != nil {
+		return err
 	}
 	envelope, err := protocol.Sign(s.Config.ReceiptKeyID, key, job)
 	if err != nil {
@@ -241,6 +265,9 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 	if run.APIVersion != protocol.APIVersion || run.Kind != "ValidationRunReceipt" || run.CreatedAt.After(time.Now().Add(time.Minute)) || run.HostID != host.ID || run.HostGroup != host.Group || !run.Official || !run.CleanupAttested || run.JobID != r.PathValue("id") {
 		return fail(422, "run_identity_mismatch", "Run identity, official isolation, or cleanup attestations do not match")
 	}
+	if err := s.verifyHostDelegation(host, run.CreatedAt); err != nil {
+		return err
+	}
 	digest, err := protocol.Digest(run)
 	if err != nil {
 		return err
@@ -290,7 +317,7 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 	if err != nil {
 		return err
 	}
-	if run.JobDigest != jobDigest || run.AcceptanceReceiptDigest != job.AcceptanceReceiptDigest || run.ChallengeLockDigest != job.ChallengeLockDigest || run.ArtifactDigest != job.ArtifactDigest || run.SuiteDigest != job.SuiteDigest || run.ExecutionProfileDigest != job.ExecutionProfileDigest || run.RunnerEpoch != job.RunnerEpoch || run.DeploymentMode != job.DeploymentMode || run.OfficialAcceptance != job.OfficialAcceptance {
+	if !protocol.ValidVerificationPolicy(protocol.JobVerificationPolicy(job)) || run.ParentJobDigest != job.ParentJobDigest || run.VerificationPolicy != job.VerificationPolicy || run.JobDigest != jobDigest || run.AcceptanceReceiptDigest != job.AcceptanceReceiptDigest || run.ChallengeLockDigest != job.ChallengeLockDigest || run.ArtifactDigest != job.ArtifactDigest || run.SuiteDigest != job.SuiteDigest || run.ExecutionProfileDigest != job.ExecutionProfileDigest || run.RunnerEpoch != job.RunnerEpoch || run.DeploymentMode != job.DeploymentMode || run.OfficialAcceptance != job.OfficialAcceptance {
 		return fail(422, "run_bindings_mismatch", "Run result did not bind every immutable input and execution policy")
 	}
 	if run.Outcome == "infrastructure_fault" {
@@ -307,6 +334,11 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 	if isBuild && run.Outcome == "valid" {
 		if err = validateBuild(job, run); err != nil {
 			return err
+		}
+		if job.Purpose == "preflight" {
+			if err = validateFixtureEvidence(job, run, host); err != nil {
+				return err
+			}
 		}
 	}
 	terminal := map[string]bool{"valid": true, "hard_gate_failed": true, "invalid_output": true, "resource_limit": true, "declared_timeout": true, "nondeterministic": true, "malicious": true, "challenge_fault": true}
@@ -392,9 +424,14 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 		confirmation.CreatedAt = time.Now().UTC()
 		confirmation.Purpose = "confirmation"
 		confirmation.RequiredHostGroup = ""
-		confirmation.ExcludedHostIDs = []string{host.ID}
+		var excludedGroup any
+		confirmation.ExcludedHostIDs = nil
+		if protocol.JobVerificationPolicy(job) == protocol.VerificationIndependent {
+			confirmation.ExcludedHostIDs = []string{host.ID}
+			excludedGroup = host.Group
+		}
 		confirmation.FencingToken = 1
-		if _, err = tx.Exec(ctx, `INSERT INTO runner_jobs(id,purpose,version_id,submission_id,payload,excluded_group) VALUES($1,'confirmation',$2,$3,$4,$5)`, confirmation.ID, version, job.SubmissionID, raw(confirmation), host.Group); err != nil {
+		if _, err = tx.Exec(ctx, `INSERT INTO runner_jobs(id,purpose,version_id,submission_id,payload,excluded_group) VALUES($1,'confirmation',$2,$3,$4,$5)`, confirmation.ID, version, job.SubmissionID, raw(confirmation), excludedGroup); err != nil {
 			return err
 		}
 		if _, err = tx.Exec(ctx, `UPDATE submissions SET status='confirmation_running' WHERE id=$1`, job.SubmissionID); err != nil {
@@ -408,12 +445,15 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 		if err != nil {
 			return err
 		}
-		if primaryGroup == host.Group {
+		if protocol.JobVerificationPolicy(job) == protocol.VerificationIndependent && primaryGroup == host.Group {
 			return fail(422, "confirmation_not_independent", "Confirmation host group must differ from the primary group")
 		}
 		var first protocol.RunReceipt
 		if err = json.Unmarshal(primary, &first); err != nil {
 			return err
+		}
+		if first.JobID == run.JobID || first.ID == run.ID || first.CreatedAt.After(run.CreatedAt) {
+			return fail(422, "confirmation_not_fresh", "Confirmation must be a separate fresh isolated attempt after the primary")
 		}
 		if run.Outcome != first.Outcome {
 			outcome = "nondeterministic"
@@ -448,4 +488,34 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 	}
 	respond(w, 200, map[string]any{"accepted": true, "final": final})
 	return nil
+}
+
+// The database inventory supplies operational routing, while a production
+// runner's signing authority must also be delegated by the pinned offline root.
+func (s *Server) verifyHostDelegation(host runnerIdentity, at time.Time) error {
+	if s.Config.DeploymentMode != "production" {
+		return nil
+	}
+	if s.TrustHistory == nil {
+		return fail(503, "runner_delegation_missing", "Production runner identities require root-signed delegation")
+	}
+	key, err := parseRunnerKey(host.PublicKey)
+	if err != nil {
+		return err
+	}
+	actual, err := logaudit.Fingerprint(key)
+	if err != nil {
+		return err
+	}
+	permitted := s.TrustHistory.KeysAt("validation-run", at)
+	want, err := logaudit.Fingerprint(permitted[host.ID])
+	if err != nil || want != actual {
+		return fail(403, "runner_delegation_invalid", "Runner signing key is not actively delegated")
+	}
+	for _, d := range s.TrustHistory.Delegations {
+		if d.KeyID == host.ID && d.HostID == host.ID {
+			return nil
+		}
+	}
+	return fail(403, "runner_host_binding_invalid", "Delegated runner key belongs to a different host")
 }

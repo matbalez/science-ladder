@@ -200,11 +200,21 @@ func VerifyQuorum(platform protocol.Envelope, witnesses []protocol.Envelope, key
 	}
 	allOperators, allKeys := map[string]bool{}, map[string]bool{}
 	for id, admin := range operators {
-		fingerprint, err := Fingerprint(keys[id])
-		if admin == "" || err != nil || allOperators[admin] || allKeys[fingerprint] {
-			return errors.New("witnesses must have distinct configured operators and keys")
+		if id == "" || admin == "" || allOperators[admin] {
+			return errors.New("witnesses must have three distinct configured operators")
 		}
 		allOperators[admin] = true
+		// KeysAt omits inactive delegations. A missing third key must not veto
+		// two valid independent votes. VerifyHistory checks all registered keys;
+		// here we additionally reject aliases among the active keys supplied.
+		key, active := keys[id]
+		if !active || key == nil {
+			continue
+		}
+		fingerprint, err := Fingerprint(key)
+		if err != nil || allKeys[fingerprint] {
+			return errors.New("active witnesses must use distinct valid keys")
+		}
 		allKeys[fingerprint] = true
 	}
 	seen := map[string]bool{}

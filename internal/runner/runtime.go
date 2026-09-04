@@ -53,6 +53,9 @@ type Config struct {
 	Jailer                 PinnedFile        `json:"jailer"`
 	MakeSquashFS           PinnedFile        `json:"makeSquashFs"`
 	CPUConfig              PinnedFile        `json:"cpuConfig"`
+	RuntimeInventory       PinnedFile        `json:"runtimeInventory"`
+	AdvisorySnapshot       PinnedFile        `json:"advisorySnapshot"`
+	AdvisoryKeys           PinnedFile        `json:"advisoryKeys"`
 	RuntimeImageDigest     string            `json:"runtimeImageDigest"`
 	EncryptionPublicKey    []byte            `json:"encryptionPublicKey"`
 	WorkRoot               string            `json:"workRoot"`
@@ -72,19 +75,45 @@ func ConfigBindingDigest(c Config) (string, error) {
 }
 
 type Runtime struct {
-	Config       Config
-	Keys         map[string]crypto.PublicKey
-	Signer       crypto.Signer
-	KeyID        string
-	HTTPClient   *http.Client
-	localObjects map[string]string
+	Config               Config
+	Keys                 map[string]crypto.PublicKey
+	Signer               crypto.Signer
+	KeyID                string
+	HTTPClient           *http.Client
+	localObjects         map[string]string
 	EncryptionPrivateKey []byte
-	suiteMaterial *protocol.SuiteKeyMaterial
+	suiteMaterial        *protocol.SuiteKeyMaterial
+	probeDiagnostics     io.Writer // only fixed first-party hardware probes may set this
 }
 
-func(r *Runtime)hiddenMaterial(job protocol.RunnerJob)(protocol.SuiteKeyMaterial,error){
-	if r.suiteMaterial!=nil{material:=*r.suiteMaterial;material.Key=append([]byte{},material.Key...);material.Salt=append([]byte{},material.Salt...);if material.Commitment!=job.Manifest.Suite.Commitment{return protocol.SuiteKeyMaterial{},errors.New("private suite cache does not match lock")};return material,nil}
-	if job.HiddenSuite==nil||job.HiddenSuite.Commitment!=job.Manifest.Suite.Commitment{return protocol.SuiteKeyMaterial{},errors.New("hidden suite grant does not match manifest")};private,err:=ecdh.X25519().NewPrivateKey(r.EncryptionPrivateKey);if err!=nil{return protocol.SuiteKeyMaterial{},errors.New("host hidden-suite decryption key unavailable")};if !bytes.Equal(private.PublicKey().Bytes(),r.Config.EncryptionPublicKey){return protocol.SuiteKeyMaterial{},errors.New("host encryption key differs from signed enrollment")};material,err:=protocol.UnwrapSuiteKey(r.EncryptionPrivateKey,job.HiddenSuite.KeyCapsule,protocol.HiddenSuiteContext(job.ID,job.HiddenSuite.Commitment));if err!=nil{return material,err};if material.Commitment!=job.HiddenSuite.Commitment{return protocol.SuiteKeyMaterial{},errors.New("decrypted suite key has wrong commitment")};return material,nil
+func (r *Runtime) hiddenMaterial(job protocol.RunnerJob) (protocol.SuiteKeyMaterial, error) {
+	if r.suiteMaterial != nil {
+		material := *r.suiteMaterial
+		material.Key = append([]byte{}, material.Key...)
+		material.Salt = append([]byte{}, material.Salt...)
+		if material.Commitment != job.Manifest.Suite.Commitment {
+			return protocol.SuiteKeyMaterial{}, errors.New("private suite cache does not match lock")
+		}
+		return material, nil
+	}
+	if job.HiddenSuite == nil || job.HiddenSuite.Commitment != job.Manifest.Suite.Commitment {
+		return protocol.SuiteKeyMaterial{}, errors.New("hidden suite grant does not match manifest")
+	}
+	private, err := ecdh.X25519().NewPrivateKey(r.EncryptionPrivateKey)
+	if err != nil {
+		return protocol.SuiteKeyMaterial{}, errors.New("host hidden-suite decryption key unavailable")
+	}
+	if !bytes.Equal(private.PublicKey().Bytes(), r.Config.EncryptionPublicKey) {
+		return protocol.SuiteKeyMaterial{}, errors.New("host encryption key differs from signed enrollment")
+	}
+	material, err := protocol.UnwrapSuiteKey(r.EncryptionPrivateKey, job.HiddenSuite.KeyCapsule, protocol.HiddenSuiteContext(job.ID, job.HiddenSuite.Commitment))
+	if err != nil {
+		return material, err
+	}
+	if material.Commitment != job.HiddenSuite.Commitment {
+		return protocol.SuiteKeyMaterial{}, errors.New("decrypted suite key has wrong commitment")
+	}
+	return material, nil
 }
 
 func ReadPublicKeys(filename string) (map[string]crypto.PublicKey, error) {
@@ -196,7 +225,7 @@ func (c Config) CheckHost(keys map[string]crypto.PublicKey) error {
 	if _, err := os.Stat(c.NetworkNamespace); err != nil {
 		return errors.New("network namespace missing")
 	}
-	for _, file := range []PinnedFile{c.Kernel, c.RootFS, c.Firecracker, c.Jailer, c.MakeSquashFS, c.CPUConfig} {
+	for _, file := range []PinnedFile{c.Kernel, c.RootFS, c.Firecracker, c.Jailer, c.MakeSquashFS, c.CPUConfig, c.RuntimeInventory, c.AdvisorySnapshot, c.AdvisoryKeys} {
 		if err := verifyPinned(file); err != nil {
 			return err
 		}
@@ -288,6 +317,8 @@ func (r *Runtime) Run(ctx context.Context, envelope protocol.Envelope) (protocol
 	if err := ValidateJob(job, r.Config); err != nil {
 		return protocol.Envelope{}, err
 	}
+	ctx, cancel := context.WithDeadline(ctx, job.ExpiresAt)
+	defer cancel()
 	return r.runJob(ctx, job)
 }
 
@@ -313,7 +344,27 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 			return protocol.Envelope{}, err
 		}
 	}
-	if job.Manifest.Suite.Visibility=="hidden"{material,err:=r.hiddenMaterial(job);if err!=nil{return protocol.Envelope{},err};defer protocol.ZeroBytes(material.Key);defer protocol.ZeroBytes(material.Salt);filename:=filepath.Join(root,"suite.squashfs");ciphertext,err:=os.ReadFile(filename);if err!=nil{return protocol.Envelope{},err};plaintext,err:=protocol.DecryptSuiteObject(material,ciphertext,"disk");if err!=nil{return protocol.Envelope{},err};defer protocol.ZeroBytes(plaintext);if err:=os.WriteFile(filename,plaintext,0400);err!=nil{return protocol.Envelope{},err}}
+	if job.Manifest.Suite.Visibility == "hidden" {
+		material, err := r.hiddenMaterial(job)
+		if err != nil {
+			return protocol.Envelope{}, err
+		}
+		defer protocol.ZeroBytes(material.Key)
+		defer protocol.ZeroBytes(material.Salt)
+		filename := filepath.Join(root, "suite.squashfs")
+		ciphertext, err := os.ReadFile(filename)
+		if err != nil {
+			return protocol.Envelope{}, err
+		}
+		plaintext, err := protocol.DecryptSuiteObject(material, ciphertext, "disk")
+		if err != nil {
+			return protocol.Envelope{}, err
+		}
+		defer protocol.ZeroBytes(plaintext)
+		if err := os.WriteFile(filename, plaintext, 0400); err != nil {
+			return protocol.Envelope{}, err
+		}
+	}
 	for _, item := range []struct {
 		name string
 		file PinnedFile
@@ -371,6 +422,9 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 	}
 	args := []string{"--id", job.ID, "--exec-file", r.Config.Firecracker.Path, "--uid", fmt.Sprint(r.Config.UID), "--gid", fmt.Sprint(r.Config.GID), "--chroot-base-dir", lease, "--netns", r.Config.NetworkNamespace, "--cgroup-version", "2", "--cgroup", "cpuset.cpus=" + r.Config.CPUSet, "--cgroup", "memory.max=" + fmt.Sprint(int64(job.Manifest.Resources.MemoryMB+256)*1024*1024), "--cgroup", "pids.max=64", "--", "--no-api", "--config-file", "/firecracker.json"}
 	command := exec.CommandContext(ctx, r.Config.Jailer.Path, args...)
+	if err := isolateJailerProcess(command); err != nil {
+		return protocol.Envelope{}, err
+	}
 	output := &boundedBuffer{max: 128 * 1024}
 	command.Stdout = output
 	command.Stderr = output
@@ -379,8 +433,12 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 	duration := time.Since(start).Milliseconds()
 	jobDigest, _ := protocol.Digest(job)
 	receipt := protocol.RunReceipt{AcceptanceReceiptDigest: job.AcceptanceReceiptDigest, DeploymentMode: job.DeploymentMode, OfficialAcceptance: job.OfficialAcceptance, APIVersion: protocol.APIVersion, Kind: "ValidationRunReceipt", ID: job.ID + "-run", CreatedAt: time.Now().UTC(), Producer: r.Config.HostID, JobID: job.ID, JobDigest: jobDigest, ChallengeLockDigest: job.ChallengeLockDigest, ArtifactDigest: job.ArtifactDigest, SuiteDigest: job.SuiteDigest, ExecutionProfileDigest: job.ExecutionProfileDigest, RunnerEpoch: job.RunnerEpoch, FencingToken: job.FencingToken, HostID: r.Config.HostID, HostGroup: r.Config.HostGroup, Official: true, Outcome: "infrastructure_fault", DurationMillis: duration}
+	receipt.VerificationPolicy = job.VerificationPolicy
+	receipt.ParentJobDigest = job.ParentJobDigest
 	if ctx.Err() != nil {
 		receipt.Outcome = "resource_limit"
+	} else if bytes.Contains(output.b.Bytes(), []byte("SL_BOOT_ERROR:")) {
+		receipt.Outcome = "infrastructure_fault"
 	} else if runErr == nil && !output.overflow {
 		resultBytes, guestOutcome, err := parseGuestOutput(output.b.Bytes())
 		if err == nil && guestOutcome != "" {
@@ -403,6 +461,9 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 			receipt.Outcome = "invalid_output"
 		}
 	}
+	if r.probeDiagnostics != nil && receipt.Outcome == "infrastructure_fault" {
+		fmt.Fprintf(r.probeDiagnostics, "Fixed platform probe infrastructure failure (%v):\n%s\n", runErr, output.b.String())
+	}
 	if err := os.RemoveAll(lease); err != nil {
 		return protocol.Envelope{}, errors.New("ephemeral teardown failed; host must be quarantined")
 	}
@@ -411,6 +472,12 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 }
 
 func ValidateJob(job protocol.RunnerJob, c Config) error {
+	if !protocol.ValidVerificationPolicy(protocol.JobVerificationPolicy(job)) {
+		return errors.New("signed job must bind verification policy")
+	}
+	if job.Manifest.VerificationPolicy != "" && job.Manifest.VerificationPolicy != protocol.JobVerificationPolicy(job) {
+		return errors.New("job policy differs from immutable manifest")
+	}
 	if job.APIVersion != protocol.APIVersion || job.Kind != "ValidationJob" || len(job.ID) > 80 || job.ID == "" || strings.ContainsAny(job.ID, "./\\\n\r ") || !job.ExpiresAt.After(time.Now()) || job.CreatedAt.After(time.Now().Add(time.Minute)) || job.ExpiresAt.Sub(job.CreatedAt) > time.Hour {
 		return errors.New("invalid or expired job")
 	}

@@ -54,6 +54,12 @@ func (b *boundedBuffer) Write(p []byte) (int, error) {
 // LocalValidate runs a pinned container, with explicit opt-in and no network or
 // secrets. It is developer feedback and cannot issue an official run receipt.
 func LocalValidate(ctx context.Context, m protocol.Manifest, challengeRoot, artifactRoot string, unsafeLocal bool) (LocalReport, error) {
+	return LocalValidateWithSuite(ctx, m, challengeRoot, artifactRoot, "", unsafeLocal)
+}
+
+// LocalValidateWithSuite permits a creator to test private local suite files.
+// It never fetches hosted hidden material or attests an official commitment.
+func LocalValidateWithSuite(ctx context.Context, m protocol.Manifest, challengeRoot, artifactRoot, privateSuiteRoot string, unsafeLocal bool) (LocalReport, error) {
 	report := LocalReport{APIVersion: protocol.APIVersion, Kind: "LocalValidationReport", Official: false, Warning: "UNOFFICIAL local container run; not the production Firecracker execution profile", Outcome: "infrastructure_fault"}
 	if !unsafeLocal {
 		return report, errors.New("local execution requires --unsafe-local; no official result will be issued")
@@ -76,12 +82,25 @@ func LocalValidate(ctx context.Context, m protocol.Manifest, challengeRoot, arti
 		return report, err
 	}
 	suitePath := filepath.Join(challengeRoot, filepath.FromSlash(m.Suite.Path))
+	if m.Suite.Visibility == "hidden" {
+		if privateSuiteRoot == "" {
+			return report, errors.New("hidden creator preview requires --private-suite; hosted hidden material is never downloaded")
+		}
+		suitePath, err = filepath.Abs(privateSuiteRoot)
+		if err != nil {
+			return report, err
+		}
+		contract := protocol.SubmissionContract{AllowedPaths: []string{"*"}, AllowedExtensions: []string{".json", ".csv", ".tsv", ".txt", ".dat", ".npy", ".bin"}, MaxFiles: 256, MaxBytes: 1 << 20, License: "MIT"}
+		if _, _, err := protocol.CanonicalArtifact(suitePath, contract); err != nil {
+			return report, err
+		}
+		report.Warning += "; private creator suite preview does not verify the hosted suite commitment"
+	} else if privateSuiteRoot != "" {
+		return report, errors.New("--private-suite applies only to a hidden manifest")
+	}
 	info, err := os.Stat(suitePath)
 	if err != nil || !info.IsDir() {
-		return report, errors.New("public suite directory unavailable")
-	}
-	if m.Suite.Visibility != "public" {
-		return report, errors.New("local command cannot materialize a hidden official suite")
+		return report, errors.New("suite directory unavailable")
 	}
 	dependencyRoot, err := os.MkdirTemp("", "science-ladder-dependencies-")
 	if err != nil {
@@ -168,8 +187,17 @@ func LocalValidate(ctx context.Context, m protocol.Manifest, challengeRoot, arti
 		return report, nil
 	}
 	if err != nil {
+		var exit *exec.ExitError
+		if errors.As(err, &exit) && (exit.ExitCode() == 125 || exit.ExitCode() == 126 || exit.ExitCode() == 127) {
+			return report, fmt.Errorf("local container infrastructure failed: %w", err)
+		}
 		report.Outcome = "challenge_fault"
 		return report, fmt.Errorf("local checker exited unsuccessfully: %w", err)
+	}
+	entries, err := os.ReadDir(output)
+	if err != nil || len(entries) != 1 || entries[0].Name() != "result.json" {
+		report.Outcome = "invalid_output"
+		return report, errors.New("checker must produce exactly one result.json")
 	}
 	info, err = os.Lstat(filepath.Join(output, "result.json"))
 	if err != nil || !info.Mode().IsRegular() || info.Size() > 65536 {

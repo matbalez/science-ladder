@@ -14,13 +14,17 @@ var identifierPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$`)
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 
 func ValidateCandidate(c Candidate) error {
-	if c.APIVersion != APIVersion || c.Kind != "ChallengeCandidate" || !identifierPattern.MatchString(c.ID) || c.Producer == "" || c.CreatedAt.IsZero() || c.PromptVersion != ScoutVersion {
+	if c.APIVersion != APIVersion || c.Kind != "ChallengeCandidate" || !identifierPattern.MatchString(c.ID) || c.Producer == "" || c.CreatedAt.IsZero() || c.PromptVersion != ScoutVersion && c.PromptVersion != "1.0.0" {
 		return errors.New("invalid candidate identity/version")
 	}
 	if c.Disposition != "viable" && c.Disposition != "needs_work" && c.Disposition != "rejected" {
 		return errors.New("invalid candidate disposition")
 	}
-	if len(c.Sources)>0 || c.Disposition=="viable" { if err := validateSources(c.Sources); err != nil { return err } }
+	if len(c.Sources) > 0 || c.Disposition == "viable" {
+		if err := validateSources(c.Sources); err != nil {
+			return err
+		}
+	}
 	if c.Disposition == "viable" && c.Manifest == nil {
 		return errors.New("viable candidate requires manifest")
 	}
@@ -50,6 +54,9 @@ func validateSources(sources []Source) error {
 }
 
 func ValidateManifest(m Manifest) error {
+	if !ValidVerificationPolicy(ManifestVerificationPolicy(m)) {
+		return errors.New("verification policy must be platform or independent")
+	}
 	if m.APIVersion != APIVersion || m.Kind != "ChallengeManifest" || !identifierPattern.MatchString(m.ID) || m.Producer == "" || m.CreatedAt.IsZero() {
 		return errors.New("invalid manifest identity/version")
 	}
@@ -242,7 +249,7 @@ func ValidateSubmissionContract(c SubmissionContract) error {
 	}
 	for _, extension := range c.AllowedExtensions {
 		switch extension {
-		case ".json", ".csv", ".tsv", ".txt", ".dat", ".npy":
+		case ".json", ".csv", ".tsv", ".txt", ".dat", ".npy", ".bin":
 		default:
 			return fmt.Errorf("unsupported data artifact extension %s", extension)
 		}

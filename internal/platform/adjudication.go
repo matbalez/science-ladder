@@ -111,15 +111,19 @@ func (s *Server) adjudicate(ctx context.Context, version string) error {
 		}
 	}
 	for {
-		var id, owner, artifact, outcome, commitment, status string
+		var id, owner, artifact, outcome, commitment, status, acceptedMode, policy string
+		var acceptedOfficial bool
 		var score *string
 		var publish bool
-		err = tx.QueryRow(ctx, `SELECT id,owner_id,artifact_digest,outcome,score_ticks::text,publish_requested,commitment,status FROM submissions WHERE version_id=$1 AND sequence=$2 FOR UPDATE`, version, watermark+1).Scan(&id, &owner, &artifact, &outcome, &score, &publish, &commitment, &status)
+		err = tx.QueryRow(ctx, `SELECT ss.id,ss.owner_id,ss.artifact_digest,ss.outcome,ss.score_ticks::text,ss.publish_requested,ss.commitment,ss.status,r.payload->>'deploymentMode',COALESCE((r.payload->>'officialAcceptance')::boolean,false),COALESCE(NULLIF(r.payload->>'verificationPolicy',''),'independent') FROM submissions ss JOIN receipts r ON r.digest=ss.receipt_digest WHERE ss.version_id=$1 AND ss.sequence=$2 FOR UPDATE OF ss`, version, watermark+1).Scan(&id, &owner, &artifact, &outcome, &score, &publish, &commitment, &status, &acceptedMode, &acceptedOfficial, &policy)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				break
 			}
 			return err
+		}
+		if !protocol.ValidVerificationPolicy(policy) {
+			return fail(422, "verification_policy_invalid", "Unknown immutable acceptance verification policy")
 		}
 		if status != "validated" {
 			break
@@ -155,7 +159,7 @@ func (s *Server) adjudicate(ctx context.Context, version string) error {
 			}
 		}
 		watermark++
-		receipt := protocol.Receipt{DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: false, APIVersion: protocol.APIVersion, Kind: "AdjudicationReceipt", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", SubjectDigest: artifact, EconomicMode: "none", Data: map[string]any{"versionId": version, "submissionId": id, "sequence": formatInt(watermark), "outcome": outcome, "scoreTicks": score, "verifiedBestAdvanced": record, "publicFrontierAdvanced": advance, "milestoneIds": claims}}
+		receipt := protocol.Receipt{VerificationPolicy: policy, VerificationStatus: verifiedStatus(policy, outcome), DeploymentMode: acceptedMode, OfficialAcceptance: acceptedOfficial, APIVersion: protocol.APIVersion, Kind: "AdjudicationReceipt", ID: ID(), CreatedAt: time.Now().UTC(), Producer: "science-ladder", SubjectDigest: artifact, EconomicMode: "none", Data: map[string]any{"versionId": version, "submissionId": id, "sequence": formatInt(watermark), "outcome": outcome, "scoreTicks": score, "verifiedBestAdvanced": record, "publicFrontierAdvanced": advance, "milestoneIds": claims, "independentReplication": policy == protocol.VerificationIndependent && outcome == "valid"}}
 		digest, err := protocol.Digest(receipt)
 		if err != nil {
 			return err
@@ -213,4 +217,14 @@ func (s *Server) adjudicate(ctx context.Context, version string) error {
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+func verifiedStatus(policy, outcome string) string {
+	if outcome != "valid" || !protocol.ValidVerificationPolicy(policy) {
+		return ""
+	}
+	if policy == protocol.VerificationIndependent {
+		return "independently_replicated"
+	}
+	return "platform_verified"
 }

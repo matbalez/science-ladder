@@ -5,14 +5,16 @@ import "time"
 
 const APIVersion = "science-ladder/v1"
 const PayloadType = "application/vnd.science-ladder.v1+json"
-const ScoutVersion = "1.0.0"
+const ScoutVersion = "1.1.0"
 
 type Source struct {
-	URL        string `json:"url"`
-	Title      string `json:"title"`
-	Evidence   string `json:"evidence"`
-	Location   string `json:"location"`
-	AccessedAt string `json:"accessedAt,omitempty"`
+	PublicationDate string `json:"publicationDate,omitempty"`
+	Identifier      string `json:"identifier,omitempty"`
+	URL             string `json:"url"`
+	Title           string `json:"title"`
+	Evidence        string `json:"evidence"`
+	Location        string `json:"location"`
+	AccessedAt      string `json:"accessedAt,omitempty"`
 }
 
 type Candidate struct {
@@ -88,6 +90,7 @@ type Fixture struct {
 }
 
 type Manifest struct {
+	VerificationPolicy   string             `json:"verificationPolicy,omitempty"`
 	APIVersion           string             `json:"apiVersion"`
 	Kind                 string             `json:"kind"`
 	ID                   string             `json:"id"`
@@ -114,7 +117,8 @@ type Manifest struct {
 }
 
 type Lock struct {
-	SuiteDiskDigest string `json:"suiteDiskDigest"`
+	VerificationPolicy     string    `json:"verificationPolicy,omitempty"`
+	SuiteDiskDigest        string    `json:"suiteDiskDigest"`
 	DeploymentMode         string    `json:"deploymentMode"`
 	OfficialAcceptance     bool      `json:"officialAcceptance"`
 	APIVersion             string    `json:"apiVersion"`
@@ -148,85 +152,117 @@ type ObjectRef struct {
 
 // RunnerJob is immutable and signed by the control plane. URLs are one-job reads.
 type RunnerJob struct {
-	HiddenSuite *HiddenSuiteGrant `json:"hiddenSuite,omitempty"`
-	AcceptanceReceiptDigest string     `json:"acceptanceReceiptDigest,omitempty"`
-	DeploymentMode          string     `json:"deploymentMode"`
-	OfficialAcceptance      bool       `json:"officialAcceptance"`
-	APIVersion              string     `json:"apiVersion"`
-	Kind                    string     `json:"kind"`
-	ID                      string     `json:"id"`
-	CreatedAt               time.Time  `json:"createdAt"`
-	Producer                string     `json:"producer"`
-	ExpiresAt               time.Time  `json:"expiresAt"`
-	Purpose                 string     `json:"purpose"` // preflight, submission, confirmation
-	SubmissionID            string     `json:"submissionId,omitempty"`
-	ChallengeLockDigest     string     `json:"challengeLockDigest"`
-	ArtifactDigest          string     `json:"artifactDigest"`
-	SuiteDigest             string     `json:"suiteDigest"`
-	ExecutionProfileDigest  string     `json:"executionProfileDigest"`
-	RunnerEpoch             string     `json:"runnerEpoch"`
-	FencingToken            int64      `json:"fencingToken"`
-	RequiredHostGroup       string     `json:"requiredHostGroup"`
-	ExcludedHostIDs         []string   `json:"excludedHostIds"`
-	ValidatorDisk           ObjectRef  `json:"validatorDisk"`
-	SubmissionDisk          ObjectRef  `json:"submissionDisk"`
-	SuiteDisk               ObjectRef  `json:"suiteDisk"`
-	ChallengeDisk           ObjectRef  `json:"challengeDisk"`
-	Manifest                Manifest   `json:"manifest"`
-	SourceSnapshot          *ObjectRef `json:"sourceSnapshot,omitempty"`
+	ParentJobDigest         string            `json:"parentJobDigest,omitempty"`
+	VerificationPolicy      string            `json:"verificationPolicy,omitempty"`
+	AdvisorySnapshotDigest  string            `json:"advisorySnapshotDigest,omitempty"`
+	RuntimeInventoryDigest  string            `json:"runtimeInventoryDigest,omitempty"`
+	HiddenSuite             *HiddenSuiteGrant `json:"hiddenSuite,omitempty"`
+	AcceptanceReceiptDigest string            `json:"acceptanceReceiptDigest,omitempty"`
+	DeploymentMode          string            `json:"deploymentMode"`
+	OfficialAcceptance      bool              `json:"officialAcceptance"`
+	APIVersion              string            `json:"apiVersion"`
+	Kind                    string            `json:"kind"`
+	ID                      string            `json:"id"`
+	CreatedAt               time.Time         `json:"createdAt"`
+	Producer                string            `json:"producer"`
+	ExpiresAt               time.Time         `json:"expiresAt"`
+	Purpose                 string            `json:"purpose"` // preflight, submission, confirmation
+	SubmissionID            string            `json:"submissionId,omitempty"`
+	ChallengeLockDigest     string            `json:"challengeLockDigest"`
+	ArtifactDigest          string            `json:"artifactDigest"`
+	SuiteDigest             string            `json:"suiteDigest"`
+	ExecutionProfileDigest  string            `json:"executionProfileDigest"`
+	RunnerEpoch             string            `json:"runnerEpoch"`
+	FencingToken            int64             `json:"fencingToken"`
+	RequiredHostGroup       string            `json:"requiredHostGroup"`
+	ExcludedHostIDs         []string          `json:"excludedHostIds"`
+	ValidatorDisk           ObjectRef         `json:"validatorDisk"`
+	SubmissionDisk          ObjectRef         `json:"submissionDisk"`
+	SuiteDisk               ObjectRef         `json:"suiteDisk"`
+	ChallengeDisk           ObjectRef         `json:"challengeDisk"`
+	Manifest                Manifest          `json:"manifest"`
+	SourceSnapshot          *ObjectRef        `json:"sourceSnapshot,omitempty"`
 }
 
-// SuiteKeyMaterial is private. It must never appear in public receipts or exports.
+// SuiteKeyMaterial stays private throughout an active season. Only an explicit
+// authorized post-season SuiteRevealReceipt may publish its key/salt/digests;
+// jobs, run receipts, build reports and ordinary exports must never disclose it.
 type SuiteKeyMaterial struct {
-	Key []byte `json:"key"`
-	Salt []byte `json:"salt"`
+	Key             []byte `json:"key"`
+	Salt            []byte `json:"salt"`
 	PlaintextDigest string `json:"plaintextDigest"`
-	Commitment string `json:"commitment"`
+	Commitment      string `json:"commitment"`
 }
 
 type KeyCapsule struct {
-	Algorithm string `json:"algorithm"`
+	Algorithm          string `json:"algorithm"`
 	EphemeralPublicKey []byte `json:"ephemeralPublicKey"`
-	Nonce []byte `json:"nonce"`
-	Ciphertext []byte `json:"ciphertext"`
-	ContextDigest string `json:"contextDigest"`
+	Nonce              []byte `json:"nonce"`
+	Ciphertext         []byte `json:"ciphertext"`
+	ContextDigest      string `json:"contextDigest"`
 }
 
 type HiddenSuiteGrant struct {
-	Source ObjectRef `json:"source"`
-	Commitment string `json:"commitment"`
+	Source     ObjectRef  `json:"source"`
+	Commitment string     `json:"commitment"`
 	KeyCapsule KeyCapsule `json:"keyCapsule"`
 }
 
 type FixtureReport struct {
-	Name            string `json:"name"`
-	ExpectedOutcome string `json:"expectedOutcome"`
-	Outcome         string `json:"outcome"`
-	ScoreTicks      string `json:"scoreTicks,omitempty"`
-	Passed          bool   `json:"passed"`
+	Stage           string     `json:"stage,omitempty"`
+	FreshVMRuns     int        `json:"freshVmRuns,omitempty"`
+	RunReceipts     []Envelope `json:"runReceipts,omitempty"`
+	Name            string     `json:"name"`
+	ExpectedOutcome string     `json:"expectedOutcome"`
+	Outcome         string     `json:"outcome"`
+	ScoreTicks      string     `json:"scoreTicks,omitempty"`
+	Passed          bool       `json:"passed"`
 }
 
 type BuildReport struct {
-	ManifestDigest             string          `json:"manifestDigest"`
-	SourceSnapshotDigest       string          `json:"sourceSnapshotDigest"`
-	ValidatorDiskDigest        string          `json:"validatorDiskDigest"`
-	RebuiltValidatorDiskDigest string          `json:"rebuiltValidatorDiskDigest"`
-	ValidatorImageDigest       string          `json:"validatorImageDigest"`
-	SuiteDigest                string          `json:"suiteDigest"`
-	ExecutionProfileDigest     string          `json:"executionProfileDigest"`
-	OfflineRebuild             bool            `json:"offlineRebuild"`
-	Fixtures                   []FixtureReport `json:"fixtures"`
-	HostileCorpusPassed        bool            `json:"hostileCorpusPassed"`
-	ScansPassed                bool            `json:"scansPassed"`
-	Passed                     bool            `json:"passed"`
-	Findings                   []string        `json:"findings"`
-	ValidatorDisk              *ObjectRef      `json:"validatorDisk,omitempty"`
-	ChallengeDisk              *ObjectRef      `json:"challengeDisk,omitempty"`
-	SuiteDisk                  *ObjectRef      `json:"suiteDisk,omitempty"`
-	SubmissionDisk             *ObjectRef      `json:"submissionDisk,omitempty"`
+	FreshVMRuns                int                `json:"freshVmRuns,omitempty"`
+	SBOM                       *ObjectRef         `json:"sbom,omitempty"`
+	VulnerabilityScan          *VulnerabilityScan `json:"vulnerabilityScan,omitempty"`
+	ManifestDigest             string             `json:"manifestDigest"`
+	SourceSnapshotDigest       string             `json:"sourceSnapshotDigest"`
+	ValidatorDiskDigest        string             `json:"validatorDiskDigest"`
+	RebuiltValidatorDiskDigest string             `json:"rebuiltValidatorDiskDigest"`
+	ValidatorImageDigest       string             `json:"validatorImageDigest"`
+	SuiteDigest                string             `json:"suiteDigest"`
+	ExecutionProfileDigest     string             `json:"executionProfileDigest"`
+	OfflineRebuild             bool               `json:"offlineRebuild"`
+	Fixtures                   []FixtureReport    `json:"fixtures"`
+	HostileCorpusPassed        bool               `json:"hostileCorpusPassed"`
+	ScansPassed                bool               `json:"scansPassed"`
+	Passed                     bool               `json:"passed"`
+	Findings                   []string           `json:"findings"`
+	ValidatorDisk              *ObjectRef         `json:"validatorDisk,omitempty"`
+	ChallengeDisk              *ObjectRef         `json:"challengeDisk,omitempty"`
+	SuiteDisk                  *ObjectRef         `json:"suiteDisk,omitempty"`
+	SubmissionDisk             *ObjectRef         `json:"submissionDisk,omitempty"`
+}
+
+type VulnerabilityFinding struct {
+	Component string `json:"component"`
+	ID        string `json:"id"`
+	Severity  string `json:"severity"`
+	SourceURL string `json:"sourceUrl"`
+}
+
+type VulnerabilityScan struct {
+	PolicyVersion          string                 `json:"policyVersion"`
+	AdvisorySnapshotDigest string                 `json:"advisorySnapshotDigest"`
+	RuntimeInventoryDigest string                 `json:"runtimeInventoryDigest"`
+	SBOMDigest             string                 `json:"sbomDigest"`
+	ScannedAt              time.Time              `json:"scannedAt"`
+	PackagesChecked        int                    `json:"packagesChecked"`
+	Status                 string                 `json:"status"`
+	Findings               []VulnerabilityFinding `json:"findings"`
 }
 
 type RunReceipt struct {
+	ParentJobDigest         string          `json:"parentJobDigest,omitempty"`
+	VerificationPolicy      string          `json:"verificationPolicy,omitempty"`
 	AcceptanceReceiptDigest string          `json:"acceptanceReceiptDigest,omitempty"`
 	DeploymentMode          string          `json:"deploymentMode"`
 	OfficialAcceptance      bool            `json:"officialAcceptance"`
@@ -266,6 +302,8 @@ type Envelope struct {
 }
 
 type Receipt struct {
+	VerificationPolicy string         `json:"verificationPolicy,omitempty"`
+	VerificationStatus string         `json:"verificationStatus,omitempty"`
 	DeploymentMode     string         `json:"deploymentMode"`
 	OfficialAcceptance bool           `json:"officialAcceptance"`
 	APIVersion         string         `json:"apiVersion"`

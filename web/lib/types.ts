@@ -39,6 +39,9 @@ export interface Submission {
   sequence: number;
   status: string;
   outcome: string;
+  verificationPolicy?: "platform" | "independent";
+  verificationStatus?: "" | "platform_verified" | "independently_replicated";
+  independentReplication?: boolean;
   scoreTicks?: string;
   artifactDigest?: string;
   repository?: string;
@@ -66,6 +69,7 @@ export interface Challenge {
   reviewStatus: string;
   intakeStatus: string;
   economicMode: "none";
+  verificationPolicy?: "platform" | "independent";
   versionId: string;
   repository: string;
   sourceCommit: string;

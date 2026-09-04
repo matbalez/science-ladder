@@ -494,9 +494,10 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                 />
                 <h3>Tests & reproducibility</h3>
                 <p>
-                  Potential milestone and frontier results require confirmation
-                  on independent clean workers. Scores are adjudicated in
-                  acceptance-receipt order.
+                  {c.verificationPolicy === "platform"
+                    ? "This challenge uses platform verification: the locked checker runs on a dedicated host, with confirmation in a fresh virtual machine. Independent replication is recorded separately."
+                    : "This challenge requires confirmation on a different physical host group before a result can advance the frontier or claim a milestone."}{" "}
+                  Scores are adjudicated in acceptance-receipt order.
                 </p>
                 <JsonViewer
                   value={evaluation}
@@ -796,7 +797,7 @@ function SubmitForm({
       <div className="section-title">
         <div>
           <div className="section-kicker">
-            EXACT COMMIT · INDEPENDENT VERIFICATION
+            EXACT COMMIT · REPRODUCIBLE VERIFICATION
           </div>
           <h2>Submit a construction</h2>
         </div>
@@ -808,8 +809,8 @@ function SubmitForm({
           <div>
             <strong>Submission accepted. Your place is recorded.</strong>
             <p>
-              Follow validation, independent confirmation, and ordered
-              adjudication.
+              Follow validation, confirmation under this challenge’s locked
+              policy, and ordered adjudication.
             </p>
             <Link href={`/submissions/${accepted}`} className="button primary">
               Open submission receipt

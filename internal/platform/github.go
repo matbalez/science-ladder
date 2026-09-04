@@ -13,8 +13,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"github.com/matbalez/science-ladder/pkg/protocol"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -145,19 +143,22 @@ func (s *Server) fetchSnapshot(ctx context.Context, repository, commit string, c
 		if entry.Type != "blob" || entry.Mode == "120000" || entry.Mode == "160000" {
 			return result, fail(422, "unsafe_git_tree", "Symbolic links and submodules are not accepted")
 		}
-		if strings.HasPrefix(entry.Path, "/") || strings.Contains(entry.Path, "\\") || filepath.Clean(entry.Path) != entry.Path || strings.HasPrefix(entry.Path, "../") {
+		if protocol.ValidatePath(entry.Path) != nil {
 			return result, fail(422, "unsafe_path", "Repository contains an unsafe path")
 		}
 		if contract != nil {
 			allowed := false
 			for _, path := range contract.AllowedPaths {
-				prefix := strings.TrimSuffix(path, "/**")
-				if entry.Path == prefix || strings.HasPrefix(entry.Path, prefix+"/") {
+				prefix := path
+				if prefix == "*" || entry.Path == prefix || strings.HasSuffix(prefix, "/") && strings.HasPrefix(entry.Path, prefix) {
 					allowed = true
 				}
 			}
 			if !allowed {
 				continue
+			}
+			if entry.Mode != "100644" {
+				return result, fail(422, "artifact_mode_invalid", "Submitted artifacts cannot carry executable file modes")
 			}
 		}
 		if entry.Size > 20<<20 || total+entry.Size > 40<<20 {
@@ -211,21 +212,7 @@ func snapshotBytes(snapshot Snapshot) []byte {
 	return raw(map[string]any{"repositoryId": snapshot.RepositoryID, "sourceCommit": snapshot.Commit, "files": files})
 }
 func artifactBytes(snapshot Snapshot, contract protocol.SubmissionContract) ([]byte, string, error) {
-	dir, err := os.MkdirTemp("", "science-ladder-canonical-")
-	if err != nil {
-		return nil, "", err
-	}
-	defer os.RemoveAll(dir)
-	for p, b := range snapshot.Files {
-		dest := filepath.Join(dir, p)
-		if err = os.MkdirAll(filepath.Dir(dest), 0700); err != nil {
-			return nil, "", err
-		}
-		if err = os.WriteFile(dest, b, 0600); err != nil {
-			return nil, "", err
-		}
-	}
-	tree, digest, err := protocol.CanonicalArtifact(dir, contract)
+	tree, digest, err := protocol.ArtifactFromFiles(snapshot.Files, contract)
 	if err != nil {
 		return nil, "", err
 	}
