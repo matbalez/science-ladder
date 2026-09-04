@@ -2938,6 +2938,100 @@
         },
         "parameters": []
       }
+    },
+    "/challenge-versions/{id}/scientific-reviews": {
+      "post": {
+        "operationId": "request_scientific_rereview",
+        "summary": "Request actual scientific re-review with pinned source evidence",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 2000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner-only unlocked versions with a completed earlier review. Consumes remote-preparation budget and permits one pending request per version. Appends the actual provider report; earlier reports are immutable. Bounded exact-commit source evidence excludes hidden suites, private solver artifacts, repository instructions and detected credentials. Poll challenge reviewStatus and reviews. No automatic approval is implied."
+      }
     }
   },
   "components": {

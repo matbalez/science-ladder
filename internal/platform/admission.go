@@ -22,7 +22,7 @@ func (s *Server) reservePreparation(ctx context.Context, tx pgx.Tx, u *User) err
 		return fail(429, "preparation_grant_required", "A free validation grant is required before remote preparation")
 	}
 	var active int
-	if err := tx.QueryRow(ctx, `SELECT (SELECT count(*) FROM candidates WHERE owner_id=$1 AND status='resolving_sources')+(SELECT count(*) FROM submission_intents WHERE owner_id=$1 AND status IN('github_fetch','quarantine_pending','ready'))+(SELECT count(*) FROM preflights p JOIN challenge_versions v ON v.id=p.version_id JOIN challenges c ON c.id=v.challenge_id WHERE c.owner_id=$1 AND p.status IN('queued','waiting_for_quarantine','independent_confirmation'))`, u.ID).Scan(&active); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT (SELECT count(*) FROM candidates WHERE owner_id=$1 AND status='resolving_sources')+(SELECT count(*) FROM submission_intents WHERE owner_id=$1 AND status IN('github_fetch','quarantine_pending','ready'))+(SELECT count(*) FROM preflights p JOIN challenge_versions v ON v.id=p.version_id JOIN challenges c ON c.id=v.challenge_id WHERE c.owner_id=$1 AND p.status IN('queued','waiting_for_quarantine','independent_confirmation'))+(SELECT count(*) FROM scientific_review_requests WHERE requested_by=$1 AND status='queued')`, u.ID).Scan(&active); err != nil {
 		return err
 	}
 	if active >= 5 {

@@ -35,10 +35,11 @@ func TestScientificReviewRechecksFinalManifestSources(t *testing.T) {
 	_, old := seed(t, s)
 	ctx := context.Background()
 	version := ID()
-	manifest := protocol.Manifest{APIVersion: protocol.APIVersion, Kind: "Challenge", Evidence: []protocol.Source{{URL: "https://127.0.0.1/secret", Title: "Changed after candidate import", Evidence: "This evidence was never safely retrieved", Location: "p1"}}}
+	manifest := reviewTestManifest()
 	if _, err := s.DB.Exec(ctx, `INSERT INTO challenge_versions(id,challenge_id,repository,repository_id,source_commit,source_digest,manifest,deadline) SELECT $1,challenge_id,repository,repository_id,source_commit,source_digest,$2,deadline FROM challenge_versions WHERE id=$3`, version, raw(manifest), old); err != nil {
 		t.Fatal(err)
 	}
+	configureReviewStorage(t, s, manifest, version)
 	s.Config.OpenAIKey = "synthetic-test-key"
 	s.Config.OpenAIModel = "synthetic-review-model"
 	calls := 0

@@ -34,6 +34,7 @@ func (s *Server) routes(m *http.ServeMux) {
 	m.HandleFunc("GET /v1/openapi.json", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "docs/openapi.json") })
 	m.HandleFunc("POST /v1/challenges", s.wrap(true, s.createChallenge))
 	m.HandleFunc("POST /v1/challenge-versions/{id}/preflights", s.wrap(true, s.startPreflight))
+	m.HandleFunc("POST /v1/challenge-versions/{id}/scientific-reviews", s.wrap(true, s.requestScientificReview))
 	m.HandleFunc("GET /v1/preflights/{id}", s.wrap(true, s.getPreflight))
 	m.HandleFunc("POST /v1/challenge-versions/{id}/lock", s.wrap(true, s.lockChallenge))
 	m.HandleFunc("POST /v1/challenge-versions/{id}/publish", s.wrap(true, s.publishChallenge))

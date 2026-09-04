@@ -54,6 +54,8 @@ func (s *Server) workOne(ctx context.Context) error {
 		err = s.completeMigration(jobctx, resource)
 	case "scientific_review":
 		err = s.scientificReview(jobctx, resource)
+	case "scientific_rereview":
+		err = s.scientificRereview(jobctx, resource)
 	case "validate_submission":
 		err = s.queueSubmission(jobctx, resource)
 	case "adjudicate":
