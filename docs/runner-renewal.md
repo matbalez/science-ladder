@@ -46,16 +46,22 @@ inventory and policy failures still fail closed; the guard grants no execution
 authority and does not replace full host checks in Run/Prepare.
 
 Before this guard, claiming work with expired host authorization could leave an
-uncompleted lease. Lease recovery remains fenced and excludes the failing host;
-other infrastructure faults can therefore still leave single-host work without
-an eligible host. The API does not currently store either trust expiry. Renewal
+uncompleted lease. Lease recovery remains fenced. Jobs with explicit
+platform-verification policy
+can retry an expired lease on the same host with a fresh capability; existing
+exclusions and the eight-attempt limit remain in force. Legacy and independent
+jobs still exclude the previous host. A signed infrastructure fault also retains
+its host exclusion, so such faults can leave single-host work without an eligible
+host. The API does not currently store either trust expiry. Renewal
 and explicit infrastructure-failure recovery remain operator responsibilities.
 
 There is no operator drain or recovery HTTP endpoint yet. Do not delete receipts,
 clear exclusions indiscriminately, or relabel failed work as successful. A failed
-preflight can use a new authorized preflight request after repair. An expired
-leased submission needs explicit operator reconciliation with the backend's
-fencing and acceptance-order rules before a fresh authorized attempt.
+preflight can use a new authorized preflight request after repair. Expired
+platform-policy leases recover automatically within the attempt limit.
+Explicitly excluded or attention-required jobs still need operator reconciliation
+with the backend's fencing and acceptance-order rules before a fresh authorized
+attempt.
 
 ## Safe renewal sequence
 
