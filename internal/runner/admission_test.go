@@ -11,6 +11,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -57,7 +58,7 @@ func TestAdmissionSignedDeadlineWindows(t *testing.T) {
 		name           string
 		host, advisory time.Duration
 		allowed        bool
-	}{{"current", time.Hour, time.Hour, true}, {"expired host", -time.Second, time.Hour, false}, {"expired advisory", time.Hour, -time.Second, false}, {"near host", 19 * time.Minute, time.Hour, false}, {"near advisory", time.Hour, 19 * time.Minute, false}, {"exact safety boundary", time.Hour, AdmissionSafetyWindow, false}} {
+	}{{"current", time.Hour, time.Hour, true}, {"expired host", -time.Second, time.Hour, false}, {"expired advisory", time.Hour, -time.Second, true}, {"near host", 19 * time.Minute, time.Hour, false}, {"near advisory", time.Hour, 19 * time.Minute, true}, {"exact advisory boundary", time.Hour, AdmissionSafetyWindow, true}} {
 		t.Run(test.name, func(t *testing.T) {
 			config, keys := admissionFixture(t, now, test.host, test.advisory)
 			window, err := LoadAdmissionWindow(config, keys)
@@ -67,6 +68,14 @@ func TestAdmissionSignedDeadlineWindows(t *testing.T) {
 			err = window.Check(now)
 			if (err == nil) != test.allowed || err != nil && !errors.Is(err, ErrAdmissionMaintenance) {
 				t.Fatalf("allowed=%v, error=%v", test.allowed, err)
+			}
+			purposes, purposeErr := window.Purposes(now)
+			if test.allowed {
+				if purposeErr != nil || len(purposes) < 3 || slices.Contains(purposes, "preflight") != (test.advisory > AdmissionSafetyWindow) {
+					t.Fatalf("wrong work eligibility: %v %v", purposes, purposeErr)
+				}
+			} else if purposeErr == nil || len(purposes) != 0 {
+				t.Fatal("expired host retained claim purposes")
 			}
 		})
 	}
@@ -83,6 +92,64 @@ func TestAdmissionSignedDeadlineWindows(t *testing.T) {
 	}
 	if !errors.Is((AdmissionWindow{}).Check(now), ErrAdmissionMaintenance) {
 		t.Fatal("zero trust cache admitted work")
+	}
+}
+
+func TestRenewedAuthorizationSurvivesOldDeadlineWithoutRefreshingScan(t *testing.T) {
+	now := time.Now().UTC()
+	config, keys := admissionFixture(t, now, time.Hour, time.Hour)
+	key, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	keys["renewal-platform"] = &key.PublicKey
+	payload, _ := protocol.Verify(config.Attestation, keys)
+	var original HostAttestation
+	if err := protocol.DecodeStrict(payload, &original); err != nil {
+		t.Fatal(err)
+	}
+	baseBytes, _ := os.ReadFile(config.AdvisorySnapshot.Path)
+	renewAt := now.Add(2 * time.Hour)
+	fresh := original
+	fresh.ExpiresAt = renewAt.Add(24 * time.Hour)
+	envelope, _ := protocol.Sign("renewal-platform", key, fresh)
+	updated, window, err := RenewAuthorization(config, keys, envelope, renewAt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	purposes, err := window.Purposes(renewAt)
+	if err != nil || !slices.Equal(purposes, []string{"artifact_prepare", "submission", "confirmation"}) {
+		t.Fatalf("renewed old challenge cannot continue: %v %v", purposes, err)
+	}
+	before, _ := ConfigBindingDigest(config)
+	after, _ := ConfigBindingDigest(updated)
+	bytesAfter, _ := os.ReadFile(config.AdvisorySnapshot.Path)
+	if before != after || string(baseBytes) != string(bytesAfter) {
+		t.Fatal("renewal altered original evidence or configuration")
+	}
+	if window.NeedsRenewal(renewAt.Add(17*time.Hour)) || !window.NeedsRenewal(renewAt.Add(18*time.Hour)) {
+		t.Fatal("renewal margin is not six hours")
+	}
+	if window.Check(renewAt.Add(24*time.Hour)) == nil {
+		t.Fatal("fresh lease did not expire")
+	}
+	for name, alter := range map[string]func(*HostAttestation){
+		"other host":          func(a *HostAttestation) { a.HostID = "other" },
+		"other physical host": func(a *HostAttestation) { a.PhysicalHostID = "other" },
+		"changed egress":      func(a *HostAttestation) { a.EgressPolicyVerified = false },
+		"different config":    func(a *HostAttestation) { a.ConfigDigest = protocol.DigestBytes([]byte("changed")) },
+		"overlong lease":      func(a *HostAttestation) { a.ExpiresAt = renewAt.Add(26 * time.Hour) },
+		"expired lease":       func(a *HostAttestation) { a.ExpiresAt = renewAt },
+	} {
+		t.Run(name, func(t *testing.T) {
+			a := fresh
+			alter(&a)
+			forged, _ := protocol.Sign("renewal-platform", key, a)
+			if _, _, err := RenewAuthorization(config, keys, forged, renewAt); err == nil {
+				t.Fatal("accepted changed/invalid enrollment")
+			}
+		})
+	}
+	envelope.Signatures = nil
+	if _, _, err := RenewAuthorization(config, keys, envelope, renewAt); err == nil {
+		t.Fatal("accepted invalid signature")
 	}
 }
 

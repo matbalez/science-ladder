@@ -8,7 +8,7 @@ Public MIT source: [matbalez/science-ladder](https://github.com/matbalez/science
 | Component or evidence | Current state |
 | --- | --- |
 | Web deployment | Published on Fly.io with prominent Participate instructions and the Quiet Echoes educational explorer |
-| API deployment | Revision `727dd76` deployed, including preserved-history researcher context; expired platform-policy leases can retry on the available host with fresh fencing |
+| API deployment | Automatic unchanged-host authorization renewal and purpose-filtered claims; preserved-history researcher context; expired platform-policy leases retry with fresh fencing |
 | Dedicated verifier | Running and connected to the API at the latest check; signed hardware isolation checks and the reviewed runtime advisory scan passed |
 | Quiet Echoes hosted preflight 2 | Signed machine checks passed, including repeated fixture execution in fresh microVMs |
 | Publication review | Actual human approval recorded separately from the preserved automated reviews; challenge version locked and published |
@@ -57,11 +57,16 @@ disk. A complete application-level restore and audit-reconciliation drill is not
 claimed; backups and snapshot configuration alone do not establish recovery.
 See [persistence and recovery](persistence.md).
 
-## Next operator deadline
+## Verification continuity
 
-The runner will stop new claims on **5 September 2026 at 15:16:26 PDT
-(22:16:26 UTC)**, twenty minutes before its earliest signed-trust expiry. It will
-finish existing result delivery and enter maintenance cleanly. Renewal is manual:
-refresh and review advisory evidence, renew the signed host/config binding, and
-drain/restart using the [renewal runbook](runner-renewal.md). No trust lifetime was
-extended. The website and existing records remain available during this pause.
+Host authorization now renews automatically on startup and six hours before each
+24-hour lease expires. Temporary API failures retry without stopping a valid
+lease; the worker recovers automatically if authorization has expired. The
+previous daily all-job maintenance cutoff is removed. Existing challenge
+verification continues after the original advisory snapshot expires.
+
+Fresh advisory evidence remains required for admitting new checkers. The original
+snapshot's preflight admission deadline is 5 September 2026 at 22:16:26 UTC;
+this does not block submitted solutions to published challenges. TLS certificates
+still require rotation before 3 December 2026. See the
+[authorization and advisory runbook](runner-renewal.md).

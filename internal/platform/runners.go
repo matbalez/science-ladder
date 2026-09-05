@@ -98,6 +98,15 @@ func (s *Server) runnerIdentity(r *http.Request) (runnerIdentity, error) {
 }
 func (s *Server) RunnerHandler() http.Handler {
 	m := http.NewServeMux()
+	m.HandleFunc("POST /internal/v1/runner/authorization/renew", func(w http.ResponseWriter, r *http.Request) {
+		host, err := s.runnerIdentity(r)
+		if err == nil {
+			err = s.renewRunnerAuthorization(w, r, host)
+		}
+		if err != nil {
+			writeError(w, err)
+		}
+	})
 	m.HandleFunc("POST /internal/v1/runner/jobs/claim", func(w http.ResponseWriter, r *http.Request) {
 		host, err := s.runnerIdentity(r)
 		if err == nil {
@@ -145,6 +154,14 @@ func (s *Server) RunRunnerListener(ctx context.Context) error {
 	return server.ListenAndServeTLS(s.Config.RunnerTLSCert, s.Config.RunnerTLSKey)
 }
 func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host runnerIdentity) error {
+	purposes, err := requestedRunnerPurposes(r, host.Purposes)
+	if err != nil {
+		return err
+	}
+	if len(purposes) == 0 {
+		respond(w, 200, map[string]any{"job": nil})
+		return nil
+	}
 	if s.Store == nil {
 		return fail(503, "storage_unavailable", "Immutable storage unavailable")
 	}
@@ -164,7 +181,7 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 	var id string
 	var payload []byte
 	var fence int64
-	err = tx.QueryRow(ctx, `SELECT id,payload,fence FROM runner_jobs WHERE status='queued' AND purpose=ANY($2) AND (purpose IN ('preflight','artifact_prepare') OR payload->>'executionProfileDigest'=$4) AND NOT COALESCE(payload->'excludedHostIds','[]'::jsonb) ? $3 AND (excluded_group IS NULL OR excluded_group<>$1) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, host.Group, host.Purposes, host.ID, host.ExecutionProfile).Scan(&id, &payload, &fence)
+	err = tx.QueryRow(ctx, `SELECT id,payload,fence FROM runner_jobs WHERE status='queued' AND purpose=ANY($2) AND (purpose IN ('preflight','artifact_prepare') OR payload->>'executionProfileDigest'=$4) AND NOT COALESCE(payload->'excludedHostIds','[]'::jsonb) ? $3 AND (excluded_group IS NULL OR excluded_group<>$1) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, host.Group, purposes, host.ID, host.ExecutionProfile).Scan(&id, &payload, &fence)
 	if errors.Is(err, pgx.ErrNoRows) {
 		respond(w, 200, map[string]any{"job": nil})
 		return nil

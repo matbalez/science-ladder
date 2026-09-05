@@ -1,69 +1,76 @@
-# Runner trust renewal
+# Runner authorization and advisory renewal
 
-The currently commissioned verifier needs operator maintenance before its first
-24-hour trust window expires. Renewal is not yet scheduled or automatic. The
-public website and stored results remain available during a verification pause.
-This deployment remains `controlled-demo`; renewal does not certify production
-readiness or turn one physical host into independent replication.
+The worker automatically renews permission to execute on its unchanged approved
+host. Existing locked challenges do not stop every day when an advisory snapshot
+expires. Fresh advisory evidence remains required when admitting a new checker.
+This deployment uses the existing platform signer and single-host platform
+verification; renewal is not a new hardware or vulnerability assessment.
 
-## Observed deadlines
+## Automatic authorization
 
-These dates were read from the deployed signed configuration and advisory on
-4 September 2026. Certificate dates are from the provisioned public certificates.
-Read the current files again before every operation; this table is an audit record,
-not a live status display.
+An operator enrolls the exact commissioned `HostAttestation` template and its
+configuration digest in `runner_authorization_enrollments`, with an approval
+reason. The template is immutable; an operator can disable it. The worker cannot
+supply new physical-tenancy, egress, profile or inventory claims.
 
-| Authority | Expiry in UTC | Vancouver time | Effect |
-| --- | --- | --- | --- |
-| Signed advisory snapshot | 2026-09-05 22:36:26.017165 | 5 September, 15:36:26 PDT | Fresh preflight scans fail as stale/unknown |
-| Signed host attestation | 2026-09-05 22:49:34.304148 | 5 September, 15:49:34 PDT | New runs and preparations fail host authorization |
-| Runner client and API server TLS certificates | 2026-12-03 22:11:10 | 3 December, 14:11:10 PST | New mTLS connections fail |
-| Private runner TLS CA certificate | 2027-09-04 22:11:10 | 4 September, 15:11:10 PDT | Certificate-chain validation fails |
+On startup, and thereafter when six hours or less remain, the daemon calls
+`POST /internal/v1/runner/authorization/renew` over the dedicated mTLS connection.
+The API checks the active host, certificate delegation, exact configuration
+and enabled enrollment. It signs the unchanged template with a new 24-hour
+expiry and records append-only issuance evidence. The daemon verifies the
+signature, unchanged claims and pinned files, then adopts the lease in memory.
+The platform private key stays off the verification server. On-disk commissioned
+evidence and advisory timestamps remain unchanged.
 
-The worker stops accepting new work **20 minutes before** either signed trust
-deadline: a 15-minute lease plus a five-minute transport/delivery margin. For the
-recorded configuration this is **5 September, 22:16:26 UTC / 15:16:26 PDT**.
-Start renewal before that admission deadline, allowing review and rollback time.
-The current daemon
-loads its configuration, trust maps and TLS client once: replacing files alone
-does not renew the running process.
+Before each claim, at least twenty minutes of host authorization must remain:
+a fifteen-minute job lease plus a five-minute delivery margin. Failed renewal
+retains a still-valid lease and retries at most once a minute. If authorization
+expires, the daemon waits without consuming jobs and recovers automatically when
+renewal succeeds. Already signed results are replayed before new claims. Actual
+host controls and pins are checked on startup and renewal and independently
+before every execution. Invalid controls or signatures still prevent execution.
 
-Advisory expiry is checked by the offline scanner during preflight. Already locked
-submissions do not rerun that scanner on each submission; host attestation remains
-an admission check for each new run. Expiry does not erase or retroactively change
-historical signed receipts. A run admitted before host expiry can finish within
-its separate job deadline.
+Revoking a host prevents authenticated claims; disabling its renewal enrollment
+prevents new leases. Disabling only renewal does not retract an already issued
+lease. For immediate removal, disable the host as well.
 
-## Current failure and recovery behavior
+## Advisory freshness applies to new checkers
 
-The daemon verifies and caches its signed host/config and advisory trust window,
-then checks that window before every claim request. Near expiry it first finishes
-the current attempt and result delivery, then exits successfully into maintenance
-without claiming another job. The service's `Restart=on-failure` does not restart
-this intentional stop. A manual restart with expired signed trust can replay
-already signed results but cannot claim or execute new work. Signature, pin,
-inventory and policy failures still fail closed; the guard grants no execution
-authority and does not replace full host checks in Run/Prepare.
+The worker requests only eligible purposes. `artifact_prepare`, `submission`
+and `confirmation` remain eligible under valid host authorization after the
+advisory expires. `preflight` is omitted once less than twenty minutes remain on
+the signed advisory. The API intersects requested purposes with the host's
+existing permissions; a request can never broaden enrollment. The preflight
+scanner independently rejects stale or incomplete evidence.
 
-Before this guard, claiming work with expired host authorization could leave an
-uncompleted lease. Lease recovery remains fenced. Jobs with explicit
-platform-verification policy
-can retry an expired lease on the same host with a fresh capability; existing
-exclusions and the eight-attempt limit remain in force. Legacy and independent
-jobs still exclude the previous host. A signed infrastructure fault also retains
-its host exclusion, so such faults can leave single-host work without an eligible
-host. The API does not currently store either trust expiry. Renewal
-and explicit infrastructure-failure recovery remain operator responsibilities.
+Existing challenges retain their exact locked checker, runtime and scientific
+contract. Historical advisory evidence is verified at its recorded generation
+time; this is not a claim that it covers newly discovered vulnerabilities.
+A new relevant security finding requires operator assessment and, if needed,
+revocation or a reviewed runtime migration. New checker admission requires the
+fresh-source procedure below; automatic source collection is not implemented.
 
-There is no operator drain or recovery HTTP endpoint yet. Do not delete receipts,
-clear exclusions indiscriminately, or relabel failed work as successful. A failed
-preflight can use a new authorized preflight request after repair. Expired
-platform-policy leases recover automatically within the attempt limit.
-Explicitly excluded or attention-required jobs still need operator reconciliation
-with the backend's fencing and acceptance-order rules before a fresh authorized
-attempt.
+Expiry does not erase or rewrite historical receipts. Expired platform-policy
+job leases may retry on the same host with fresh fencing, subject to the existing
+eight-attempt limit. Explicit infrastructure-fault exclusions and independent
+verification policies retain their restrictions; those faults can require
+operator reconciliation. Never delete receipts or relabel failed work successful.
 
-## Safe renewal sequence
+## Other credential lifetimes
+
+The original signed advisory expires on **5 September 2026 at 22:36:26 UTC**.
+With its admission margin, new checker preflights need refreshed evidence after
+22:16:26 UTC. This does not pause solutions for published challenges. The original
+on-disk host attestation expires at 22:49:34 UTC that day; the daemon now obtains
+its own renewable authorization instead of stopping at that date.
+
+The commissioned runner client and API server TLS certificates expire on
+**3 December 2026 at 22:11:10 UTC**, and their CA on **4 September 2027 at
+22:11:10 UTC**. TLS rotation is separate and not automated by this change. Read
+current certificates and the latest `runner_authorization_renewals` rows for
+current operational status; these dates document the original commissioning.
+
+## Installing fresh advisory evidence or a changed configuration
 
 1. Record the current signed config, advisory, public keys, file digests, host
    identity, profile, epoch and inventory row in the operator audit. Preserve the
@@ -99,7 +106,9 @@ attempt.
    Compute the new binding with `runnerd config-digest --config PROPOSED_CONFIG`.
    The authorized platform host-attestation signer must bind that exact config,
    host identity, physical ownership/egress assertions, epoch and execution profile
-   to a fresh bounded expiry. Keep the platform private signing key off the runner.
+   to a fresh bounded expiry. Enroll that exact approved template in
+   `runner_authorization_enrollments` and disable the superseded enrollment.
+   Keep the platform private signing key off the runner.
    Advisory renewal alone does not change the guest execution profile or scientific
    challenge locks. A runtime or guest-semantic change follows security migration
    rules instead of this renewal path.
@@ -131,33 +140,3 @@ restarts the runner's TLS client, and rolls the API's server certificate. Rotate
 the CA with an explicit trust-overlap plan before its expiry. Retain signing-key
 history separately: a certificate replacement is not permission to discard old
 receipt verification keys.
-
-## Smallest supported automation path
-
-The existing code provides strict scanner, signature, binding, host-check,
-hardware-probe and expiry-aware claim-admission primitives. It does not yet provide
-a complete refresh collector, review-aware renewal command, scheduled signer or
-drain API. Installing a timer that merely re-signs yesterday's snapshot is not a
-proper maintenance implementation.
-
-A bounded implementation should add:
-
-- A reproducible primary-source collector and exact-inventory matcher that archives
-  raw responses. Existing applicability decisions may be reused only while their
-  exact package versions, relevant advisory assessment and supporting evidence
-  remain unchanged. Changed or new security records stop automatic approval and
-  produce a review request. Missing sources and stale coverage remain failures.
-- A dedicated renewal signer outside the application and runner, using restricted
-  managed-key authority. It may renew an unchanged approved host/config only after
-  fresh authenticated control measurements. It must not allow a compromised host
-  to grant itself tenancy, egress or new component authorization.
-- A transactionally coordinated drain/install/inventory/restart operation with
-  audit records and operator alerts before the existing admission guard stops
-  claims. Existing result delivery must continue. Failure keeps admission paused
-  rather than consuming and stranding jobs.
-
-A small operator command that validates and installs an already reviewed, newly
-signed snapshot/config bundle would reduce manual errors and is a reasonable next
-step. It would not itself automate scientific/security review or primary-source
-refresh. The admission guard is installed; automatic renewal and lifetime
-extensions are not.

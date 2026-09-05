@@ -27,7 +27,7 @@ type AdmissionWindow struct {
 
 // LoadAdmissionWindow verifies signatures, exact config/file bindings and base
 // runtime advisory coverage once. It deliberately preserves expired deadlines so
-// serve can replay existing signed results and then enter maintenance cleanly.
+// serve can replay existing signed results and automatically renew authorization.
 func LoadAdmissionWindow(config Config, keys map[string]crypto.PublicKey) (AdmissionWindow, error) {
 	var window AdmissionWindow
 	payload, err := protocol.Verify(config.Attestation, keys)
@@ -75,7 +75,7 @@ func LoadAdmissionWindow(config Config, keys map[string]crypto.PublicKey) (Admis
 		return window, errors.New("admission inventory does not bind the configured runtime")
 	}
 	// Check signed structure, provenance and exact coverage at generation time;
-	// Check below enforces the preserved time window against the current clock.
+	// Check/Purposes below apply the distinct authorization and preflight deadlines.
 	if _, status := ScanAdvisories(inventory.Packages, advisory, advisory.GeneratedAt); status != "pass" {
 		return window, errors.New("admission advisory coverage is not approved")
 	}
@@ -90,13 +90,64 @@ func (w AdmissionWindow) Check(now time.Time) error {
 	if now.Before(w.validFrom) {
 		return fmt.Errorf("%w: signed advisory is not yet valid", ErrAdmissionMaintenance)
 	}
-	for _, authority := range []struct {
-		name    string
-		expires time.Time
-	}{{"host attestation", w.hostExpires}, {"advisory snapshot", w.advisoryExpires}} {
-		if !authority.expires.After(now.Add(AdmissionSafetyWindow)) {
-			return fmt.Errorf("%w: %s expires at %s; requires more than %s remaining", ErrAdmissionMaintenance, authority.name, authority.expires.UTC().Format(time.RFC3339), AdmissionSafetyWindow)
-		}
+	if !w.hostExpires.After(now.Add(AdmissionSafetyWindow)) {
+		return fmt.Errorf("%w: host authorization expires at %s; requires more than %s remaining", ErrAdmissionMaintenance, w.hostExpires.UTC().Format(time.RFC3339), AdmissionSafetyWindow)
 	}
 	return nil
+}
+
+// Purpose filtering keeps a stale admission scan from shutting down already
+// locked challenges. Preflight still requires current evidence, and its scanner
+// independently checks freshness. The API intersects this list with enrollment.
+func (w AdmissionWindow) Purposes(now time.Time) ([]string, error) {
+	if err := w.Check(now); err != nil {
+		return nil, err
+	}
+	purposes := []string{"artifact_prepare", "submission", "confirmation"}
+	if w.advisoryExpires.After(now.Add(AdmissionSafetyWindow)) {
+		purposes = append(purposes, "preflight")
+	}
+	return purposes, nil
+}
+
+func (w AdmissionWindow) NeedsRenewal(now time.Time) bool {
+	return !w.verified || !w.hostExpires.After(now.Add(6*time.Hour))
+}
+
+func (w AdmissionWindow) HostExpiresAt() time.Time { return w.hostExpires }
+
+// RenewAuthorization accepts only a bounded lease for the exact existing
+// operator-approved enrollment. A renewed lease is not fresh vulnerability or
+// hardware-measurement evidence. All existing pins and Run/Prepare checks remain.
+func RenewAuthorization(config Config, keys map[string]crypto.PublicKey, envelope protocol.Envelope, now time.Time) (Config, AdmissionWindow, error) {
+	decode := func(e protocol.Envelope) (HostAttestation, error) {
+		var a HostAttestation
+		payload, err := protocol.Verify(e, keys)
+		if err == nil {
+			err = protocol.DecodeStrict(payload, &a)
+		}
+		return a, err
+	}
+	old, err := decode(config.Attestation)
+	if err != nil {
+		return config, AdmissionWindow{}, err
+	}
+	fresh, err := decode(envelope)
+	if err != nil {
+		return config, AdmissionWindow{}, err
+	}
+	if !fresh.ExpiresAt.After(now.Add(AdmissionSafetyWindow)) || fresh.ExpiresAt.After(now.Add(25*time.Hour)) {
+		return config, AdmissionWindow{}, errors.New("renewed host authorization has an invalid lease duration")
+	}
+	old.ExpiresAt = fresh.ExpiresAt
+	if old != fresh {
+		return config, AdmissionWindow{}, errors.New("renewal changes the approved host enrollment")
+	}
+	proposed := config
+	proposed.Attestation = envelope
+	window, err := LoadAdmissionWindow(proposed, keys)
+	if err != nil {
+		return config, AdmissionWindow{}, err
+	}
+	return proposed, window, nil
 }

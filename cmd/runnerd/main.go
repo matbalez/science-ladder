@@ -190,20 +190,46 @@ func run(args []string) error {
 	if err := replayResults(ctx, client, base, config.ResultSpool); err != nil {
 		return err
 	}
-	// Delivery of already signed results is allowed during trust maintenance.
-	// No execution or claim is allowed until both admission and host checks pass.
-	if err := admission.Check(time.Now()); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return nil
-	}
-	if err := config.CheckHost(keys); err != nil {
-		return err
-	}
+	authorization := hostAuthorization{config: config, window: admission, keys: keys}
+	controlsChecked, waitingForAuthorization, preflightUnavailable := false, false, false
 	for ctx.Err() == nil {
-		claim, err := claimIfAdmitted(ctx, client, base, func() error { return admission.Check(time.Now()) })
+		renewed, renewalErr := authorization.refresh(ctx, client, base, time.Now())
+		if renewalErr != nil {
+			fmt.Fprintln(os.Stderr, "host authorization renewal unavailable; retaining only the existing valid lease:", renewalErr)
+		}
+		if renewed {
+			config = authorization.config
+			runtime.Config = config
+			controlsChecked = false
+			fmt.Fprintln(os.Stderr, "approved host authorization renewed through", authorization.window.HostExpiresAt().UTC().Format(time.RFC3339))
+		}
+		if err := authorization.window.Check(time.Now()); err != nil {
+			if !waitingForAuthorization {
+				fmt.Fprintln(os.Stderr, err, "; waiting for automatic renewal without claiming work")
+			}
+			waitingForAuthorization = true
+			if !pause(ctx, 10*time.Second) {
+				break
+			}
+			continue
+		}
+		waitingForAuthorization = false
+		// Actual pins and host controls are checked on startup and renewal, and
+		// Run/Prepare independently enforce them before executing every job.
+		if !controlsChecked {
+			if err := config.CheckHost(keys); err != nil {
+				return err
+			}
+			controlsChecked = true
+		}
+		purposes, _ := authorization.window.Purposes(time.Now())
+		if len(purposes) == 3 && !preflightUnavailable {
+			fmt.Fprintln(os.Stderr, "advisory refresh needed for new checker preflights; existing challenge verification remains available")
+			preflightUnavailable = true
+		}
+		claim, err := claimIfAdmitted(ctx, client, base, func() ([]string, error) { return authorization.window.Purposes(time.Now()) })
 		if errors.Is(err, runner.ErrAdmissionMaintenance) {
-			fmt.Fprintln(os.Stderr, err)
-			return nil
+			continue // Recheck/renew before issuing any further claim.
 		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "runner claim unavailable; retrying without accepting work")

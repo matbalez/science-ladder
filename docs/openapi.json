@@ -3130,6 +3130,170 @@
           }
         }
       }
+    },
+    "/internal/v1/runner/jobs/claim": {
+      "post": {
+        "servers": [
+          {
+            "url": "/",
+            "description": "Separate mTLS runner listener; not the public /v1 API"
+          }
+        ],
+        "security": [
+          {
+            "RunnerMTLS": []
+          }
+        ],
+        "tags": [
+          "Runner control plane"
+        ],
+        "operationId": "claim_runner_job",
+        "summary": "Claim one job within enrolled and requested purposes",
+        "description": "An omitted purposes member preserves legacy behavior and considers all enrolled purposes. An explicit empty array claims no work. Requested purposes are intersected with operator enrollment and cannot expand permissions. Workers omit preflight when advisory evidence is stale while continuing locked artifact preparation and solution verification.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "purposes": {
+                    "type": "array",
+                    "maxItems": 4,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "preflight",
+                        "artifact_prepare",
+                        "submission",
+                        "confirmation"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Malformed or unsupported request"
+          },
+          "401": {
+            "description": "Verified mutual TLS client certificate required"
+          },
+          "403": {
+            "description": "Runner identity, enrollment or delegation is not active"
+          },
+          "503": {
+            "description": "Required signing or storage service unavailable"
+          },
+          "200": {
+            "description": "One signed fenced job, or job:null when no eligible work exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "job"
+                  ],
+                  "properties": {
+                    "job": {
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Envelope"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "resultToken": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/v1/runner/authorization/renew": {
+      "post": {
+        "servers": [
+          {
+            "url": "/",
+            "description": "Separate mTLS runner listener; not the public /v1 API"
+          }
+        ],
+        "security": [
+          {
+            "RunnerMTLS": []
+          }
+        ],
+        "tags": [
+          "Runner control plane"
+        ],
+        "operationId": "renew_runner_authorization",
+        "summary": "Renew authorization for an unchanged operator-enrolled host configuration",
+        "description": "Only available on the separate mTLS runner listener. The server loads an enabled immutable operator-approved HostAttestation template for this host and configuration digest, verifies its identity/group/profile/epoch against active enrollment, and changes only its expiry to 24 hours from issuance. The signed authorization and audit event are persisted before delivery. This is continued authorization, not a new advisory collection or hardware assessment. Client-provided host templates, tenancy, egress assertions or expiry values are rejected.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "configDigest"
+                ],
+                "properties": {
+                  "configDigest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Malformed or unsupported request"
+          },
+          "401": {
+            "description": "Verified mutual TLS client certificate required"
+          },
+          "403": {
+            "description": "Runner identity, enrollment or delegation is not active"
+          },
+          "503": {
+            "description": "Required signing or storage service unavailable"
+          },
+          "200": {
+            "description": "Signed bounded authorization for the unchanged approved host",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "attestation"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "attestation": {
+                      "$ref": "#/components/schemas/Envelope"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3142,6 +3306,10 @@
       "token": {
         "type": "http",
         "scheme": "bearer"
+      },
+      "RunnerMTLS": {
+        "type": "mutualTLS",
+        "description": "Operator-enrolled client certificate on the separate runner listener. This authentication is not available on the public API."
       }
     },
     "schemas": {

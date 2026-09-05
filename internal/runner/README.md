@@ -4,9 +4,12 @@
 code. `runnerd serve` uses a dedicated mTLS listener, verifies signed jobs, consumes
 exact-object grants, uploads deterministic disks with bounded one-job PUT grants,
 and returns signed typed results. A failed trust or resource check fails closed.
-Before every claim, a cached signed host/advisory admission window must have more
-than twenty minutes remaining. Otherwise the daemon completes existing delivery
-and exits successfully into maintenance; it never renews trust itself. See the
+Before every claim, signed host authorization must have more than twenty minutes
+remaining. The daemon automatically renews its exact operator-approved enrollment
+on startup and with six hours remaining. Temporary renewal failures retain the
+valid lease and retry; expiry pauses claims until automatic recovery. Stale
+advisory evidence blocks new checker preflight only, not existing challenge
+verification. Actual host controls remain mandatory before every execution. See the
 [renewal runbook](../../docs/runner-renewal.md).
 
 The Linux guest uses `/sbin/sl-init` (the `runnerd` executable installed under that
