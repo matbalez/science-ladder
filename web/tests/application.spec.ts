@@ -87,9 +87,9 @@ test("public empty state has no invented challenges and mobile has no horizontal
   );
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.getByText("The next frontier is waiting.")).toBeVisible();
+  await expect(page.getByText("No challenges published yet.")).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Explore the Challenge Scout" }),
+    page.getByRole("link", { name: "Create the first challenge" }),
   ).toBeVisible();
   expect(
     await page.evaluate(
@@ -123,7 +123,7 @@ test("flat canonical manifest renders real evidence, gates, and exact score deci
   await expect(
     page.getByText("900,719,925,474,099.312345", { exact: false }).first(),
   ).toBeVisible();
-  await page.getByRole("tab", { name: "Evaluation contract" }).click();
+  await page.getByRole("tab", { name: "Evaluation" }).click();
   await expect(
     page.getByText("Every coordinate must be finite.", { exact: true }),
   ).toBeVisible();
@@ -157,10 +157,11 @@ test("candidate import validates YAML and preserves canonical prompt inputs", as
   await page
     .getByLabel("Field or topic", { exact: true })
     .fill("Quantum geometry");
-  await page.getByText("Preview the complete prompt").click();
+  await page.getByText("Read prompt", { exact: true }).click();
   await expect(
     page.getByText("Topic: Quantum geometry", { exact: false }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Import it for review" }).click();
   await page.getByLabel("Candidate YAML").fill("title: [");
   await page.getByRole("button", { name: "Validate candidate" }).click();
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
@@ -211,7 +212,7 @@ test("submission independently fetches exact SHA before acceptance", async ({
     }),
   );
   await page.goto("/challenges/test-only");
-  await page.getByRole("button", { name: "Submit a construction" }).click();
+  await page.getByRole("button", { name: "Submit a solution" }).click();
   await expect(
     page.getByText(
       "The best verified score is public even when its artifact remains private.",
@@ -307,11 +308,9 @@ test("completed preflight object remains readable and can lock the reviewed cont
   await expect(
     page.getByText("TEST ONLY signed build evidence", { exact: false }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Lock the immutable contract" })
-    .click();
+  await page.getByRole("button", { name: "Lock challenge" }).click();
   await expect(
-    page.getByRole("heading", { name: "Challenge contract locked" }),
+    page.getByRole("heading", { name: "Challenge locked" }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Publish challenge" }),
@@ -336,7 +335,7 @@ test("API failure remains visible instead of showing invented empty data", async
   await expect(page.locator("main").getByRole("alert")).toContainText(
     "The test data service is temporarily unavailable.",
   );
-  await expect(page.getByText("The next frontier is waiting.")).toHaveCount(0);
+  await expect(page.getByText("No challenges published yet.")).toHaveCount(0);
 });
 
 test("canonical artifact bundle previews real coordinate data without executing files", async ({
@@ -407,6 +406,9 @@ test("audit panel distinguishes absent evidence from independently witnessed quo
     r.fulfill({ json: { checkpoints: [], deploymentMode: "demonstration" } }),
   );
   await page.goto("/docs#trust");
+  await page
+    .getByText("Deployment evidence and limitations", { exact: true })
+    .click();
   await expect(
     page.getByRole("heading", {
       name: "No signed checkpoints have been published.",
@@ -467,12 +469,8 @@ test("educational explorer link is secondary and bound to the exact registered s
     "href",
     "/showcase/quiet-echoes/index.html",
   );
-  const setup = page
-    .locator(".content-section")
-    .filter({
-      has: page.getByRole("heading", { name: "Bring your own agent." }),
-    })
-    .locator(".code-block");
+  await page.locator(".local-setup > summary").click();
+  const setup = page.locator(".local-setup .code-block");
   await expect(setup).toContainText("python3 tools/reproduce.py --check");
   await expect(setup).toContainText("python3 -m unittest discover -s tests -v");
   await expect(setup).not.toContainText("sl challenge test");

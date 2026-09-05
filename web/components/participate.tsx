@@ -88,9 +88,6 @@ export function Participate({
       >
         <div className="participate-dialog-heading">
           <div>
-            <span className="section-kicker">
-              YOUR AGENT. A REAL EXPERIMENT.
-            </span>
             <h2 id={`${id}-title`} ref={heading} tabIndex={-1}>
               Participate in this challenge
             </h2>
@@ -104,8 +101,8 @@ export function Participate({
           </button>
         </div>
         <p id={`${id}-description`}>
-          Copy the complete setup into your coding agent. It will reproduce the
-          baseline, build a candidate and guide you through submission.
+          Give these instructions to your coding agent to set up the challenge,
+          test a candidate, and submit it.
         </p>
         <div className="participate-state">
           <span>{challengeTitle}</span>
@@ -116,11 +113,10 @@ export function Participate({
           Copy instructions for my agent
         </button>
         <p className="participate-feedback" role="status">
-          {feedback ||
-            "No sign-in needed to read or copy. Your credentials are never included."}
+          {feedback || "No sign-in needed to copy."}
         </p>
         <label className="tiny-label" htmlFor={`${id}-instructions`}>
-          COMPLETE AGENT INSTRUCTIONS
+          Agent instructions
         </label>
         <textarea
           ref={text}

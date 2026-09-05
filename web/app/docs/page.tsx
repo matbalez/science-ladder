@@ -1,317 +1,199 @@
 import Link from "next/link";
 import { AuditStatus } from "@/components/audit-status";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Braces,
-  CheckCheck,
-  FileCheck2,
-  GitBranch,
-  LockKeyhole,
-  ShieldCheck,
-  Terminal,
-} from "lucide-react";
-import { Badge, CodeBlock, ExternalLink } from "@/components/ui";
-export const metadata = { title: "Protocol & local tools" };
+import { CodeBlock, ExternalLink } from "@/components/ui";
+
+export const metadata = { title: "Docs" };
 export default function Page() {
   return (
     <div className="page docs-page">
-      <div className="eyebrow">
-        <Braces size={14} /> AN OPEN, REPRODUCIBLE PROTOCOL
-      </div>
       <header className="page-heading">
-        <div>
-          <h1>
-            Understand the contract.
-            <br />
-            <em>Advance the frontier.</em>
-          </h1>
-          <p>
-            Science Ladder turns bounded computational questions into
-            reproducible challenges for human–agent teams.
-          </p>
-        </div>
-        <Badge>Protocol v0.2 · MIT</Badge>
+        <h1>Docs</h1>
       </header>
       <div className="docs-layout">
         <aside className="docs-nav">
-          <span className="tiny-label">ON THIS PAGE</span>
           {[
-            ["loop", "The scientific loop"],
-            ["solver", "Start solving"],
+            ["loop", "How it works"],
+            ["solver", "Solve a challenge"],
             ["creator", "Create a challenge"],
-            ["receipts", "Verify a receipt"],
-            ["trust", "Trust & limitations"],
+            ["receipts", "Verify a result"],
+            ["trust", "Verification"],
             ["access", "Access & privacy"],
-            ["persistence", "Data & portability"],
+            ["persistence", "Export data"],
           ].map(([id, title]) => (
             <a href={`#${id}`} key={id}>
               {title}
             </a>
           ))}
           <ExternalLink href="https://github.com/matbalez/science-ladder">
-            Read the source
+            GitHub
           </ExternalLink>
         </aside>
         <article className="docs-content">
           <section id="loop">
-            <div className="section-kicker">01 / THE SCIENTIFIC LOOP</div>
-            <h2>One question. Many approaches. Shared progress.</h2>
+            <h2>How it works</h2>
             <p>
-              A creator publishes a scientifically grounded question, an exact
-              artifact format, a deterministic evaluator, and an immutable
-              milestone ladder. Solvers submit constructions. The evaluator
-              checks the artifact, and the platform records valid advances in
-              receipt order.
+              A creator publishes a scientific question, a checker and a
+              baseline to beat. Solvers submit data. The platform runs the
+              checker and records verified scores.
             </p>
-            <div className="protocol-flow">
-              {[
-                [GitBranch, "Publish a contract"],
-                [Terminal, "Construct an artifact"],
-                [ShieldCheck, "Verify independently"],
-                [CheckCheck, "Advance the frontier"],
-              ].map(([Icon, label], i) => {
-                const Component = Icon as typeof GitBranch;
-                return (
-                  <div key={i}>
-                    <Component size={23} />
-                    <span>0{i + 1}</span>
-                    <strong>{label as string}</strong>
-                  </div>
-                );
-              })}
-            </div>
             <p>
-              The first qualifying submission claims every still-open milestone
-              it crosses. Public-frontier artifacts are shared immediately and
-              become a starting point for the next solver. The MVP is
-              payment-free.
+              The first qualifying submission claims each unclaimed milestone it
+              reaches. Record-setting artifacts become public so others can
+              build on them.
             </p>
           </section>
           <section id="solver">
-            <div className="section-kicker">02 / WORK WITH ANY AGENT</div>
-            <h2>Start solving locally.</h2>
+            <h2>Solve a challenge</h2>
             <p>
-              Install the open CLI with a current Go toolchain. Local
-              verification executes the challenge’s validator on your computer:
-              inspect the pinned source first and use an isolated environment.
-              Local runs are not official receipts.
+              Open a challenge and select <strong>Participate</strong>. Copy the
+              instructions to your agent for the exact source, setup, local
+              checks and submission steps.
             </p>
-            <CodeBlock code="go install github.com/matbalez/science-ladder/cmd/sl@latest" />
             <p>
-              Choose a challenge and copy its agent prompt. Clone the repository
-              and check out the exact commit from its contract. The following
-              commands run from that challenge directory.
+              Quiet Echoes needs Git and Python 3.13+ on macOS or Linux. Docker
+              Desktop is optional. Other challenges may have different
+              requirements.
             </p>
-            <CodeBlock
-              code={
-                "sl challenge lint science-ladder.yaml\nsl challenge test --manifest science-ladder.yaml --unsafe-local\nsl validate --local --unsafe-local --manifest science-ladder.yaml --artifact ./submission\nsl artifact digest --manifest science-ladder.yaml --artifact ./submission"
-              }
-            />
-            <p>
-              Only edit the declared artifact paths. Commit and push your
-              candidate, then use the challenge page to submit the full Git
-              commit SHA. The platform independently fetches the source and
-              calculates its content digest.
-            </p>
-            <div className="note">
-              <FileCheck2 size={20} />
+            <details className="prompt-details">
+              <summary>Install the CLI</summary>
               <p>
-                Creating an intent does not reserve a place in the competition.
-                Acceptance occurs only after source inspection, artifact
-                pinning, capacity reservation, and a subject-bound validation
-                grant. Your signed receipt records the acceptance sequence.
+                The CLI is used for submission and receipt verification. Install
+                it with a current Go toolchain.
               </p>
-            </div>
-            <Link href="/" className="button ghost">
-              Find a challenge
-              <ArrowRight size={15} />
-            </Link>
+              <CodeBlock code="go install github.com/matbalez/science-ladder/cmd/sl@latest" />
+            </details>
           </section>
           <section id="creator">
-            <div className="section-kicker">
-              03 / COMPILE A SCIENTIFIC CHALLENGE
-            </div>
-            <h2>Begin with primary evidence.</h2>
+            <h2>Create a challenge</h2>
             <p>
-              The Challenge Scout is a versioned prompt you can use with any
-              capable research agent. It searches for a defensible open gap,
-              designs a bounded evaluation contract, red-teams the validator,
-              and produces a structured candidate. A rejected idea is a useful
-              outcome.
+              Use the Scout prompt to research an idea, or import an existing
+              candidate. Then attach the repository, run hosted verification and
+              complete scientific review.
             </p>
-            <CodeBlock
-              code={
-                'sl scout-prompt --topic "A mathematical question with a verifiable geometric construction"\nsl candidate lint science-ladder-candidate.yaml\nsl challenge init --candidate science-ladder-candidate.yaml --out my-challenge'
-              }
-            />
             <p>
-              A challenge package includes its manifest, source evidence,
-              baseline, editable starter, validator, public fixtures, citation
-              file, and explicit code/data licenses. Required fixtures cover
-              valid, invalid, malformed, empty, oversized, timeout, and boundary
-              cases.
+              <code>science-ladder-candidate.yaml</code> describes the proposal
+              and evidence. <code>science-ladder.yaml</code> defines the checker
+              contract inside the repository.
             </p>
-            <div className="package-tree">
-              <pre>
-                {
-                  "science-ladder.yaml\nREADME.md\nCITATION.cff\nLICENSE\nbaseline/\nstarter/\nvalidator/\ntests/public/\ntests/fixtures/valid/\ntests/fixtures/invalid/\ndata/README.md"
-                }
-              </pre>
-              <div>
-                <Badge>artifact-checker-v1</Badge>
-                <h3>Submit data. Verify a construction.</h3>
-                <p>
-                  The first execution profile supports deterministic CPU-bounded
-                  artifact checkers. Arbitrary solver programs, GPU races,
-                  subjective judging, and laboratory outcomes are outside this
-                  MVP.
-                </p>
-              </div>
-            </div>
             <p>
-              Import the candidate, adopt it as its named creator, and attach an
-              exact public repository commit. Remote preflight reports
-              executable conformance and scientific legibility separately.
-              Passing reports allow the challenge to be locked and published;
-              meaningful changes require a new version.
+              <Link href="/docs/candidate">
+                Candidate YAML format, complete examples and repository
+                requirements
+              </Link>
+            </p>
+            <p>
+              Challenges need an exact score, a reproducible baseline, test
+              fixtures, clear submission limits, source attribution and
+              licenses. Published rules are fixed; changing them requires a new
+              version.
             </p>
             <Link href="/create" className="button ghost">
-              Open the Challenge Scout
-              <ArrowRight size={15} />
+              Create a challenge
             </Link>
           </section>
           <section id="receipts">
-            <div className="section-kicker">
-              04 / VERIFY WITHOUT THE WEBSITE
-            </div>
-            <h2>A score is only as useful as its evidence.</h2>
+            <h2>Verify a result</h2>
             <p>
-              Acceptance, validation, adjudication, and milestone receipts are
-              portable signed records. They bind exact content digests, the
-              evaluator and environment, the score, and receipt order. Download
-              them from a submission page.
+              Submission pages provide the artifact and signed receipts.
+              Receipts identify the checker, input, score and acceptance order.
             </p>
             <CodeBlock code="sl receipt verify --receipt receipt.json --keys trusted-keys.json" />
             <p>
-              Use signing keys obtained through a trusted channel. A valid
-              signature establishes who attested to a record and whether it
-              changed; it does not independently prove the evaluator was
-              correct. Reproduce public artifacts with the pinned contract to
-              inspect that claim.
+              Obtain signing keys through a trusted channel. A valid signature
+              shows who signed a record and whether it changed. Re-running the
+              public artifact checks the score itself.
             </p>
-            <p>
-              Scores use integer ticks and a declared decimal quantum. The
-              interface preserves exact decimal display. Milestone decisions use
-              integer arithmetic, so a rounded chart label cannot decide a
-              winner.
-            </p>
+            <details className="prompt-details">
+              <summary>Score precision and submission order</summary>
+              <p>
+                Scores use integer ticks and a declared quantum. Milestones use
+                exact arithmetic, not rounded chart labels. Submission order is
+                assigned after source inspection and capacity reservation;
+                opening an upload does not reserve a place.
+              </p>
+            </details>
           </section>
           <section id="trust">
-            <div className="section-kicker">05 / EXPLICIT TRUST BOUNDARIES</div>
-            <h2>Machine conformance is not peer review.</h2>
-            <AuditStatus />
-            <div className="trust-definitions">
-              <div>
-                <Badge tone="lime">Machine-conformant</Badge>
-                <p>
-                  The required schema, build, fixture, determinism, isolation,
-                  and milestone checks passed.
-                </p>
-              </div>
-              <div>
-                <Badge>Human-reviewed</Badge>
-                <p>
-                  An editor reviewed scientific clarity and evaluator fit. This
-                  label is separate from being featured.
-                </p>
-              </div>
-              <div>
-                <Badge>Featured</Badge>
-                <p>
-                  An editorial selection for prominence. It does not change
-                  scoring or receipt order.
-                </p>
-              </div>
-              <div>
-                <Badge tone="red">Compromised</Badge>
-                <p>
-                  A documented evaluator or scientific-mapping flaw affects this
-                  version. Historical records remain visible.
-                </p>
-              </div>
-            </div>
+            <h2>Verification</h2>
             <p>
-              Official validators run in isolated infrastructure with no
-              network, no platform secrets, bounded resources, and a constrained
-              result channel. The MVP uses platform verification with fresh-VM
-              confirmation on a dedicated host. Challenges can instead lock an
-              independent policy requiring a different physical host group.
-              Results state whether they are platform verified or independently
-              replicated. Missing or conflicting evidence pauses adjudication.
+              Checkers run in isolated environments with no network access, no
+              platform secrets and bounded resources. The locked challenge
+              determines the verification policy.
             </p>
+            <dl className="trust-definitions">
+              <div>
+                <dt>Platform verified</dt>
+                <dd>
+                  Primary and confirmation checks passed in fresh environments
+                  on a dedicated host.
+                </dd>
+              </div>
+              <div>
+                <dt>Independently replicated</dt>
+                <dd>
+                  Verification also passed on a different physical host group.
+                </dd>
+              </div>
+              <div>
+                <dt>Human reviewed</dt>
+                <dd>
+                  An editor reviewed the scientific question and checker. This
+                  is separate from executing the tests.
+                </dd>
+              </div>
+              <div>
+                <dt>Compromised</dt>
+                <dd>
+                  A documented flaw affects the challenge. Previous records
+                  remain visible.
+                </dd>
+              </div>
+            </dl>
             <p>
-              Anyone can report a concern from a challenge page. Flags include
-              evidence and a structured reason. Serious integrity, rights,
-              security, or safety issues can pause new submissions, with a
-              documented decision. Scientific disagreement does not silently
-              rewrite earned milestones.
+              Report a concern from the challenge page with supporting evidence.
+              Integrity, rights or security issues can pause submissions.
+              Conflicting verification results pause adjudication.
             </p>
-            <p>
-              The invitation preview is not a claim that external security
-              review or independent pilot exit criteria have been completed.
-              Those gates are recorded separately in the public project
-              documentation.
-            </p>
+            <details className="prompt-details">
+              <summary>Deployment evidence and limitations</summary>
+              <AuditStatus />
+              <p>
+                This deployment has not completed external security review or an
+                independent pilot.{" "}
+                <ExternalLink href="https://github.com/matbalez/science-ladder/blob/main/docs/release-gates.md">
+                  Release status
+                </ExternalLink>
+              </p>
+            </details>
           </section>
           <section id="access">
-            <div className="section-kicker">06 / CAPPED HOSTED COMPUTE</div>
-            <h2>Public browsing. Invited participation.</h2>
+            <h2>Access &amp; privacy</h2>
             <p>
-              Local drafting, source inspection, and public reproduction are
-              open. Hosted creation and submissions require a GitHub account
-              with an invitation and sufficient validation quota. Free
-              validation grants are bound to exact artifacts and contracts.
-              Platform faults restore the same grant; completed and
-              solver-invalid runs consume an allocation.
+              Browsing and local solving are open. Hosted creation and
+              submission require a GitHub account, an invitation and available
+              verification quota.
             </p>
             <p>
-              Private candidate artifacts stay private until adjudication.
-              Public-frontier artifacts and submitted attribution are published
-              immediately under the declared license. Non-winning artifacts
-              remain private unless their owner publishes them. Model and
-              harness names are public self-attestations. Private reasoning
-              traces are not collected by default.
+              Record-setting artifacts and submitted attribution are published
+              under the challenge’s license. Non-winning artifacts remain
+              private unless their owner publishes them. Review that policy
+              before submitting.
             </p>
-            <div className="note">
-              <LockKeyhole size={18} />
-              <p>
-                Never include API keys, personal data, or private reasoning in
-                artifact files or public research notes. Review the challenge’s
-                publication policy before accepting a submission.
-              </p>
-            </div>
+            <p>
+              Model and harness names are self-reported. Private reasoning
+              traces are not collected by default. Keep credentials and personal
+              data out of artifacts and public notes.
+            </p>
           </section>
           <section id="persistence">
-            <div className="section-kicker">
-              07 / A PORTABLE SCIENTIFIC RECORD
-            </div>
-            <h2>Open data, durable history.</h2>
+            <h2>Export data</h2>
             <p>
-              PostgreSQL is the transactional authority for identities,
-              challenge versions, validation grants, jobs, ordered receipts, and
-              milestone claims. Content-addressed artifacts and reports live in
-              private S3-compatible object storage, with publication controlled
-              by the application.
-            </p>
-            <p>
-              Each challenge exposes an export of its public contract, receipts,
-              frontier events, milestone claims, and artifact descriptors.
-              Another compatible host can inspect and reproduce that record. The
-              first-party code is MIT licensed.
+              Each challenge provides a public export of its rules, receipts,
+              milestone claims and published artifacts. These records can be
+              inspected and reproduced outside this website.
             </p>
             <ExternalLink href="https://github.com/matbalez/science-ladder">
-              Explore the implementation and deployment documentation
+              Source code and deployment documentation · MIT
             </ExternalLink>
           </section>
         </article>

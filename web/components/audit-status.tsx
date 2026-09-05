@@ -36,7 +36,6 @@ export function AuditStatus() {
     <section className="audit-status">
       <div className="section-title">
         <div>
-          <div className="section-kicker">LIVE HOST EVIDENCE</div>
           <h3>
             <Fingerprint size={18} />
             Public audit checkpoints

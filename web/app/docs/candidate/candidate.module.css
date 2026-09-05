@@ -1,0 +1,103 @@
+.page {
+  max-width: 980px;
+}
+.back {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.page > p,
+.page section > p,
+.page li {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.page section {
+  margin: 38px 0;
+  scroll-margin-top: 100px;
+}
+.page h2 {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 20px 0;
+}
+.tableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.tableWrap th,
+.tableWrap td {
+  padding: 13px 16px 13px 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.tableWrap th {
+  color: var(--muted);
+  font-weight: 500;
+}
+.tableWrap td:first-child {
+  min-width: 160px;
+}
+.tableWrap code,
+.page > p code,
+.page section code {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.tableWrap a {
+  display: block;
+  color: var(--lime);
+  margin-bottom: 7px;
+}
+.page .note {
+  font-size: 12px;
+}
+.details {
+  margin: 24px 0;
+}
+.details summary {
+  cursor: pointer;
+  font-size: 14px;
+}
+.details p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+@media (max-width: 600px) {
+  .tableWrap table,
+  .tableWrap tbody,
+  .tableWrap tr,
+  .tableWrap td {
+    display: block;
+  }
+  .tableWrap thead {
+    display: none;
+  }
+  .tableWrap tr {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+  }
+  .tableWrap td {
+    border: 0;
+    padding: 4px 0;
+  }
+  .tableWrap td:first-child {
+    min-width: 0;
+  }
+  .tableWrap td:last-child a {
+    display: inline-flex;
+    margin: 8px 18px 0 0;
+  }
+}

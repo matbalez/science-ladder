@@ -8,19 +8,18 @@ import {
   CheckCheck,
   FileCode2,
   FileSearch,
-  FlaskConical,
   GitBranch,
   LockKeyhole,
-  Sparkles,
+  Search,
   Upload,
 } from "lucide-react";
 import { parseDocument } from "yaml";
+import styles from "./creator.module.css";
 import { useAction, useResource } from "@/lib/api";
 import { asList, asRecord, asText, humanize } from "@/lib/scientific";
 import type { Candidate, Finding, Preflight } from "@/lib/types";
 import { useSession } from "./shell";
 import {
-  Badge,
   CodeBlock,
   CopyButton,
   DownloadButton,
@@ -86,6 +85,7 @@ export function Creator() {
         const s = JSON.parse(saved);
         setInputs(s.inputs || inputs);
         setDocument(s.document || "");
+        if (s.path === "scout" || s.path === "import") setPath(s.path);
         setRepository(s.repository || "");
         setRef(s.ref || "");
         if (s.candidate) setCandidate(s.candidate);
@@ -94,9 +94,9 @@ export function Creator() {
         if (s.lock) setLock(s.lock);
       }
     } catch {}
-    const selected = new URLSearchParams(window.location.search).get(
-      "candidate",
-    );
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("path") === "import") setPath("import");
+    const selected = params.get("candidate");
     if (selected) {
       setCandidate({
         id: selected,
@@ -117,6 +117,7 @@ export function Creator() {
           "science-ladder-creator-draft",
           JSON.stringify({
             inputs,
+            path,
             document,
             repository,
             ref,
@@ -129,6 +130,7 @@ export function Creator() {
       } catch {}
   }, [
     inputs,
+    path,
     document,
     repository,
     ref,
@@ -151,12 +153,7 @@ export function Creator() {
       /\{\{([A-Z_]+)\}\}/g,
       (_, key) => replacements[key] || "(investigate)",
     ) || "";
-  const steps = [
-    "Scout & import",
-    "Adopt & attach",
-    "Preflight",
-    "Lock & publish",
-  ];
+  const steps = ["Candidate", "Repository", "Verification", "Publish"];
   const active = published
     ? 4
     : lock
@@ -172,8 +169,13 @@ export function Creator() {
     try {
       const parsed = parseDocument(document, { uniqueKeys: true });
       if (parsed.errors.length) throw new Error(parsed.errors[0].message);
-      if (!parsed.toJS() || typeof parsed.toJS() !== "object")
+      const value = parsed.toJS();
+      if (!value || typeof value !== "object" || Array.isArray(value))
         throw new Error("The candidate must be a YAML object.");
+      if (value.kind === "ChallengeManifest")
+        throw new Error(
+          "This is a challenge manifest (science-ladder.yaml). Import science-ladder-candidate.yaml here; attach the repository in the next step.",
+        );
       const result = await action.run<{
         valid: boolean;
         findings: Finding[];
@@ -186,22 +188,8 @@ export function Creator() {
   }
   return (
     <div className="page creator-page">
-      <div className="eyebrow">
-        <span className="status-dot" /> THE CHALLENGE COMPILER
-      </div>
       <header className="page-heading">
-        <div>
-          <h1>
-            Turn a question
-            <br />
-            into <em>a shared frontier.</em>
-          </h1>
-          <p>
-            One scientific claim. One executable contract. A ladder of
-            meaningful progress.
-          </p>
-        </div>
-        <Badge>Drafts are permissionless</Badge>
+        <h1>Create a challenge</h1>
       </header>
       <ol className="creation-steps">
         {steps.map((step, i) => (
@@ -222,268 +210,251 @@ export function Creator() {
       </ol>
       {!currentCandidate ? (
         <>
-          <div className="creator-paths">
+          <div className="creator-paths" aria-label="Starting point">
             <button
               className={path === "scout" ? "selected" : ""}
+              aria-pressed={path === "scout"}
               onClick={() => setPath("scout")}
             >
-              <Sparkles size={21} />
+              <Search size={21} />
               <div>
-                <strong>Help me find or structure a challenge</strong>
-                <span>
-                  Start with a field, paper, or an intriguing question.
-                </span>
+                <strong>Find a challenge</strong>
+                <span>Give your agent a research prompt.</span>
               </div>
-              <ArrowUpRight size={17} />
             </button>
             <button
               className={path === "import" ? "selected" : ""}
+              aria-pressed={path === "import"}
               onClick={() => setPath("import")}
             >
               <FileCode2 size={21} />
               <div>
-                <strong>I have a candidate or repository</strong>
-                <span>
-                  Import your structured candidate to begin preflight.
-                </span>
+                <strong>Import a candidate</strong>
+                <span>Upload YAML, then attach your repository.</span>
               </div>
-              <ArrowUpRight size={17} />
             </button>
           </div>
           {path === "scout" && (
             <section className="panel scout-panel">
-              <div className="section-title">
-                <div>
-                  <div className="section-kicker">
-                    A PORTABLE PROMPT FOR YOUR AGENT
-                  </div>
-                  <h2>Meet the Challenge Scout.</h2>
-                </div>
-                <Badge>{prompt.data?.version || "Versioned prompt"}</Badge>
-              </div>
+              <h2>Research a challenge</h2>
               <p>
-                Choose a direction. Copy the research prompt into your preferred
-                agent. It will investigate primary evidence, design a checkable
-                artifact, and try to break its own evaluator.
+                Give this prompt to your agent. It will research the question
+                and produce a candidate file for review.
               </p>
-              <div className="form-grid">
-                <Field label="Field or topic">
-                  <input
-                    placeholder="e.g. sphere packing, fusion, quantum error correction"
-                    value={inputs.topic}
-                    onChange={(e) =>
-                      setInputs({ ...inputs, topic: e.target.value })
-                    }
-                  />
-                </Field>
-                <Field label="A suspected open question (optional)">
-                  <input
-                    placeholder="What question keeps you curious?"
-                    value={inputs.question}
-                    onChange={(e) =>
-                      setInputs({ ...inputs, question: e.target.value })
-                    }
-                  />
-                </Field>
-                <Field label="Seed papers or URLs (optional)">
-                  <textarea
-                    rows={3}
-                    placeholder="DOIs, arXiv links, or primary sources"
-                    value={inputs.papers}
-                    onChange={(e) =>
-                      setInputs({ ...inputs, papers: e.target.value })
-                    }
-                  />
-                </Field>
-                <Field label="Available data, code, or benchmarks (optional)">
-                  <textarea
-                    rows={3}
-                    placeholder="Links and any known licensing constraints"
-                    value={inputs.resources}
-                    onChange={(e) =>
-                      setInputs({ ...inputs, resources: e.target.value })
-                    }
-                  />
-                </Field>
-                <Field label="Official compute ceiling (optional)">
-                  <input
-                    placeholder="e.g. 1 CPU, 2 GB RAM, 60 seconds"
-                    value={inputs.compute}
-                    onChange={(e) =>
-                      setInputs({ ...inputs, compute: e.target.value })
-                    }
-                  />
-                </Field>
-                <Field label="Other constraints (optional)">
-                  <input
-                    placeholder="Known limitations, goals, or exclusions"
-                    value={inputs.constraints}
-                    onChange={(e) =>
-                      setInputs({ ...inputs, constraints: e.target.value })
-                    }
-                  />
-                </Field>
-              </div>
+              <Field label="Field or topic">
+                <input
+                  placeholder="e.g. sphere packing, fusion, quantum error correction"
+                  value={inputs.topic}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, topic: e.target.value })
+                  }
+                />
+              </Field>
+              <details className={styles.options}>
+                <summary>Add a question, sources or constraints</summary>
+                <div className="form-grid">
+                  <Field label="Open question (optional)">
+                    <input
+                      value={inputs.question}
+                      onChange={(e) =>
+                        setInputs({ ...inputs, question: e.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field label="Papers or URLs (optional)">
+                    <textarea
+                      rows={3}
+                      value={inputs.papers}
+                      onChange={(e) =>
+                        setInputs({ ...inputs, papers: e.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field label="Data, code or benchmarks (optional)">
+                    <textarea
+                      rows={3}
+                      value={inputs.resources}
+                      onChange={(e) =>
+                        setInputs({ ...inputs, resources: e.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field label="Verification compute limit (optional)">
+                    <input
+                      placeholder="e.g. 1 CPU, 2 GB RAM, 60 seconds"
+                      value={inputs.compute}
+                      onChange={(e) =>
+                        setInputs({ ...inputs, compute: e.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field label="Other constraints (optional)">
+                    <input
+                      value={inputs.constraints}
+                      onChange={(e) =>
+                        setInputs({ ...inputs, constraints: e.target.value })
+                      }
+                    />
+                  </Field>
+                </div>
+              </details>
               <ErrorMessage error={prompt.error} retry={prompt.refresh} />
               {prompt.loading ? (
-                <Loading label="Loading canonical Scout prompt" />
+                <Loading label="Loading prompt" />
               ) : (
                 filledPrompt && (
                   <>
                     <div className="scout-actions">
                       <CopyButton text={filledPrompt} className="primary">
-                        Copy prefilled Scout prompt
+                        Copy agent prompt
                       </CopyButton>
                       <DownloadButton
                         text={filledPrompt}
                         filename={`challenge-scout-${prompt.data?.version}.md`}
                       >
-                        Download prompt
+                        Download
                       </DownloadButton>
-                      <span>
-                        Use with any capable research or coding agent.
-                      </span>
                     </div>
                     <details className="prompt-details">
-                      <summary>
-                        Preview the complete prompt <ArrowUpRight size={14} />
-                      </summary>
+                      <summary>Read prompt</summary>
                       <pre>{filledPrompt}</pre>
                     </details>
                   </>
                 )
               )}
-              <div className="note">
-                <FlaskConical size={18} />
-                <p>
-                  The Scout produces a draft, including uncertainties and
-                  rejected alternatives. You remain the accountable creator.
-                  Automated critique is not peer review.
-                </p>
+              <p className={styles.nextStep}>
+                Have the candidate file?{" "}
+                <button
+                  className={styles.textButton}
+                  onClick={() => setPath("import")}
+                >
+                  Import it for review <ArrowRight size={14} />
+                </button>
+              </p>
+            </section>
+          )}
+          {path === "import" && (
+            <section className="panel import-panel">
+              <div className="section-title">
+                <div>
+                  <h2>Candidate file</h2>
+                </div>
+                <button
+                  className="button small ghost"
+                  onClick={() => inputFile.current?.click()}
+                >
+                  <Upload size={14} />
+                  Choose YAML file
+                </button>
+                <input
+                  type="file"
+                  accept=".yaml,.yml,text/yaml,text/plain"
+                  ref={inputFile}
+                  hidden
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 1_000_000) {
+                        setParseError(
+                          new Error(
+                            "Candidate YAML must be smaller than 1 MB.",
+                          ),
+                        );
+                        return;
+                      }
+                      setDocument(await file.text());
+                      setParseError(undefined);
+                      setValidation(undefined);
+                    }
+                  }}
+                />
+              </div>
+              <p>
+                Upload or paste <code>science-ladder-candidate.yaml</code>.
+                You’ll attach the public GitHub repository and exact commit
+                next.
+              </p>
+              <div className={styles.guideLinks}>
+                <Link href="/docs/candidate" target="_blank">
+                  YAML format &amp; example <ArrowUpRight size={14} />
+                </Link>
+                <span>
+                  <code>science-ladder.yaml</code> belongs in the repository;
+                  this step needs the candidate file.
+                </span>
+              </div>
+              <textarea
+                className="yaml-input"
+                aria-label="Candidate YAML"
+                placeholder="Paste science-ladder-candidate.yaml here…"
+                value={document}
+                onChange={(e) => {
+                  setDocument(e.target.value);
+                  setParseError(undefined);
+                  setValidation(undefined);
+                }}
+                spellCheck={false}
+                rows={12}
+              />
+              <ErrorMessage error={parseError} />
+              <ErrorMessage error={action.error} />
+              {validation && (
+                <div className="validation-result">
+                  <Status
+                    value={
+                      validation.valid ? "schema_valid" : "changes_required"
+                    }
+                  />
+                  <Findings findings={validation.findings} />
+                  {validation.candidate && (
+                    <CandidateSummary candidate={validation.candidate} />
+                  )}
+                </div>
+              )}
+              <div className="form-actions">
+                <button
+                  className="button ghost"
+                  disabled={!document.trim() || action.busy}
+                  onClick={inspect}
+                >
+                  <FileSearch size={16} />
+                  {action.busy ? "Checking…" : "Validate candidate"}
+                </button>
+                {validation?.valid &&
+                  (session.data?.capabilities.creation ? (
+                    <button
+                      className="button primary"
+                      disabled={action.busy}
+                      onClick={async () => {
+                        const result = await action.run<Candidate>(
+                          "/candidates/import",
+                          { document },
+                        );
+                        if (result) setCandidate(result);
+                      }}
+                    >
+                      Import candidate
+                      <ArrowRight size={16} />
+                    </button>
+                  ) : (
+                    <Link href="/account" className="button primary">
+                      <LockKeyhole size={15} />
+                      Sign in to import
+                    </Link>
+                  ))}
               </div>
             </section>
           )}
-          <section className="panel import-panel">
-            <div className="section-title">
-              <div>
-                <div className="section-kicker">
-                  BRING THE SCOUT’S OUTPUT BACK
-                </div>
-                <h2>Import a candidate</h2>
-              </div>
-              <button
-                className="button small ghost"
-                onClick={() => inputFile.current?.click()}
-              >
-                <Upload size={14} />
-                Choose YAML file
-              </button>
-              <input
-                type="file"
-                accept=".yaml,.yml,text/yaml,text/plain"
-                ref={inputFile}
-                hidden
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    if (file.size > 1_000_000) {
-                      setParseError(
-                        new Error("Candidate YAML must be smaller than 1 MB."),
-                      );
-                      return;
-                    }
-                    setDocument(await file.text());
-                    setValidation(undefined);
-                  }
-                }}
-              />
-            </div>
-            <p>
-              Paste <code>science-ladder-candidate.yaml</code>. Schema checks
-              preserve the prompt version, model attribution, citations,
-              evidence locations, and open uncertainties.
-            </p>
-            <textarea
-              className="yaml-input"
-              aria-label="Candidate YAML"
-              placeholder="Paste science-ladder-candidate.yaml here…"
-              value={document}
-              onChange={(e) => {
-                setDocument(e.target.value);
-                setValidation(undefined);
-              }}
-              spellCheck={false}
-              rows={12}
-            />
-            <ErrorMessage error={parseError} />
-            <ErrorMessage error={action.error} />
-            {validation && (
-              <div className="validation-result">
-                <Status
-                  value={validation.valid ? "schema_valid" : "changes_required"}
-                />
-                <Findings findings={validation.findings} />
-                {validation.candidate && (
-                  <CandidateSummary candidate={validation.candidate} />
-                )}
-              </div>
-            )}
-            <div className="form-actions">
-              <button
-                className="button ghost"
-                disabled={!document.trim() || action.busy}
-                onClick={inspect}
-              >
-                <FileSearch size={16} />
-                {action.busy ? "Checking…" : "Validate candidate"}
-              </button>
-              {validation?.valid &&
-                (session.data?.capabilities.creation ? (
-                  <button
-                    className="button primary"
-                    disabled={action.busy}
-                    onClick={async () => {
-                      const result = await action.run<Candidate>(
-                        "/candidates/import",
-                        { document },
-                      );
-                      if (result) setCandidate(result);
-                    }}
-                  >
-                    Import & resolve sources
-                    <ArrowRight size={16} />
-                  </button>
-                ) : (
-                  <Link href="/account" className="button primary">
-                    <LockKeyhole size={15} />
-                    Sign in with an invitation to import
-                  </Link>
-                ))}
-            </div>
-            <p className="field-help">
-              No repository yet? The CLI can scaffold an artifact/checker
-              package after candidate validation.
-            </p>
-            <CodeBlock
-              code={
-                "sl candidate lint science-ladder-candidate.yaml\nsl challenge init --candidate science-ladder-candidate.yaml --out my-challenge"
-              }
-            />
-          </section>
         </>
       ) : (
         <>
           <section className="panel">
             <div className="section-title">
               <div>
-                <div className="section-kicker">IMPORTED CANDIDATE</div>
                 <h2>
                   {asText(
                     asRecord(currentCandidate.candidate.manifest).title,
-                    asText(
-                      currentCandidate.candidate.title,
-                      "Your research candidate",
-                    ),
+                    asText(currentCandidate.candidate.title, "Candidate"),
                   )}
                 </h2>
               </div>
@@ -497,25 +468,31 @@ export function Creator() {
             />
             <JsonViewer
               value={currentCandidate.candidate}
-              label="Inspect imported evidence and provenance"
+              label="Candidate details"
             />
           </section>
           {!creation ? (
             <section className="panel">
-              <div className="section-kicker">
-                ATTACH THE EXACT CHALLENGE PACKAGE
-              </div>
-              <h2>A public repository. An immutable commit.</h2>
+              <h2>Attach a repository</h2>
               <p>
-                Push your manifest, validator, baseline, fixtures, citation
-                file, and licenses. The platform independently fetches the full
-                source tree at this commit.
+                Push the manifest, checker, baseline and test fixtures to
+                GitHub. Attach the commit you want reviewed.{" "}
+                <Link href="/docs/candidate#repository" target="_blank">
+                  Repository requirements
+                </Link>
               </p>
-              <CodeBlock
-                code={
-                  "sl challenge init --candidate science-ladder-candidate.yaml --out my-challenge\ncd my-challenge\nsl challenge lint science-ladder.yaml\nsl challenge test --manifest science-ladder.yaml --unsafe-local"
-                }
-              />
+              <details className={styles.options}>
+                <summary>Need to create a repository?</summary>
+                <p>
+                  This creates a new directory with a draft checker. Implement
+                  the checker and fixtures before attaching it.
+                </p>
+                <CodeBlock
+                  code={
+                    "sl challenge init --candidate science-ladder-candidate.yaml --out my-challenge"
+                  }
+                />
+              </details>
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
@@ -550,7 +527,7 @@ export function Creator() {
                   </Field>
                 </div>
                 <Field
-                  label="Creator adoption statement"
+                  label="Review statement"
                   help="State what evidence, rights, metric, and limitations you have reviewed. This is recorded with the challenge."
                 >
                   <textarea
@@ -558,7 +535,7 @@ export function Creator() {
                     rows={4}
                     minLength={30}
                     value={adoption}
-                    placeholder="I have inspected the cited primary sources, reproduced the baseline, reviewed redistribution rights and limitations, and accept responsibility for this challenge…"
+                    placeholder="Describe the evidence, baseline and licenses you checked, and any limitations."
                     onChange={(e) => setAdoption(e.target.value)}
                   />
                 </Field>
@@ -570,9 +547,7 @@ export function Creator() {
                     currentCandidate.status === "resolving_sources"
                   }
                 >
-                  {action.busy
-                    ? "Fetching source…"
-                    : "Adopt candidate & attach repository"}
+                  {action.busy ? "Fetching source…" : "Attach repository"}
                   <GitBranch size={16} />
                 </button>
                 {currentCandidate.status === "resolving_sources" && (
@@ -587,13 +562,8 @@ export function Creator() {
             <section className="panel">
               <div className="section-title">
                 <div>
-                  <div className="section-kicker">
-                    IMMUTABLE REVIEW SNAPSHOT
-                  </div>
                   <h2>
-                    {published
-                      ? "Your challenge is public."
-                      : "Validate, lock, publish."}
+                    {published ? "Challenge published" : "Review and publish"}
                   </h2>
                 </div>
                 <Status
@@ -610,10 +580,8 @@ export function Creator() {
               {!preflight ? (
                 <>
                   <p>
-                    Remote preflight tests the baseline, positive and negative
-                    fixtures, determinism, numeric boundaries, isolation, and
-                    milestone arithmetic. Scientific legibility is reported
-                    separately.
+                    Run the hosted checker tests, then complete scientific
+                    review before publication.
                   </p>
                   <button
                     className="button primary"
@@ -625,7 +593,7 @@ export function Creator() {
                       if (r) setPreflight(r);
                     }}
                   >
-                    Run remote preflight
+                    Run verification
                     <ArrowRight size={16} />
                   </button>
                 </>
@@ -634,7 +602,7 @@ export function Creator() {
                   <div className="preflight-status">
                     <FileSearch size={22} />
                     <div>
-                      <h3>Remote preflight</h3>
+                      <h3>Verification</h3>
                       <Status value={currentPreflight?.status || "queued"} />
                     </div>
                   </div>
@@ -670,17 +638,17 @@ export function Creator() {
                         }}
                       >
                         <LockKeyhole size={16} />
-                        Lock the immutable contract
+                        Lock challenge
                       </button>
                     )}
                   {lock && (
                     <div className="lock-record">
                       <CheckCheck size={22} />
                       <div>
-                        <h3>Challenge contract locked</h3>
+                        <h3>Challenge locked</h3>
                         <p>
-                          Evaluator, thresholds, deadline, licenses, and
-                          payment-free mode are fixed.
+                          The checker, thresholds, deadline and licenses are
+                          fixed.
                         </p>
                         <a
                           className="mono"
@@ -759,7 +727,7 @@ function CandidateSummary({
     <div className="candidate-summary">
       <dl className="contract-grid">
         <div>
-          <dt>Candidate verdict</dt>
+          <dt>Assessment</dt>
           <dd>
             {humanize(
               asText(candidate.disposition, asText(candidate.verdict, "Draft")),
@@ -767,7 +735,7 @@ function CandidateSummary({
           </dd>
         </div>
         <div>
-          <dt>Prompt provenance</dt>
+          <dt>Prompt version</dt>
           <dd>
             {asText(
               candidate.promptVersion,
@@ -812,7 +780,7 @@ function CandidateSummary({
         <div className="note">
           <FileSearch size={17} />
           <div>
-            <strong>Unresolved questions remain visible</strong>
+            <strong>Unresolved questions</strong>
             <ul>
               {asList(
                 candidate.unresolvedQuestions || candidate.uncertainties,

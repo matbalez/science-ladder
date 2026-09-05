@@ -1,21 +1,19 @@
 "use client";
 import Link from "next/link";
+import { displaySummary } from "@/lib/presentation";
 import { useMemo, useState } from "react";
 import {
   ArrowDownUp,
   ArrowRight,
   ArrowUpRight,
   Beaker,
-  CheckCheck,
-  Circle,
-  Crosshair,
   Search,
   SlidersHorizontal,
 } from "lucide-react";
 import { useResource } from "@/lib/api";
 import { dateLabel, formatTicks, humanize } from "@/lib/scientific";
 import type { Challenge } from "@/lib/types";
-import { Badge, Empty, ErrorMessage, Loading, Status } from "./ui";
+import { Empty, ErrorMessage, Loading, Status } from "./ui";
 import { MiniFrontier } from "./science-visuals";
 export function Explore() {
   const { data, loading, error, refresh } = useResource<{
@@ -56,179 +54,21 @@ export function Explore() {
         ),
     [challenges, domain, search, sort, onlyOpen],
   );
-  const milestones = challenges.flatMap((c) => c.milestones || []);
-  const openMilestones = milestones.filter((m) => !m.claimedBy).length;
   return (
     <div className="page explore-page">
-      <div className="eyebrow top-eyebrow">
-        <span className="status-dot" /> THE OPEN SCIENCE FRONTIER{" "}
-        <span className="eyebrow-right">
-          PROTOCOL v0.2 / INVITATION PREVIEW
-        </span>
-      </div>
-      <section className="explore-heading">
+      <header className="page-heading directory-heading">
         <div>
-          <h1>
-            A better answer
-            <br />
-            starts with <em>an open question.</em>
-          </h1>
-          <p>
-            Computational challenges for human–agent teams.
-            <br className="desktop-break" /> Build something verifiable. Move
-            science forward.
-          </p>
+          <h1>Explore challenges</h1>
+          <p>Computational science problems for you and your coding agent.</p>
         </div>
-        <div className="frontier-instrument" aria-label="The scientific loop">
-          <div className="instrument-corner">FIG. 01 — THE SCIENTIFIC LOOP</div>
-          <svg
-            viewBox="0 0 340 152"
-            role="img"
-            aria-label="Question leads to construction, verification, and open frontier"
-          >
-            <defs>
-              <pattern
-                id="dotgrid"
-                width="14"
-                height="14"
-                patternUnits="userSpaceOnUse"
-              >
-                <circle cx="1" cy="1" r=".6" fill="#53634f" />
-              </pattern>
-            </defs>
-            <rect width="340" height="152" fill="url(#dotgrid)" />
-            <path
-              d="M23 120 L93 120 L93 88 L169 88 L169 57 L245 57 L245 26 L313 26"
-              fill="none"
-              stroke="#d4f88b"
-              strokeWidth="2"
-            />
-            <path
-              d="M23 120 L93 120 L93 88 L169 88 L169 57 L245 57 L245 26 L313 26"
-              fill="none"
-              stroke="#d4f88b"
-              strokeWidth="8"
-              opacity=".08"
-            />
-            {[
-              [23, 120],
-              [93, 88],
-              [169, 57],
-              [245, 26],
-            ].map(([x, y], i) => (
-              <g key={i}>
-                <circle
-                  cx={x}
-                  cy={y}
-                  r="4"
-                  fill="#11180f"
-                  stroke="#d4f88b"
-                  strokeWidth="1.5"
-                />
-                <text
-                  x={x + 9}
-                  y={y - 10}
-                  fill="#b9c5ad"
-                  fontSize="8"
-                  fontFamily="monospace"
-                >
-                  0{i + 1}
-                </text>
-              </g>
-            ))}
-            <path
-              d="M304 18 L313 26 L304 34"
-              stroke="#d4f88b"
-              fill="none"
-              strokeWidth="2"
-            />
-          </svg>
-          <div className="instrument-labels">
-            <span>QUESTION</span>
-            <span>BUILD</span>
-            <span>VERIFY</span>
-            <span>ADVANCE ↗</span>
-          </div>
-        </div>
-      </section>
-      <section className="metric-strip" aria-label="Platform activity">
-        <div>
-          <span className="metric-label">
-            <Crosshair size={14} />
-            Challenges
-          </span>
-          <strong>
-            {data ? String(challenges.length).padStart(2, "0") : "—"}
-          </strong>
-          <span>public contracts</span>
-        </div>
-        <div>
-          <span className="metric-label">
-            <Circle size={14} />
-            Open milestones
-          </span>
-          <strong>
-            {data ? String(openMilestones).padStart(2, "0") : "—"}
-          </strong>
-          <span>steps toward the frontier</span>
-        </div>
-        <div>
-          <span className="metric-label">
-            <CheckCheck size={15} />
-            Claimed milestones
-          </span>
-          <strong>
-            {data
-              ? String(milestones.length - openMilestones).padStart(2, "0")
-              : "—"}
-          </strong>
-          <span>receipt-ordered progress</span>
-        </div>
-        <div className="metric-note">
-          <span className="tiny-label">OPEN BY DESIGN</span>
-          <p>
-            Every frontier advance
-            <br />
-            becomes a new starting point.
-          </p>
-          <Link href="/docs">
-            How it works <ArrowUpRight size={14} />
-          </Link>
-        </div>
-      </section>
-      <section className="challenge-directory">
-        <div className="panel" style={{ marginBottom: "2rem" }}>
-          <div className="section-kicker">
-            FIRST SHOWCASE · MATHEMATICS & SIGNAL PHYSICS
-          </div>
-          <h2>Quiet Echoes: 512 signs, cleaner signals.</h2>
-          <p>
-            Explore a reproduced published pulse, see its ghost echoes, and load
-            your own candidate. The challenge ranks exact sidelobe energy; every
-            milestone asks for an improvement over the reference.
-          </p>
-          <a
-            className="button primary"
-            href="/showcase/quiet-echoes/index.html"
-          >
-            Explore the signal <ArrowUpRight size={16} />
-          </a>
-        </div>
-        <div className="section-title">
-          <h2>
-            Explore challenges{" "}
-            <span>{data ? `(${challenges.length})` : ""}</span>
-          </h2>
-          <Link href="/create">
-            Have a question? Create a challenge <ArrowUpRight size={15} />
-          </Link>
-        </div>
+      </header>
+      <section className="challenge-directory" aria-label="Challenges">
         <div className="filters">
           <div className="search-field">
             <Search size={17} />
             <input
               aria-label="Search challenges"
-              placeholder="Search questions, topics, or keywords…"
+              placeholder="Search challenges…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -270,10 +110,9 @@ export function Explore() {
               className={onlyOpen ? "selected" : ""}
               onClick={() => setOnlyOpen(true)}
             >
-              <span className="status-dot" /> Open for progress
+              <span className="status-dot" /> Open for submissions
             </button>
           </div>
-          <span className="tiny-label">ARTIFACT / CHECKER</span>
         </div>
         <ErrorMessage error={error} retry={refresh} />
         {loading && !data ? (
@@ -289,12 +128,12 @@ export function Explore() {
               title={
                 challenges.length
                   ? "No challenges match this view."
-                  : "The next frontier is waiting."
+                  : "No challenges published yet."
               }
             >
               {challenges.length
                 ? "Try a different field or search term."
-                : "The first challenge will appear here with its scientific question, verification contract, and milestone ladder. Start with a question worth answering."}
+                : "Published challenges will appear here. You can start drafting one now."}
             </Empty>
             <Link
               className="button primary"
@@ -309,39 +148,22 @@ export function Explore() {
             >
               {challenges.length
                 ? "Reset filters"
-                : "Explore the Challenge Scout"}
+                : "Create the first challenge"}
               <ArrowRight size={16} />
             </Link>
           </div>
         ) : (
           <div className="challenge-grid">
-            {shown.map((c, index) => (
-              <ChallengeCard key={c.id} challenge={c} index={index} />
+            {shown.map((c) => (
+              <ChallengeCard key={c.id} challenge={c} />
             ))}
           </div>
         )}
       </section>
-      <section className="participate-strip">
-        <div>
-          <span className="tiny-label">
-            YOUR AGENT. YOUR APPROACH. A SHARED FRONTIER.
-          </span>
-          <h2>Bring curiosity. Leave a reproducible result.</h2>
-        </div>
-        <Link href="/docs#solver" className="button ghost">
-          Start solving <ArrowRight size={16} />
-        </Link>
-      </section>
     </div>
   );
 }
-function ChallengeCard({
-  challenge: c,
-  index,
-}: {
-  challenge: Challenge;
-  index: number;
-}) {
+function ChallengeCard({ challenge: c }: { challenge: Challenge }) {
   const achieved = c.milestones.filter((m) => m.claimedBy).length;
   return (
     <Link
@@ -349,14 +171,13 @@ function ChallengeCard({
       className="challenge-card"
     >
       <div className="card-meta">
-        <span className="card-number">
-          {String(index + 1).padStart(2, "0")}
+        <span className="card-domain">
+          {c.domain || "Computational science"}
         </span>
-        <Badge>{c.domain || "Computational science"}</Badge>
         <Status value={c.status} />
       </div>
       <h3>{c.title}</h3>
-      <p className="card-summary">{c.summary}</p>
+      <p className="card-summary">{displaySummary(c)}</p>
       <div className="card-chart">
         <MiniFrontier challenge={c} />
         <div className="card-score">

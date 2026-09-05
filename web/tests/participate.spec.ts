@@ -95,7 +95,7 @@ test("anonymous pending challenge has complete accessible, copyable participatio
   await expect(
     dialog.getByRole("heading", { name: "Participate in this challenge" }),
   ).toBeFocused();
-  const text = dialog.getByLabel("COMPLETE AGENT INSTRUCTIONS");
+  const text = dialog.getByLabel(/agent instructions/i);
   const value = await text.inputValue();
   expect(value).toContain("test-version-123");
   expect(value).toContain("git checkout --detach '" + "a".repeat(40) + "'");
@@ -149,7 +149,7 @@ test("standalone explorer keeps science central and puts tools below the visuali
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   const value = await dialog
-    .getByLabel("COMPLETE AGENT INSTRUCTIONS")
+    .getByLabel(/agent instructions/i)
     .inputValue();
   expect(value).toContain("56ddbf39-2b67-4172-9a9d-e3c78e44c7cf");
   expect(value).toContain("f42f527e97563b1c068a1835732c6da44f21223f");

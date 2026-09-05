@@ -5,28 +5,18 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  CircleUserRound,
   Github,
   KeyRound,
   LockKeyhole,
   LogOut,
   Plus,
   ShieldCheck,
-  Terminal,
 } from "lucide-react";
 import { useAction, useResource } from "@/lib/api";
 import { asRecord, asText, dateLabel, humanize } from "@/lib/scientific";
 import type { Candidate, Challenge, Intent, Submission } from "@/lib/types";
 import { useSession } from "./shell";
-import {
-  Badge,
-  CodeBlock,
-  Empty,
-  ErrorMessage,
-  Field,
-  Loading,
-  Status,
-} from "./ui";
+import { Badge, Empty, ErrorMessage, Field, Loading, Status } from "./ui";
 import { SubmissionTable } from "./submission";
 export function Account() {
   const session = useSession();
@@ -40,32 +30,23 @@ export function Account() {
   }>(me?.user ? "/dashboard" : null, 15000);
   const [cliId, setCliId] = useState("");
   const [cliCode, setCliCode] = useState("");
+  const [cliOpen, setCliOpen] = useState(false);
   const [approved, setApproved] = useState(false);
   const [authError, setAuthError] = useState("");
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
-    setCliId(
-      q.get("cliSession") || q.get("session") || q.get("sessionId") || "",
-    );
+    const callbackSession =
+      q.get("cliSession") || q.get("session") || q.get("sessionId") || "";
+    setCliId(callbackSession);
+    if (callbackSession) setCliOpen(true);
     setCliCode(q.get("userCode") || q.get("code") || "");
     setAuthError(q.get("error") || "");
   }, []);
   return (
     <div className="page account-page">
-      <div className="eyebrow">
-        <CircleUserRound size={14} /> YOUR SCIENTIFIC WORKSPACE
-      </div>
       <header className="page-heading">
         <div>
-          <h1>
-            {me?.user ? "Hello, " : ""}
-            <em>{me?.user?.login || "Make your contribution."}</em>
-          </h1>
-          <p>
-            {me?.user
-              ? "Your challenges, artifacts, and durable contribution record."
-              : "Connect GitHub to create a challenge or submit an exact, reproducible artifact."}
-          </p>
+          <h1>Account</h1>
         </div>
         {me?.user && (
           <button
@@ -95,11 +76,11 @@ export function Account() {
         <div className="account-signin">
           <div className="signin-card">
             <Github size={36} strokeWidth={1.3} />
-            <h2>Identity, attached to the work.</h2>
+            <h2>Sign in</h2>
             <p>
-              Your GitHub identity attributes challenges and candidate
-              artifacts. Winning constructions are shared under the declared
-              open license.
+              Your GitHub account identifies your challenges and submissions.
+              Results that improve the public frontier are shared under the
+              challenge’s license.
             </p>
             {me?.configuration.githubAuth ? (
               <a className="button primary" href="/v1/auth/github">
@@ -112,33 +93,25 @@ export function Account() {
                 <LockKeyhole size={18} />
                 <p>
                   {session.error
-                    ? "Sign-in availability could not be read. Retry the connection above. Public protocol documentation and local tools remain available."
-                    : "GitHub sign-in is not configured on this host yet. Public challenges, the Scout prompt, and local tools are available."}
+                    ? "Could not check sign-in availability. Retry above. Documentation and local tools remain available."
+                    : "GitHub sign-in is not configured yet. You can browse public challenges and use the local tools."}
                 </p>
               </div>
             )}
-            <span className="tiny-label">
-              NO PRIVATE AGENT TRACES COLLECTED
-            </span>
           </div>
           <div className="signin-description">
-            <div className="section-kicker">INVITATION PREVIEW</div>
-            <h2>
-              Public science.
-              <br />
-              Carefully opened compute.
-            </h2>
+            <h2>Access</h2>
             <p>
-              Anyone can browse the record, explore the protocol, draft a
-              candidate, and reproduce results locally. Hosted creation and
-              validation are currently reserved for invited accounts.
+              Anyone can browse challenges, draft candidates and test locally.
+              Creating hosted challenges and running platform validation
+              currently require an invitation.
             </p>
             <Link href="/docs#solver">
-              Start with the local tools
+              Local tools
               <ArrowUpRight size={15} />
             </Link>
             <Link href="/create">
-              Try the Challenge Scout
+              Challenge Scout
               <ArrowUpRight size={15} />
             </Link>
           </div>
@@ -156,15 +129,15 @@ export function Account() {
             <div>
               <span className="tiny-label">VALIDATIONS REMAINING</span>
               <strong>{me.quotas.remaining}</strong>
-              <p>Free, subject-bound validation grants</p>
+              <p>Free grants, each tied to a specific submission</p>
             </div>
             <div>
               <span className="tiny-label">ACTIVE RUN LIMIT</span>
               <strong>{me.quotas.activeLimit}</strong>
-              <p>Per-account concurrent validation</p>
+              <p>Validations that can run at once</p>
             </div>
             <div>
-              <span className="tiny-label">HOST CAPABILITIES</span>
+              <span className="tiny-label">SERVICES</span>
               <ul>
                 <li>
                   <i
@@ -195,10 +168,9 @@ export function Account() {
             <div className="note">
               <LockKeyhole size={20} />
               <p>
-                Your account is ready, but an invitation is needed to create
-                challenges and reserve official validation. An operator grants
-                access to your GitHub account. You can continue drafting and
-                testing locally.
+                An operator must invite your GitHub account before you can
+                create challenges or request platform validation. You can draft
+                and test locally now.
               </p>
             </div>
           )}
@@ -206,15 +178,14 @@ export function Account() {
             <div className="note">
               <LockKeyhole size={20} />
               <p>
-                Your hosted validation quota is exhausted. Local validation
-                remains available. An operator must increase your allocation
-                before a new official run can be accepted.
+                You have no hosted validations remaining. An operator must
+                increase your quota before another run can be accepted. Local
+                testing remains available.
               </p>
             </div>
           )}
-          <section className="panel">
-            <div className="section-kicker">REPOSITORY ACCESS</div>
-            <h2>Connect the repositories you use.</h2>
+          <details className="panel account-settings">
+            <summary>Repository access</summary>
             <p>
               The Science Ladder GitHub App reads exact commits from
               repositories you authorize. Install it on your challenge and
@@ -230,15 +201,13 @@ export function Account() {
               Install or configure GitHub App
               <ArrowUpRight size={14} />
             </a>
-          </section>
-          <section className="panel cli-session">
-            <div className="section-title">
-              <div>
-                <div className="section-kicker">CONNECT YOUR TERMINAL</div>
-                <h2>Approve a CLI session</h2>
-              </div>
-              <Terminal size={22} />
-            </div>
+          </details>
+          <details
+            className="panel account-settings cli-session"
+            open={cliOpen}
+            onToggle={(event) => setCliOpen(event.currentTarget.open)}
+          >
+            <summary>Approve a CLI session</summary>
             <p>
               Only approve a session you initiated in your own terminal. Enter
               its session ID and displayed verification code.
@@ -288,10 +257,10 @@ export function Account() {
                 </button>
               </form>
             )}
-          </section>
+          </details>
           <ErrorMessage error={dashboard.error} retry={dashboard.refresh} />
           {dashboard.loading && !dashboard.data ? (
-            <Loading label="Loading your scientific activity" />
+            <Loading label="Loading your activity" />
           ) : (
             <>
               <section className="content-section">
@@ -320,9 +289,9 @@ export function Account() {
                     ))}
                   </div>
                 ) : (
-                  <Empty title="A question worth asking starts here.">
-                    Use the Challenge Scout to turn primary evidence into a
-                    candidate, then attach a verified repository.
+                  <Empty title="No challenges yet.">
+                    Use the Challenge Scout to draft a challenge, then attach
+                    its repository.
                   </Empty>
                 )}
                 {dashboard.data?.candidates?.length ? (
@@ -414,7 +383,7 @@ function IntentRow({
       <td>
         {i.submissionId ? (
           <Link href={`/submissions/${i.submissionId}`}>
-            View receipt
+            View submission
             <ArrowRight size={13} />
           </Link>
         ) : i.status === "ready" ? (
@@ -431,7 +400,7 @@ function IntentRow({
         ) : (
           <span className="subtle">
             {i.status === "failed"
-              ? "Revise source from challenge page"
+              ? "Revise the source on the challenge page"
               : "Inspection in progress"}
           </span>
         )}
@@ -447,9 +416,8 @@ function InviteForm() {
   const [success, setSuccess] = useState(false);
   return (
     <section className="panel">
-      <div className="section-kicker">OPERATOR ACCESS CONTROL</div>
       <h2>Invite a participant</h2>
-      <p>Grant account-bound access and a finite hosted-validation quota.</p>
+      <p>Give a GitHub account access and a hosted validation quota.</p>
       <form
         onSubmit={async (e) => {
           e.preventDefault();

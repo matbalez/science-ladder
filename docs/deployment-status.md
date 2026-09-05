@@ -70,3 +70,13 @@ snapshot's preflight admission deadline is 5 September 2026 at 22:16:26 UTC;
 this does not block submitted solutions to published challenges. TLS certificates
 still require rotation before 3 December 2026. See the
 [authorization and advisory runbook](runner-renewal.md).
+
+## Interface simplification
+
+The website now uses concise headings and removes promotional slogans, decorative
+protocol/version labels and repeated explanations. Participate and the educational
+challenge material remain visible. Creation separates researching an idea from
+importing a candidate; the import view links to `/docs/candidate` with the exact
+YAML requirements, complete Quiet Echoes examples and repository setup guidance.
+A misplaced challenge manifest receives a specific error before import. Source
+contracts and verification behavior are unchanged.

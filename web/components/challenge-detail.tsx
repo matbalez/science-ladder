@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { displaySummary } from "@/lib/presentation";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -7,7 +8,6 @@ import {
   ArrowUpRight,
   BookOpen,
   Check,
-  ChevronRight,
   Clock3,
   Download,
   FileCheck2,
@@ -34,7 +34,6 @@ import { ArtifactViewer, FrontierChart } from "./science-visuals";
 import {
   Badge,
   CodeBlock,
-  CopyButton,
   Empty,
   ErrorMessage,
   ExternalLink,
@@ -140,34 +139,31 @@ export function ChallengeDetail({ slug }: { slug: string }) {
   const solverPrompt = solverInstructions(c);
   return (
     <div className="page challenge-detail">
-      <div className="breadcrumb">
-        <Link href="/">Explore</Link>
-        <ChevronRight size={13} />
-        <span>{c.domain || "Computational science"}</span>
-        <ChevronRight size={13} />
-        <span>{c.slug}</span>
-      </div>
+      <Link href="/" className="back-link">
+        <ArrowLeft size={14} /> All challenges
+      </Link>
       <ErrorMessage error={error} retry={refresh} />
       <header className="challenge-header">
         <div>
           <div className="inline-meta">
-            <Badge>{c.domain}</Badge>
+            <span className="subtle">{c.domain}</span>
             <Status value={c.status} />
             {c.intakeStatus !== "open" && (
               <Badge tone="amber">Intake {c.intakeStatus}</Badge>
             )}
-            <Badge>Payment-free</Badge>
-            {c.badges.map((b) => (
-              <Badge
-                key={b}
-                tone={b.toLowerCase() === "featured" ? "lime" : ""}
-              >
-                {humanize(b)}
-              </Badge>
-            ))}
+            {c.badges
+              .filter((b) => b.toLowerCase() !== "featured")
+              .map((b) => (
+                <Badge
+                  key={b}
+                  tone={b.toLowerCase() === "featured" ? "lime" : ""}
+                >
+                  {humanize(b)}
+                </Badge>
+              ))}
           </div>
           <h1>{c.title}</h1>
-          <p className="challenge-summary">{c.summary}</p>
+          <p className="challenge-summary">{displaySummary(c)}</p>
           <div className="challenge-provenance">
             <ExternalLink href={`https://github.com/${c.repository}`}>
               <GitBranch size={14} />
@@ -196,7 +192,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
               ? "Submissions unavailable"
               : showSubmit
                 ? "Close submission"
-                : "Submit a construction"}
+                : "Submit a solution"}
             <ArrowUpRight size={15} />
           </button>
         </div>
@@ -233,19 +229,18 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           </span>
         </div>
         <div>
-          <span className="tiny-label">MILESTONE LADDER</span>
+          <span className="tiny-label">MILESTONES</span>
           <strong>
             {c.milestones.filter((m) => m.claimedBy).length}
             <small>/ {c.milestones.length} claimed</small>
           </strong>
-          <span>First to threshold, in receipt order</span>
+          <span>First verified submission to each threshold</span>
         </div>
         <div>
-          <span className="tiny-label">CONTRACT</span>
+          <span className="tiny-label">REVIEW</span>
           <strong className="stat-word">
             {humanize(c.reviewStatus || "Pending review")}
           </strong>
-          <span>Automated review ≠ peer review</span>
         </div>
       </div>
       <div
@@ -256,8 +251,8 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         {[
           ["overview", "The question"],
           ["frontier", "Frontier & artifacts"],
-          ["evaluation", "Evaluation contract"],
-          ["history", "Submissions & receipts"],
+          ["evaluation", "Evaluation"],
+          ["history", "Submissions"],
         ].map(([id, label]) => (
           <button
             key={id}
@@ -283,14 +278,10 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           <div className="two-column">
             <div>
               <section className="content-section">
-                <div className="section-kicker">01 / THE SCIENTIFIC GAP</div>
                 <h2>{asText(science.question, c.summary)}</h2>
-                <p>
-                  {asText(
-                    science.impactStatement,
-                    "The creator’s scientific rationale is recorded in the immutable challenge manifest.",
-                  )}
-                </p>
+                {asText(science.impactStatement) && (
+                  <p>{asText(science.impactStatement)}</p>
+                )}
                 {explorerUrl && (
                   <p>
                     <Link
@@ -305,13 +296,12 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                     </Link>
                   </p>
                 )}
-                <h3>Why this metric matters</h3>
-                <p>
-                  {asText(
-                    asRecord(science).metricRationale,
-                    "See the evaluation contract for the exact metric and validity gates.",
-                  )}
-                </p>
+                {asText(asRecord(science).metricRationale) && (
+                  <>
+                    <h3>Why this metric matters</h3>
+                    <p>{asText(asRecord(science).metricRationale)}</p>
+                  </>
+                )}
                 <TextList
                   title="Assumptions"
                   value={asRecord(science).assumptions}
@@ -319,8 +309,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                 <TextList title="Limitations" value={science.limitations} />
               </section>
               <section className="content-section">
-                <div className="section-kicker">02 / PRIMARY EVIDENCE</div>
-                <h2>The question, in context.</h2>
+                <h2>Research background</h2>
                 {asList(science.citations).length ? (
                   asList(science.citations).map((citation, i) => {
                     const cite = asRecord(citation);
@@ -397,46 +386,24 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                     : undefined
                 }
               />
-              <section className="content-section">
-                <div className="section-kicker">03 / BEGIN AN EXPERIMENT</div>
-                <h2>Bring your own agent.</h2>
+              <details className="content-section local-setup">
+                <summary>Local setup</summary>
                 <p>
-                  Clone the immutable challenge, reproduce its baseline, then
-                  improve the allowed artifact. Official validation fetches your
-                  exact pushed commit.
+                  Clone this version and reproduce the baseline before changing
+                  the candidate.
                 </p>
                 <CodeBlock code={challengeSetupCommands(c)} />
-                <details className="prompt-details">
-                  <summary>
-                    <Terminal size={16} />
-                    Solver agent prompt
-                  </summary>
-                  <pre>{solverPrompt}</pre>
-                  <CopyButton text={solverPrompt}>Copy prompt</CopyButton>
-                </details>
-              </section>
+              </details>
             </div>
             <aside>
               <MilestoneLadder challenge={c} />
               <div className="trust-panel">
                 <ShieldCheck size={20} />
-                <h3>Inspect the contract.</h3>
+                <h3>Challenge record</h3>
                 <p>
-                  Scores describe performance under this evaluator. Machine
-                  conformance does not establish scientific truth.
+                  Scores measure performance under this checker, not broader
+                  scientific validity.
                 </p>
-                <div className="trust-facts">
-                  <span>
-                    Source <code>{shortHash(c.sourceCommit)}</code>
-                  </span>
-                  <span>
-                    Profile{" "}
-                    <code>{asText(task.profile, "artifact-checker-v1")}</code>
-                  </span>
-                  <span>
-                    Economic mode <Badge>None</Badge>
-                  </span>
-                </div>
                 <a
                   href={`/v1/exports/challenge-versions/${c.versionId}`}
                   className="button small ghost"
@@ -461,10 +428,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           <div className="content-section">
             <div className="section-title">
               <div>
-                <div className="section-kicker">
-                  ORDERED, REPRODUCIBLE PROGRESS
-                </div>
-                <h2>Every advance raises the starting point.</h2>
+                <h2>Verified progress</h2>
               </div>
               <span className="tiny-label">
                 {c.metric.name} / {c.metric.units}
@@ -481,10 +445,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           <div className="two-column">
             <div>
               <section className="content-section">
-                <div className="section-kicker">
-                  THE IMMUTABLE SUCCESS CONTRACT
-                </div>
-                <h2>What counts as progress.</h2>
+                <h2>Scoring and validity</h2>
                 <dl className="contract-grid">
                   <div>
                     <dt>Primary metric</dt>
@@ -559,8 +520,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                 />
               </section>
               <section className="content-section">
-                <div className="section-kicker">TWO SEPARATE REVIEW TRACKS</div>
-                <h2>Conformance & scientific legibility</h2>
+                <h2>Checker and scientific reviews</h2>
                 {c.reviews?.length ? (
                   c.reviews.map((r, i) => (
                     <div className="review-record" key={i}>
@@ -583,7 +543,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             <aside>
               <div className="trust-panel">
                 <LockKeyhole size={21} />
-                <h3>Frozen at publication.</h3>
+                <h3>Version rules</h3>
                 <p>
                   The evaluator, score arithmetic, milestone thresholds,
                   deadline, and artifact publication policy are locked for this
@@ -610,12 +570,8 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           <section className="content-section">
             <div className="section-title">
               <div>
-                <div className="section-kicker">
-                  THE PUBLIC SCIENTIFIC RECORD
-                </div>
-                <h2>Submissions & receipts</h2>
+                <h2>Submissions</h2>
               </div>
-              <span className="tiny-label">UPDATED EVERY 15 SECONDS</span>
             </div>
             <p>
               Public results are shown below. Unpublished candidate artifacts
@@ -846,10 +802,7 @@ function SubmitForm({
     <section className="panel submit-panel">
       <div className="section-title">
         <div>
-          <div className="section-kicker">
-            EXACT COMMIT · REPRODUCIBLE VERIFICATION
-          </div>
-          <h2>Submit a construction</h2>
+          <h2>Submit a solution</h2>
         </div>
         <Badge>{session.data.quotas.remaining} validations remaining</Badge>
       </div>
@@ -857,11 +810,8 @@ function SubmitForm({
         <div className="success-note">
           <FileCheck2 size={22} />
           <div>
-            <strong>Submission accepted. Your place is recorded.</strong>
-            <p>
-              Follow validation, confirmation under this challenge’s locked
-              policy, and ordered adjudication.
-            </p>
+            <strong>Submission accepted.</strong>
+            <p>View its verification progress and final result.</p>
             <Link href={`/submissions/${accepted}`} className="button primary">
               Open submission receipt
               <ArrowRight size={16} />
@@ -879,7 +829,7 @@ function SubmitForm({
             <div>
               <dt>Artifact digest</dt>
               <dd className="mono">
-                {current.artifactDigest || "Being independently fetched"}
+                {current.artifactDigest || "Fetching artifact…"}
               </dd>
             </div>
           </dl>
@@ -889,8 +839,7 @@ function SubmitForm({
           {current.status === "ready" ? (
             <>
               <p>
-                The platform has fetched your artifact. Accepting reserves
-                validation capacity and assigns a receipt sequence.
+                Your artifact is ready. Reserve a verification run to submit it.
               </p>
               <button
                 className="button primary"
@@ -1033,7 +982,7 @@ function SubmitForm({
           </label>
           <ErrorMessage error={action.error} />
           <button className="button primary" disabled={action.busy || !consent}>
-            {action.busy ? "Creating intent…" : "Fetch & inspect exact commit"}
+            {action.busy ? "Fetching source…" : "Fetch & inspect exact commit"}
             <ArrowRight size={16} />
           </button>
         </form>

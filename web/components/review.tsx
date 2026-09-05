@@ -36,20 +36,11 @@ export function ReviewConsole({
   const action = useAction();
   return (
     <div className="page review-page">
-      <div className="eyebrow">
-        <ClipboardCheck size={14} /> DOCUMENTED EDITORIAL JUDGMENT
-      </div>
       <header className="page-heading">
         <div>
-          <h1>
-            Review <em>the evidence.</em>
-          </h1>
-          <p>
-            Resolve flags, document incidents, and distinguish human review from
-            editorial featuring.
-          </p>
+          <h1>Review</h1>
+          <p>Review challenges and respond to reported concerns.</p>
         </div>
-        <Badge>Append-only decisions</Badge>
       </header>
       {session.loading ? (
         <Loading />

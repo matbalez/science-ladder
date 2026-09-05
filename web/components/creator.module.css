@@ -1,0 +1,47 @@
+.options {
+  margin: 22px 0;
+}
+.options summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+}
+.options[open] summary {
+  margin-bottom: 18px;
+}
+.guideLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0 0 20px;
+  font-size: 12px;
+}
+.guideLinks a,
+.textButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lime);
+  width: fit-content;
+}
+.guideLinks span {
+  color: var(--muted);
+  line-height: 1.6;
+}
+.guideLinks code {
+  overflow-wrap: anywhere;
+}
+.nextStep {
+  margin: 24px 0 0;
+  font-size: 13px;
+}
+.textButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.textButton:hover {
+  text-decoration: underline;
+}

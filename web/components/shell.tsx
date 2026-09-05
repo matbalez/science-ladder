@@ -23,7 +23,6 @@ export function Brand() {
       </span>
       <span>
         science<span className="brand-light">ladder</span>
-        <sup>α</sup>
       </span>
     </Link>
   );
@@ -49,9 +48,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <Telescope size={16} />
               Explore
             </Link>
-            <Link href="/docs" className={path === "/docs" ? "active" : ""}>
+            <Link
+              href="/docs"
+              className={path.startsWith("/docs") ? "active" : ""}
+            >
               <BookOpen size={16} />
-              Protocol
+              Docs
             </Link>
             {session.data?.capabilities.review && (
               <Link
@@ -85,20 +87,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <main id="main">{children}</main>
       <footer className="site-footer">
         <Brand />
-        <span>Open questions. Reproducible progress.</span>
         <div>
-          <Link href="/docs#trust">Trust & protocol</Link>
+          <Link href="/docs#trust">Verification</Link>
           <a
             href="https://github.com/matbalez/science-ladder"
             target="_blank"
             rel="noreferrer"
           >
-            MIT · Source <ArrowUpRight size={13} />
+            GitHub <ArrowUpRight size={13} />
           </a>
-          <span className="footer-status">
-            <i />
-            Invitation preview
-          </span>
         </div>
       </footer>
     </SessionContext.Provider>

@@ -1,0 +1,134 @@
+verificationPolicy: "platform"
+apiVersion: "science-ladder/v1"
+kind: "ChallengeManifest"
+id: "quiet-echoes-labs512-v1"
+createdAt: "2026-09-04T22:21:15Z"
+producer: "MatBalez via Codex; platform-seeded creator adoption under explicit user authorization"
+slug: "quiet-echoes-labs512"
+title: "Quiet Echoes: the 512-bit signal challenge"
+summary: "Lower exact sidelobe energy of a 512-chip binary pulse below a reproduced literature reference. A small artifact, a vast search space, and a score anyone can recompute."
+scientificQuestion: "Can a length 512 sequence of +1 and -1 achieve aperiodic sidelobe energy E below 17996, the best inspected and reproduced published reference?"
+evidence:
+  -
+    url: "https://arxiv.org/abs/2409.07222v1"
+    title: "Dual-Step Optimization for Binary Sequences with High Merit Factors"
+    evidence: "our approach has successfully identified new best-known binary sequences for all lengths ranging from 450 to 527"
+    location: "Abstract, final paragraph; historical claim from the 2024 paper, not a claim about the present frontier"
+    accessedAt: "2026-09-04"
+    identifier: "arXiv:2409.07222v1"
+    publicationDate: "2024-09-11"
+  -
+    url: "https://arxiv.org/html/2409.07222v1"
+    title: "Dual-Step Optimization: exact length 512 reference"
+    evidence: "512 7.0942 7.2834"
+    location: "Table 2, length 512 row: length, previous merit factor, new reported merit factor. The full row is reproduced in literature/reference.json; our integer recomputation gives E = 17996. That energy is a computation, not a quoted paper value."
+    accessedAt: "2026-09-04"
+    identifier: "arXiv:2409.07222v1"
+  -
+    url: "https://arxiv.org/abs/2607.09688v1"
+    title: "Prioritizing Search Space Regions in the Low Autocorrelation Binary Sequences Problem"
+    evidence: "improves the previously best-known results for 35 sequence lengths"
+    location: "Abstract, experimental-results paragraph. Full-text Table 3 was separately inspected; length 512 is absent from that improvement table, a bounded comparison rather than proof of a current world record."
+    accessedAt: "2026-09-04"
+    identifier: "arXiv:2607.09688v1"
+    publicationDate: "2026-06-17"
+impact: "Low-autocorrelation sequence design connects discrete optimization, Ising spin models and pulse compression. This finite benchmark measures total idealized sidelobe energy; it does not establish real radar, sonar, GNSS or quantum-system performance."
+limitations:
+  - "The baseline is a 2024 preprint result published in 2025; later 2026 work was inspected. The literature search is bounded, so beating this reference is not automatically a world-record claim."
+  - "One binary sequence at one length does not prove global optimality or an asymptotic merit-factor conjecture."
+  - "Total sidelobe energy and peak sidelobe level are different objectives. A better score can have a higher individual peak."
+  - "No Doppler, noise, bandwidth, cross-correlation, hardware or multi-target robustness is scored."
+  - "The runtime is pinned to a real patched image. Creator adoption is authorized; actual hosted scientific review, vulnerability-policy checks, machine preflight and publication remain separate requirements. Local test reports do not satisfy hosted verification or independent replication."
+safetyClassification: "low-risk-computational"
+economicMode: "none"
+metric:
+  name: "Aperiodic sidelobe energy"
+  direction: "minimize"
+  unit: "sum of squared correlations"
+  quantum: "1"
+  baselineTicks: "17996"
+  minimumDeltaTicks: "4"
+  toleranceTicks: "0"
+  domainMinTicks: "256"
+  domainMaxTicks: "44608256"
+hardGates:
+  - "one_canonical_sequence"
+  - "binary_length_512"
+milestones:
+  -
+    id: "first-lower-energy"
+    title: "One real step beyond the reference"
+    thresholdTicks: "17992"
+    rationale: "At length 512 every attainable energy is a multiple of 4. This is the next possible strict improvement; novelty still requires a current literature check."
+  -
+    id: "one-percent"
+    title: "1% less sidelobe energy"
+    thresholdTicks: "17816"
+    rationale: "At least 1% below the reproduced reference; integer threshold rounded down to an attainable energy residue. This is a research target, not a promised achievable score."
+  -
+    id: "two-point-five-percent"
+    title: "2.5% less sidelobe energy"
+    thresholdTicks: "17544"
+    rationale: "At least 2.5% energy reduction relative to 17996; does not imply a 2.5% real receiver improvement."
+  -
+    id: "five-percent"
+    title: "5% less sidelobe energy"
+    thresholdTicks: "17096"
+    rationale: "An ambitious finite-sequence target, at least 5% lower total sidelobe energy; feasibility is not established."
+deadline: "2027-03-04T23:59:59Z"
+submission:
+  allowedPaths:
+    - "sequence.txt"
+  allowedExtensions:
+    - ".txt"
+  maxBytes: 513
+  maxFiles: 1
+  license: "CC-BY-4.0"
+validator:
+  profile: "artifact-checker-v1"
+  entrypoint:
+    - "/usr/local/bin/python3"
+    - "/sl/challenge/checker.py"
+  dependencyLock: "requirements.lock"
+  runtimeImageDigest: "sha256:a8136bf6f5082a72776f2565f279a6c336b462da483aa54cfa81586ad20705fa"
+suite:
+  visibility: "public"
+  path: "suite"
+resources:
+  class: "cpu-small"
+  vCpu: 1
+  memoryMb: 128
+  timeoutSeconds: 5
+  maxOutputBytes: 4096
+fixtures:
+  -
+    name: "baseline"
+    path: "fixtures/baseline"
+    expectedOutcome: "valid"
+    expectedTicks: "17996"
+  -
+    name: "valid"
+    path: "fixtures/valid"
+    expectedOutcome: "valid"
+    expectedTicks: "43776"
+  -
+    name: "invalid"
+    path: "fixtures/invalid"
+    expectedOutcome: "hard_gate_failed"
+  -
+    name: "malformed"
+    path: "fixtures/malformed"
+    expectedOutcome: "invalid_output"
+  -
+    name: "empty"
+    path: "fixtures/empty"
+    expectedOutcome: "hard_gate_failed"
+  -
+    name: "oversized"
+    path: "fixtures/oversized"
+    expectedOutcome: "invalid_output"
+  -
+    name: "maximum"
+    path: "fixtures/maximum"
+    expectedOutcome: "valid"
+    expectedTicks: "44608256"

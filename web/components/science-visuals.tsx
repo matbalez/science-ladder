@@ -402,7 +402,7 @@ export function ArtifactViewer({ digest }: { digest?: string }) {
     <div className="artifact-panel">
       <div className="panel-heading">
         <h3>
-          <Box size={17} /> Construction viewer
+          <Box size={17} /> Artifact preview
         </h3>
         {digest && (
           <a
@@ -416,12 +416,8 @@ export function ArtifactViewer({ digest }: { digest?: string }) {
         )}
       </div>
       {!digest ? (
-        <Empty
-          title="The first open artifact belongs here."
-          icon={<Box size={30} />}
-        >
-          A public-frontier construction will become available after validation
-          and adjudication.
+        <Empty title="No public artifact available." icon={<Box size={30} />}>
+          Public artifacts can be viewed and downloaded here.
         </Empty>
       ) : error ? (
         <div className="artifact-info">

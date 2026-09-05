@@ -6,19 +6,12 @@ import {
   ArrowUpRight,
   Download,
   FileCheck2,
-  Fingerprint,
   Globe,
   LockKeyhole,
   ShieldCheck,
 } from "lucide-react";
 import { useAction, useResource } from "@/lib/api";
-import {
-  asText,
-  dateLabel,
-  formatTicks,
-  humanize,
-  shortHash,
-} from "@/lib/scientific";
+import { asText, dateLabel, formatTicks, humanize } from "@/lib/scientific";
 import type { Submission } from "@/lib/types";
 import { ArtifactViewer } from "./science-visuals";
 import { Badge, Empty, ErrorMessage, JsonViewer, Loading, Status } from "./ui";
@@ -31,19 +24,20 @@ export function SubmissionTable({
 }) {
   if (!submissions.length)
     return (
-      <Empty title="No public submissions yet." icon={<FileCheck2 size={30} />}>
-        The first submitted construction begins a durable, signed scientific
-        record.
-      </Empty>
+      <Empty
+        title="No submissions yet."
+        icon={<FileCheck2 size={30} />}
+        children={null}
+      />
     );
   return (
     <div className="table-scroll">
       <table className="data-table">
         <thead>
           <tr>
-            <th>Receipt</th>
+            <th>Submission</th>
             <th>Attribution</th>
-            <th>{quantum ? "Score" : "Score ticks"}</th>
+            <th>{quantum ? "Score" : "Score units"}</th>
             <th>Processing</th>
             <th>Validation</th>
             <th>Publication</th>
@@ -67,9 +61,11 @@ export function SubmissionTable({
                   </Link>
                 </td>
                 <td>
-                  <strong>{s.attribution?.model || "Unspecified model"}</strong>
+                  <strong>
+                    {s.attribution?.model || "Model not supplied"}
+                  </strong>
                   <small>
-                    {s.attribution?.harness || "Unspecified harness"}
+                    {s.attribution?.harness || "Agent software not supplied"}
                     {s.attribution?.platformSeeded && (
                       <Badge tone="amber">Platform-seeded</Badge>
                     )}
@@ -101,7 +97,7 @@ export function SubmissionTable({
                 <td>
                   <Link
                     href={`/submissions/${s.id}`}
-                    aria-label={`Open receipt ${s.sequence}`}
+                    aria-label={`Open submission ${s.sequence}`}
                   >
                     <ArrowUpRight size={17} />
                   </Link>
@@ -141,7 +137,7 @@ export function SubmissionDetail({ id }: { id: string }) {
       <div className="page">
         <Link href="/account" className="back-link">
           <ArrowLeft size={14} />
-          Your activity
+          Account
         </Link>
         <ErrorMessage error={resource.error} retry={resource.refresh} />
       </div>
@@ -158,15 +154,12 @@ export function SubmissionDetail({ id }: { id: string }) {
     <div className="page submission-page">
       <Link href="/account" className="back-link">
         <ArrowLeft size={14} />
-        Your activity
+        Account
       </Link>
-      <div className="eyebrow">
-        <Fingerprint size={14} /> THE DURABLE SCIENTIFIC RECORD
-      </div>
       <header className="page-heading">
         <div>
           <h1>
-            Receipt <em>#{String(s.sequence).padStart(3, "0")}</em>
+            Submission <em>#{String(s.sequence).padStart(3, "0")}</em>
           </h1>
           <p className="mono">{s.id}</p>
         </div>
@@ -176,14 +169,13 @@ export function SubmissionDetail({ id }: { id: string }) {
             <Badge tone="lime">{humanize(s.verificationStatus)}</Badge>
           )}
           <Badge>{s.public ? "Public artifact" : "Private artifact"}</Badge>
-          <Badge>Payment-free</Badge>
         </div>
       </header>
       <ErrorMessage error={resource.error} retry={resource.refresh} />
       {s.verificationStatus && (
         <p className="note">
           {s.verificationStatus === "independently_replicated"
-            ? "The locked checker produced matching results on different physical host groups."
+            ? "The same fixed checker produced matching results on different physical host groups."
             : "The platform checked this result and confirmed it in a fresh virtual machine. Independent replication has not been recorded."}
         </p>
       )}
@@ -202,17 +194,17 @@ export function SubmissionDetail({ id }: { id: string }) {
         <div>
           <span className="tiny-label">VALIDATION OUTCOME</span>
           <strong className="stat-word">{humanize(s.outcome)}</strong>
-          <span>Independent from processing state</span>
+          <span>Separate from processing status</span>
         </div>
         <div>
-          <span className="tiny-label">EXACT SCORE TICKS</span>
+          <span className="tiny-label">SCORE UNITS</span>
           <strong>{formatTicks(s.scoreTicks)}</strong>
-          <span>Scale is declared by the challenge metric</span>
+          <span>The challenge defines the value of each unit</span>
         </div>
         <div>
           <span className="tiny-label">MILESTONES CLAIMED</span>
           <strong>{s.claims?.length || 0}</strong>
-          <span>After ordered adjudication</span>
+          <span>Decided in acceptance order</span>
         </div>
         <div>
           <span className="tiny-label">ACCEPTED</span>
@@ -223,15 +215,14 @@ export function SubmissionDetail({ id }: { id: string }) {
       <div className="two-column">
         <div>
           <section className="content-section">
-            <div className="section-kicker">CONTENT & ATTRIBUTION</div>
-            <h2>The exact submitted construction.</h2>
+            <h2>Submission details</h2>
             <dl className="contract-grid">
               <div>
-                <dt>Model, self-attested</dt>
+                <dt>Model (reported)</dt>
                 <dd>{s.attribution?.model || "Not supplied"}</dd>
               </div>
               <div>
-                <dt>Harness, self-attested</dt>
+                <dt>Agent software (reported)</dt>
                 <dd>{s.attribution?.harness || "Not supplied"}</dd>
               </div>
               <div>
@@ -239,7 +230,7 @@ export function SubmissionDetail({ id }: { id: string }) {
                 <dd className="mono">{s.sourceCommit || "Private source"}</dd>
               </div>
               <div>
-                <dt>Artifact content digest</dt>
+                <dt>Artifact hash</dt>
                 <dd className="mono">{s.artifactDigest || "Pending"}</dd>
               </div>
             </dl>
@@ -247,14 +238,14 @@ export function SubmissionDetail({ id }: { id: string }) {
               <div className="note">
                 <Badge tone="amber">Platform-seeded</Badge>
                 <p>
-                  This is an initial platform demonstration submission, not an
-                  independent external contribution.
+                  Created by the platform for its initial demonstration. This is
+                  not an independent external contribution.
                 </p>
               </div>
             )}
             {s.attribution?.disclosure && (
               <div className="public-note">
-                <h3>Public research note</h3>
+                <h3>Research note</h3>
                 <p>{s.attribution.disclosure}</p>
               </div>
             )}
@@ -265,14 +256,13 @@ export function SubmissionDetail({ id }: { id: string }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                Open exact source
+                View source commit
                 <ArrowUpRight size={14} />
               </a>
             )}
           </section>
           <section className="content-section">
-            <div className="section-kicker">VALIDATION & CONFIRMATION</div>
-            <h2>Runs are evidence.</h2>
+            <h2>Runs</h2>
             {s.runs?.length ? (
               s.runs.map((r, i) => (
                 <div key={i} className="run-record">
@@ -282,10 +272,7 @@ export function SubmissionDetail({ id }: { id: string }) {
                       value={asText(r.status, asText(r.outcome, "recorded"))}
                     />
                   </div>
-                  <JsonViewer
-                    value={r}
-                    label="Inspect environment, gates, and signed run evidence"
-                  />
+                  <JsonViewer value={r} label="Run details" />
                 </div>
               ))
             ) : (
@@ -293,16 +280,13 @@ export function SubmissionDetail({ id }: { id: string }) {
                 title="No completed runs yet."
                 icon={<ShieldCheck size={28} />}
               >
-                This record updates as workers validate, confirm, and finalize
-                the candidate. Infrastructure failures do not imply an invalid
-                scientific result.
+                Results appear as validation and confirmation finish. An
+                infrastructure failure does not mean the scientific result is
+                invalid.
               </Empty>
             )}
             {s.claims?.length > 0 && (
-              <JsonViewer
-                value={s.claims}
-                label="Inspect ordered milestone claims"
-              />
+              <JsonViewer value={s.claims} label="Milestone claims" />
             )}
           </section>
           <ArtifactViewer digest={s.public ? s.artifactDigest : undefined} />
@@ -310,11 +294,10 @@ export function SubmissionDetail({ id }: { id: string }) {
         <aside>
           <section className="trust-panel">
             <FileCheck2 size={23} />
-            <h3>Portable, signed receipts.</h3>
+            <h3>Receipts</h3>
             <p>
-              Receipts bind this artifact, the immutable contract, evaluation
-              evidence, and acceptance order. Download and verify them
-              independently.
+              Signed receipts record the artifact, challenge rules, results and
+              acceptance order. Download them for independent verification.
             </p>
             {s.receiptDigest ? (
               <>
@@ -329,7 +312,7 @@ export function SubmissionDetail({ id }: { id: string }) {
                 {acceptance.data && (
                   <JsonViewer
                     value={acceptance.data}
-                    label="Inspect acceptance envelope"
+                    label="Acceptance receipt details"
                   />
                 )}
                 <ErrorMessage
@@ -348,12 +331,12 @@ export function SubmissionDetail({ id }: { id: string }) {
                   download
                 >
                   <Download size={14} />
-                  Adjudication receipt
+                  Decision receipt
                 </a>
                 {adjudication.data && (
                   <JsonViewer
                     value={adjudication.data}
-                    label="Inspect adjudication envelope"
+                    label="Decision receipt details"
                   />
                 )}
                 <ErrorMessage
@@ -370,10 +353,10 @@ export function SubmissionDetail({ id }: { id: string }) {
           {!s.public && s.status === "finalized" && (
             <section className="panel">
               <Globe size={22} />
-              <h3>Share this construction.</h3>
+              <h3>Publish artifact</h3>
               <p>
-                Publishing makes your artifact available under the challenge’s
-                required license, even if it did not advance the frontier.
+                Publishing shares your artifact under the challenge’s required
+                license, even if it did not improve the public frontier.
                 Publication is permanent.
               </p>
               <ErrorMessage error={action.error} />

@@ -31,10 +31,12 @@ export function Status({ value }: { value: string }) {
   return (
     <Badge
       tone={
-        /published|valid$|ready|claimed|finalized|public_frontier/.test(value)
-          ? "lime"
-          : /fail|reject|compromis|invalid/.test(value)
-            ? "red"
+        /fail|reject|compromis|invalid/.test(value)
+          ? "red"
+          : /published|valid$|ready|claimed|finalized|public_frontier/.test(
+                value,
+              )
+            ? "lime"
             : /pending|queued|running|draft|paused/.test(value)
               ? "amber"
               : ""
@@ -44,11 +46,7 @@ export function Status({ value }: { value: string }) {
     </Badge>
   );
 }
-export function Loading({
-  label = "Reading the scientific record",
-}: {
-  label?: string;
-}) {
+export function Loading({ label = "Loading…" }: { label?: string }) {
   return (
     <div className="loading" role="status">
       <Loader2 size={20} className="spin" />

@@ -6,11 +6,11 @@ import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 export const metadata: Metadata = {
   title: {
-    default: "Science Ladder — Open questions. Reproducible progress.",
+    default: "Science Ladder",
     template: "%s · Science Ladder",
   },
   description:
-    "Open computational challenges for human–agent teams. Build an artifact, verify a result, advance the frontier. An open-source, payment-free scientific protocol.",
+    "Explore computational science challenges, submit solutions, and compare verified results.",
   robots: { index: true, follow: true },
 };
 export const viewport: Viewport = { themeColor: "#101310" };
