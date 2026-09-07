@@ -10,6 +10,8 @@
 
 **Initial scope:** Computational science only
 
+**September 7 addendum:** New challenge design and review must follow the [scientific metric policy](../scientific-metric-policy.md). See the [validation extension requirements](validation-v0.3.md) for coverage beyond the implemented data-artifact profile; they are requirements, not deployed capabilities.
+
 ## 1. Executive decision
 
 Science Ladder should be an open protocol and hosted reference implementation for turning bounded computational research questions into reproducible, machine-evaluated competitions. The MVP proves challenge creation, validation, ordered frontier advancement, and open scientific contribution without moving money. Non-custodial Bitcoin rewards and paid validation are post-MVP capabilities built onto explicit protocol seams.

@@ -1,0 +1,931 @@
+{
+  "checkedAt": "2026-09-07T18:53:16.009145+00:00",
+  "registryURL": "https://api.yukon.org/api/benchmarks",
+  "registrySnapshotSHA256": "d2c4d601e14fa583fcd232f805a26eb2c8575f5d2bed12581979a7e20ca5fd4f",
+  "registryCount": 27,
+  "statusCounts": {
+    "open": 10,
+    "closed": 13,
+    "failed": 4
+  },
+  "scienceLadderCommit": "5a4b08d4043f0b83a479516445a95ce3e512238a",
+  "method": "Anonymous public registry GET; public directory cross-check; exact registered GitHub commits, manifests, validation documentation and relevant source inspection. No candidate code executed and no Yukon submissions or discussion posts created.",
+  "coverageLimit": "All entries returned by the public registry at this snapshot, including closed and failed/test entries. Deleted or private unlisted historical challenges cannot be established from this inventory.",
+  "entries": [
+    {
+      "id": "60d71e6c-548f-45ae-afde-a4158c99cf11",
+      "name": "eigenlabs/eip8200-challenges/modexp",
+      "title": "precompile.fast / modexp",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/eip8200-challenges",
+      "sourceCommit": "195f7582c0a0fc3bd11ea66b27f30e120d3e3db5",
+      "rootDir": "",
+      "validationDesign": "Bind submitted bytecode to a Lean correctness theorem, replay through Comparator with restricted axioms, then measure gas on 44 vectors using protected execution.",
+      "scientificInterpretation": "Gas savings for the fixed semantics/workload under the proved correctness predicate. Broader EVM deployment claims need matched semantics and workload evidence.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "lean-toolchain",
+        "byte-proof-binding",
+        "deterministic-cost",
+        "multi-track"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/195f7582c0a0fc3bd11ea66b27f30e120d3e3db5/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/195f7582c0a0fc3bd11ea66b27f30e120d3e3db5/docs/benchmark.md"
+        },
+        {
+          "label": "Scorer",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/195f7582c0a0fc3bd11ea66b27f30e120d3e3db5/Challenge/Modexp/Scorer.lean"
+        }
+      ]
+    },
+    {
+      "id": "00a444d5-a160-425f-aabc-57892f305776",
+      "name": "eigenlabs/eip8200-challenges/ripemd160",
+      "title": "precompile.fast / ripemd160",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/eip8200-challenges",
+      "sourceCommit": "195f7582c0a0fc3bd11ea66b27f30e120d3e3db5",
+      "rootDir": "",
+      "validationDesign": "Bind submitted bytecode to a Lean correctness theorem, replay through Comparator with restricted axioms, then measure gas on 49 vectors, including clean/dirty-state checks using protected execution.",
+      "scientificInterpretation": "Gas savings for the fixed semantics/workload under the proved correctness predicate. Broader EVM deployment claims need matched semantics and workload evidence.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "lean-toolchain",
+        "byte-proof-binding",
+        "deterministic-cost",
+        "multi-track"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/195f7582c0a0fc3bd11ea66b27f30e120d3e3db5/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/195f7582c0a0fc3bd11ea66b27f30e120d3e3db5/docs/benchmark.md"
+        },
+        {
+          "label": "Scorer",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/195f7582c0a0fc3bd11ea66b27f30e120d3e3db5/Challenge/Ripemd160/Scorer.lean"
+        }
+      ]
+    },
+    {
+      "id": "8c3e7051-530a-4aee-88df-a426e6e78151",
+      "name": "layr-labs/matrices-fast",
+      "title": "matrices.fast",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/matrices-fast",
+      "sourceCommit": "68ec63860d9fa225f5f7a9c1cb9eb67859309610",
+      "rootDir": "",
+      "validationDesign": "Build a Rust ordering algorithm; require valid repeat-identical permutations under per-matrix time limits; recompute symbolic factorization cost on a hidden corpus. Rank a 0.30/0.30/0.40 weighted mean of within-size-bucket geometric-mean flop ratios to AMD.",
+      "scientificInterpretation": "Lower predicted factorization work, with a plausible engineering link. This does not measure complete solver latency or numerical stability. Preserve per-bucket results and generalization checks.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "hidden-corpus",
+        "per-case-budgets",
+        "weighted-aggregation",
+        "diagnostic-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/matrices-fast/blob/68ec63860d9fa225f5f7a9c1cb9eb67859309610/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/matrices-fast/blob/68ec63860d9fa225f5f7a9c1cb9eb67859309610/RULES.md"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/matrices-fast/blob/68ec63860d9fa225f5f7a9c1cb9eb67859309610/README.md"
+        }
+      ]
+    },
+    {
+      "id": "af5dd63a-8242-432a-8288-d32464889153",
+      "name": "eigenlabs/heesch",
+      "title": "Heesch",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/heesch",
+      "sourceCommit": "ce3b8d6974d3f318c3c6081b421ed51c7d041d6e",
+      "rootDir": "",
+      "validationDesign": "Validate geometric witnesses and non-tiling evidence from a fixed census or checked UNSAT certificate; rank completed coronas plus a bounded partial-coverage term.",
+      "scientificInterpretation": "Completed coronas with non-tiling evidence support a mathematical bound. Partial coverage is a local search objective, not a fractional Heesch number or proof-completion probability.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "native-certificate-checkers",
+        "large-artifacts",
+        "achievement-predicate",
+        "exact-rational-metadata"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "A small census-only witness adaptation could fit the data profile. The full proof workflow, formats, native checkers and record-scale budgets do not.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/docs/submitting.md"
+        },
+        {
+          "label": "Proof-checker dispatch",
+          "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/heesch_encoder/proofcheck/checkers.py"
+        }
+      ]
+    },
+    {
+      "id": "be15cf17-1dc9-4d1a-9b24-264e23575de9",
+      "name": "davidtai/mlxfast-gemma4-26b-a4b",
+      "title": "MLX.fast / Gemma",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine",
+      "sourceCommit": "e7fa339aae4eb2e69e13d4137306d3e0295e4c46",
+      "rootDir": "",
+      "validationDesign": "Build Swift/Metal inference code against pinned weights. Thermally gated paired measurements use a prefill/decode composite for the batch regime and a separate median-ratio series for single-stream DFlash; a declared token-divergence budget gates output.",
+      "scientificInterpretation": "Speed for a specified model, regime and accepted output difference. The participant contract permits 10% per-stream token divergence: application quality or lossless equivalence is not established by that budget alone.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates",
+        "separate-series"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine/blob/e7fa339aae4eb2e69e13d4137306d3e0295e4c46/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine/blob/e7fa339aae4eb2e69e13d4137306d3e0295e4c46/docs/participant-contract.md"
+        }
+      ]
+    },
+    {
+      "id": "a2e3eaa8-95c0-4a62-81d3-2cd7e78e8575",
+      "name": "proximity-prize/proximity-prize/irs-reduction-threshold-lower",
+      "title": "Proximity / lower",
+      "status": "open",
+      "sourceRepository": "https://github.com/proximity-prize/proximity-prize",
+      "sourceCommit": "1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c",
+      "rootDir": "",
+      "validationDesign": "Maximize an induced centibit floor at a certified-safe reduction radius; bind scalar/radius metadata to a fixed Lean theorem and restricted axiom closure; ranked workflow requires separate verifier acceptance.",
+      "scientificInterpretation": "A certified statement about one IRS reduction profile. The quantity does not establish whole-protocol security; lower and upper tracks improve different sides of the scientific characterization.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "lean-toolchain",
+        "statement-parameter-binding",
+        "exact-rational-metadata",
+        "multi-track",
+        "verifier-attestation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/README.md"
+        },
+        {
+          "label": "Protected target",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/ProximityPrize/Benchmark/TargetLower.lean"
+        }
+      ]
+    },
+    {
+      "id": "1226aa4f-1258-4eb7-8c9e-846ece1e2543",
+      "name": "proximity-prize/proximity-prize/irs-reduction-threshold-upper",
+      "title": "Proximity / upper",
+      "status": "open",
+      "sourceRepository": "https://github.com/proximity-prize/proximity-prize",
+      "sourceCommit": "1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c",
+      "rootDir": "",
+      "validationDesign": "Minimize an induced centibit ceiling at a certified unsafe radius suffix; bind scalar/radius metadata to a fixed Lean theorem and restricted axiom closure; ranked workflow requires separate verifier acceptance.",
+      "scientificInterpretation": "A certified statement about one IRS reduction profile. The quantity does not establish whole-protocol security; lower and upper tracks improve different sides of the scientific characterization.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "lean-toolchain",
+        "statement-parameter-binding",
+        "exact-rational-metadata",
+        "multi-track",
+        "verifier-attestation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/README.md"
+        },
+        {
+          "label": "Protected target",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/ProximityPrize/Benchmark/TargetUpper.lean"
+        }
+      ]
+    },
+    {
+      "id": "5d1ee4d7-80bd-4555-b182-6505f26ef495",
+      "name": "eigenlabs/qwen38-challenge",
+      "title": "MLX.fast / Qwen 3.8 (retired)",
+      "status": "closed",
+      "sourceRepository": "https://github.com/Layr-Labs/qwen-3.8-mtp-challenge",
+      "sourceCommit": "0863b06ac16e26e48fc06e97444095b00feb66d4",
+      "rootDir": "",
+      "validationDesign": "Evaluate editable inference/speculation code and optional draft weights against a fixed backbone; measure paired serial-relative decode rates over eight prompts and rank their median, with exact-token reverification and bounded timing.",
+      "scientificInterpretation": "Equivalent-token decode speed under the fixed evaluation regime. Retain raw ratios, quality gates and the actual pinned ceiling; older descriptive text is not a substitute for versioned configuration.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "large-artifacts",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Scoring configuration",
+          "url": "https://github.com/Layr-Labs/qwen-3.8-mtp-challenge/blob/0863b06ac16e26e48fc06e97444095b00feb66d4/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/qwen-3.8-mtp-challenge/blob/0863b06ac16e26e48fc06e97444095b00feb66d4/README.md"
+        }
+      ]
+    },
+    {
+      "id": "8abde9cf-9256-4453-99e2-9de8632a7943",
+      "name": "eigenlabs/flock-challenge-multi/x86",
+      "title": "SNARK.fast / x86",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/flock-challenge-multi",
+      "sourceCommit": "c75aeceb34f8f33ff49c06a293b05dd7e00d463b",
+      "rootDir": "",
+      "validationDesign": "Build an editable Rust prover; issue fresh seed-driven workloads; the protected verifier checks every proof and controls timing. Rank 262,144 compressions divided by median duration over 100 measured trials after 20 warm-ups.",
+      "scientificInterpretation": "Verified proof-production throughput on the declared hardware and workload. BLAKE3 compressions per second must not be silently relabelled end-to-end Ethereum transactions per second.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "fresh-workloads",
+        "trusted-timing",
+        "statistical-policy",
+        "hardware-profile",
+        "linux-x86-16-vcpu"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/flock-challenge-multi/blob/c75aeceb34f8f33ff49c06a293b05dd7e00d463b/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/flock-challenge-multi/blob/c75aeceb34f8f33ff49c06a293b05dd7e00d463b/docs/BLAKE3_X86_BENCHMARK.md"
+        }
+      ]
+    },
+    {
+      "id": "c6931fd9-f783-4e1f-84df-c7ffe49c3426",
+      "name": "eigenlabs/lighter-prover-challenge",
+      "title": "Lighter.fast",
+      "status": "closed",
+      "sourceRepository": "https://github.com/Layr-Labs/lighter-prover-challenge",
+      "sourceCommit": "ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0",
+      "rootDir": "",
+      "validationDesign": "Build the candidate prover separately from the pinned verifier; verify proofs and public outputs for private active-transaction fixtures; trusted timing and transaction counts determine throughput on the ranked M4 Pro host.",
+      "scientificInterpretation": "Proving throughput for the fixed circuit/workload. Public empty-block smoke scores are noncompetitive; a fleet multiplier is an extrapolation, and circuit correctness is an inherited assumption.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "macos-arm64",
+        "large-memory"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/lighter-prover-challenge/blob/ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/lighter-prover-challenge/blob/ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0/BENCHMARK.md"
+        }
+      ]
+    },
+    {
+      "id": "8806afb8-8dfa-4a9d-8f11-4735c5fde7c9",
+      "name": "eigenlabs/flock-challenge",
+      "title": "SNARK.fast / Apple",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/flock-challenge",
+      "sourceCommit": "c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd",
+      "rootDir": "",
+      "validationDesign": "Build an editable Rust prover; issue fresh seed-driven workloads; the protected verifier checks every proof and controls timing. Rank 262,144 compressions divided by median duration over 100 measured trials after 20 warm-ups.",
+      "scientificInterpretation": "Verified proof-production throughput on the declared hardware and workload. BLAKE3 compressions per second must not be silently relabelled end-to-end Ethereum transactions per second.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "fresh-workloads",
+        "trusted-timing",
+        "statistical-policy",
+        "hardware-profile",
+        "macos-arm64"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/flock-challenge/blob/c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/flock-challenge/blob/c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd/docs/BLAKE3_MAC_BENCHMARK.md"
+        }
+      ]
+    },
+    {
+      "id": "1854efdf-feba-4773-bae9-b80520881a74",
+      "name": "eigenlabs/mlxfast-challenge",
+      "title": "MLX.fast / Laguna (retired)",
+      "status": "closed",
+      "sourceRepository": "https://github.com/Layr-Labs/mlxfast-challenge",
+      "sourceCommit": "4ea72c3b28873fca23b12b6f33193a2eeb5042f8",
+      "rootDir": "",
+      "validationDesign": "Swift/Metal model execution with pinned checkpoint/goldens, paired baseline measurements, output-correctness and operating-state gates, and a weighted prefill/decode speedup objective.",
+      "scientificInterpretation": "Model inference performance at specified correctness and operating conditions. Keep different checkpoint versions and calibration baselines separate.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/4ea72c3b28873fca23b12b6f33193a2eeb5042f8/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/4ea72c3b28873fca23b12b6f33193a2eeb5042f8/README.md"
+        }
+      ]
+    },
+    {
+      "id": "a89b9cfe-1625-423b-bf38-f369c8cd5492",
+      "name": "gpsanant/mlxfast-challenge-dev-serial-v2-2",
+      "title": "gpsanant/mlxfast-challenge-dev-serial-v2-2",
+      "status": "failed",
+      "sourceRepository": "https://github.com/Layr-Labs/mlxfast-challenge",
+      "sourceCommit": "461af5b76fc0b4f037150134ad4c424df095c846",
+      "rootDir": "",
+      "validationDesign": "Swift/Metal model execution with pinned checkpoint/goldens, paired baseline measurements, output-correctness and operating-state gates, and a weighted prefill/decode speedup objective.",
+      "scientificInterpretation": "Model inference performance at specified correctness and operating conditions. Keep different checkpoint versions and calibration baselines separate.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile. Historical/test registration; its status is not evidence of a successful competitive run.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/README.md"
+        }
+      ]
+    },
+    {
+      "id": "d5ad0a15-9e0f-46d3-bd0e-9cedd2111b2b",
+      "name": "gpsanant/mlxfast-challenge-dev-serial-v2",
+      "title": "gpsanant/mlxfast-challenge-dev-serial-v2",
+      "status": "failed",
+      "sourceRepository": "https://github.com/Layr-Labs/mlxfast-challenge",
+      "sourceCommit": "461af5b76fc0b4f037150134ad4c424df095c846",
+      "rootDir": "",
+      "validationDesign": "Swift/Metal model execution with pinned checkpoint/goldens, paired baseline measurements, output-correctness and operating-state gates, and a weighted prefill/decode speedup objective.",
+      "scientificInterpretation": "Model inference performance at specified correctness and operating conditions. Keep different checkpoint versions and calibration baselines separate.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile. Historical/test registration; its status is not evidence of a successful competitive run.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/README.md"
+        }
+      ]
+    },
+    {
+      "id": "6180ffe0-2cda-4a34-ae4c-37a8708a661e",
+      "name": "openfrontiercs/pack-the-polyominoes",
+      "title": "OpenFrontierCS / pack-the-polyominoes",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "447c1c0f723c7c8db6cd635ccae1008ced09fe0b",
+      "rootDir": "algorithmic/problems/0",
+      "validationDesign": "Run submitted C++ against the judge’s cases. Check all transformed pieces for containment and overlap; the pinned checker computes occupied-cell area divided by enclosing rectangle area.",
+      "scientificInterpretation": "Direct packing utilization for the tested instances. This differs from the registry’s generic reference-ratio description; application benefits require relevant instance evidence.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/benchmark.json"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/chk.cc"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/statement.txt"
+        }
+      ]
+    },
+    {
+      "id": "38b3863e-293c-49a2-8f42-53ac53d12a71",
+      "name": "openfrontiercs/number-loop-construction",
+      "title": "OpenFrontierCS / number-loop-construction",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "252a4145f3c06cec268881bb293c9ca2f277441a",
+      "rootDir": "algorithmic/problems/145",
+      "validationDesign": "Run submitted C++ against the judge’s cases. Validate the fixed clue template, count loop solutions up to six, then rank by solution-count bucket and proportion of one-valued clues.",
+      "scientificInterpretation": "Uniqueness is a concrete construction property. The additional clue-composition preference needs an explicit mathematical or algorithmic rationale before being presented as scientific progress.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/benchmark.json"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/checker.cpp"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/statement.txt"
+        }
+      ]
+    },
+    {
+      "id": "d227cbcd-d5dc-4209-9611-75950facf862",
+      "name": "openfrontiercs/sphere-packing",
+      "title": "OpenFrontierCS / sphere-packing",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "6b3fd62e05048afdcdd1dfe1b573bc3be15306b8",
+      "rootDir": "algorithmic/problems/48",
+      "validationDesign": "Run submitted C++ against the judge’s cases. Validate finite center coordinates and derive feasible radius from pairwise and boundary distances; normalize against baseline/reference bounds.",
+      "scientificInterpretation": "Improved finite-cube packings. Floating-point feasibility is not a rigorous global-optimality certificate; retain numeric error controls and raw radius.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/benchmark.json"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/chk.cc"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/statement.txt"
+        }
+      ]
+    },
+    {
+      "id": "733b6eb4-d48b-499f-92b2-a962a2e53637",
+      "name": "openfrontiercs/rectangle-knapsack",
+      "title": "OpenFrontierCS / rectangle-knapsack",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "83ccc1045b7292b45578b4336e3033604dc3c4e7",
+      "rootDir": "algorithmic/problems/47",
+      "validationDesign": "Run submitted C++ against the judge’s cases. Check allowed item counts, rotations, containment and non-overlap; sum packed value and normalize between per-case references.",
+      "scientificInterpretation": "Greater feasible packed value is a direct optimization result. Document reference bounds and practical relevance of the item distribution.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/benchmark.json"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/chk.cc"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/statement.txt"
+        }
+      ]
+    },
+    {
+      "id": "aad568a9-2045-496d-9d6a-a27ffb0dc8df",
+      "name": "openfrontiercs/job-shop-scheduling",
+      "title": "OpenFrontierCS / job-shop-scheduling",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "73a3d1d65a1056bee085f882f4c97736590d3094",
+      "rootDir": "algorithmic/problems/46",
+      "validationDesign": "Run submitted C++ against the judge’s cases. Validate machine permutations and the resulting precedence graph; reject cycles, compute makespan and normalize against per-case reference values.",
+      "scientificInterpretation": "Reduced completion time under the scheduling model. Preserve feasibility, workload coverage and the raw makespan; industrial transfer needs representative constraints.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/benchmark.json"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/chk.cc"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/statement.txt"
+        }
+      ]
+    },
+    {
+      "id": "d82a09a7-c6a0-448a-b501-65d4e2100514",
+      "name": "openfrontiercs/traveling-santa",
+      "title": "OpenFrontierCS / traveling-santa",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "484ea328460142f1d632f62b48baf3dc773cb2e9",
+      "rootDir": "algorithmic/problems/44",
+      "validationDesign": "Run submitted C++ against the judge’s cases. Check a complete city tour and recompute distance with the prime-index/periodic penalty; apply the pinned baseline normalization and score remapping.",
+      "scientificInterpretation": "Better constrained routes on this instance family. The artificial penalty and nonlinear score do not by themselves justify real logistics-efficiency claims.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/benchmark.json"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/chk.cc"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/statement.txt"
+        }
+      ]
+    },
+    {
+      "id": "ccd10e51-23cc-45ba-a546-32aae3f06826",
+      "name": "openfrontiercs/rectangle-free-grid",
+      "title": "OpenFrontierCS / rectangle-free-grid",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5",
+      "rootDir": "algorithmic/problems/27",
+      "validationDesign": "Run submitted C++ against the judge’s cases. Check distinct grid positions and absence of rectangular four-corner patterns; normalize the selected-cell count by a size-dependent expression.",
+      "scientificInterpretation": "Larger valid constructions give extremal-combinatorics evidence for specified dimensions. The normalized score is not itself a proved fraction of the unknown optimum.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/benchmark.json"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/chk.cc"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/statement.txt"
+        }
+      ]
+    },
+    {
+      "id": "b440dbb5-f982-49e1-afc2-da7def40d50a",
+      "name": "openfrontiercs/worldmap",
+      "title": "OpenFrontierCS / worldmap",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "68913c3643719a84b6fe3de79bd8f0b83196f13b",
+      "rootDir": "algorithmic/problems/6",
+      "validationDesign": "Run submitted C++ against the judge’s cases. Validate a labelled square map against the required adjacency graph; compute a normalized function of map side length divided by country count.",
+      "scientificInterpretation": "Compact graph representation under specified constraints. A display score above 100% is not more than a complete scientific solution.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/benchmark.json"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/chk.cc"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/statement.txt"
+        }
+      ]
+    },
+    {
+      "id": "1ffb695a-309b-46b6-a728-2f97d8c7be74",
+      "name": "gpsanant/ecdsafail-challenge",
+      "title": "ECDSA.fail",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/ecdsafail-challenge",
+      "sourceCommit": "1196b9fd0f2197c55411b22081b98d57759e2d66",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count × peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/README.md"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/src/sim.rs"
+        }
+      ]
+    },
+    {
+      "id": "74d8a5f7-6390-49dc-93f7-da91cfc15c2f",
+      "name": "gpsanant/ecdsafail-4",
+      "title": "gpsanant/ecdsafail-4",
+      "status": "closed",
+      "sourceRepository": "https://github.com/ecdsafail/ecadd-challenge-test",
+      "sourceCommit": "ca1bf336d447abfc9f7e581db7f4a938711e969d",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count × peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile. Historical/test registration; its status is not evidence of a successful competitive run.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/README.md"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/src/sim.rs"
+        }
+      ]
+    },
+    {
+      "id": "0d464d26-93fa-4153-8e63-c6e8f0b06b42",
+      "name": "gpsanant/ecdsafail-3",
+      "title": "gpsanant/ecdsafail-3",
+      "status": "closed",
+      "sourceRepository": "https://github.com/ecdsafail/ecadd-challenge-test",
+      "sourceCommit": "ca1bf336d447abfc9f7e581db7f4a938711e969d",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count × peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile. Historical/test registration; its status is not evidence of a successful competitive run.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/README.md"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/src/sim.rs"
+        }
+      ]
+    },
+    {
+      "id": "9672d9d7-e467-47d0-9a63-5b05ae77e8d4",
+      "name": "gpsanant/ecdsafail-2",
+      "title": "gpsanant/ecdsafail-2",
+      "status": "failed",
+      "sourceRepository": "https://github.com/ecdsafail/ecadd-challenge-test",
+      "sourceCommit": "db48f663f45dfeaa3845da1c0f103269a9771d1e",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count × peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile. Historical/test registration; its status is not evidence of a successful competitive run.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/README.md"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/src/sim.rs"
+        }
+      ]
+    },
+    {
+      "id": "a2c4a34d-8d48-43af-a06d-79f52aedc9c0",
+      "name": "gpsanant/ecdsafail",
+      "title": "gpsanant/ecdsafail",
+      "status": "failed",
+      "sourceRepository": "https://github.com/ecdsafail/ecadd-challenge-test",
+      "sourceCommit": "db48f663f45dfeaa3845da1c0f103269a9771d1e",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count × peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "Not supported as the original contract by the current execution profile. Historical/test registration; its status is not evidence of a successful competitive run.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/benchmark.json"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/README.md"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/src/sim.rs"
+        }
+      ]
+    }
+  ]
+}

@@ -7,6 +7,8 @@ Open computational challenges for human–agent teams. Publish a scientific ques
 - Website: [science-ladder.fly.dev](https://science-ladder.fly.dev)
 - Product and architecture: [v0.2 product specification](docs/specs/product-v0.2.md), [technical architecture](docs/specs/architecture-v0.2.md)
 - Current decisions: [MIT licensing, Fly.io hosting, and deployment modes](docs/decisions.md)
+- Validation scope: [Yukon compatibility audit](docs/research/yukon-validation-audit-2026-09-07.md), [extension requirements](docs/specs/validation-v0.3.md)
+- Challenge quality: [scientific metric policy](docs/scientific-metric-policy.md), [creator worksheet](docs/templates/metric-rationale.md)
 - API: [OpenAPI document](docs/openapi.json), [frontend contract](docs/openapi-contract.md)
 - Persistence: [database, immutable objects, and recovery](docs/persistence.md)
 

@@ -10,6 +10,8 @@
 
 **Companion document:** *Science Ladder — Product Requirements Document v0.2*
 
+**September 7 addendum:** The [validation extension requirements](validation-v0.3.md) address the gaps found in the [Yukon audit](../research/yukon-validation-audit-2026-09-07.md). The deployed profile remains unchanged. Candidate/evaluator isolation in the extension means separate trust domains, not mandatory separate physical servers. New challenges must also meet the [scientific metric policy](../scientific-metric-policy.md).
+
 ---
 
 ## 1. Executive recommendation
