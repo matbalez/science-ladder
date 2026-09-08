@@ -9,8 +9,13 @@ mkdir -p /work/root/usr/sbin
 mkdir -p /work/root/sbin /work/root/proc /work/root/sys /work/root/dev /work/root/tmp
 mkdir -p /work/root/sl/validator /work/root/sl/submission /work/root/sl/suite
 mkdir -p /work/root/sl/challenge /work/root/sl/config /work/root/sl/work /work/root/sl/output
-mkdir -p /work/root/sl/candidate /work/root/sl/broker /work/root/sl/baseline /work/root/sl/assets
+mkdir -p /work/root/sl/candidate /work/root/sl/broker /work/root/sl/baseline /work/root/sl/assets /work/root/sl/products
+mkdir -p /work/root/opt/sl-private/assets
+chmod 0700 /work/root/opt/sl-private /work/root/opt/sl-private/assets
 cp /input/sl-init /work/root/sbin/sl-init
+cp /input/sl-init /work/root/opt/sl-private/toolchain/usr/local/bin/sl-candidate-setup
+cp /input/sl-candidate-sandbox /work/root/opt/sl-private/toolchain/usr/local/bin/sl-candidate-sandbox
+chmod 0755 /work/root/opt/sl-private/toolchain/usr/local/bin/sl-candidate-setup /work/root/opt/sl-private/toolchain/usr/local/bin/sl-candidate-sandbox
 chmod 0755 /work/root/sbin/sl-init
 test -x /work/root/usr/local/bin/sl-candidate-sandbox
 printf '127.0.0.1 localhost\n' > /work/root/etc/hosts

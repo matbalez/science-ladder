@@ -54,3 +54,51 @@ func selectedAssetDisks(m protocol.Manifest, c Config) ([]AssetDisk, error) {
 }
 
 func assetDiskFilename(i int) string { return fmt.Sprintf("asset-%02d.squashfs", i) }
+
+func assetGuestPath(a protocol.EvaluationAsset) string {
+	if a.Domain == "candidate" {
+		return filepath.Join("/opt/sl-private/assets", a.Name)
+	}
+	return filepath.Join("/sl/assets", a.Name)
+}
+
+// Asset components are part of the same signed runtime inventory and advisory
+// coverage. A candidate-only disposition cannot cover checker-visible tools.
+func validateAssetInventory(c Config, inventory RuntimeInventory) error {
+	if len(c.Assets) != len(inventory.Assets) {
+		return errors.New("asset component inventory does not match configured disks")
+	}
+	packages := map[string]PackageCoordinate{}
+	for _, p := range inventory.Packages {
+		packages[packageKey(p)] = p
+	}
+	seen := map[string]bool{}
+	for _, binding := range inventory.Assets {
+		if !protocol.ValidDigest(binding.ComponentInventoryDigest) || seen[binding.Asset.Name] {
+			return errors.New("invalid asset component inventory binding")
+		}
+		seen[binding.Asset.Name] = true
+		matched := false
+		for _, disk := range c.Assets {
+			matched = matched || disk.Asset == binding.Asset
+		}
+		if !matched {
+			return errors.New("asset inventory is for different immutable bytes or disclosure policy")
+		}
+		if binding.Asset.Domain != "" && len(binding.PackageKeys) == 0 {
+			return errors.New("executable asset lacks package coverage")
+		}
+		keys := map[string]bool{}
+		for _, key := range binding.PackageKeys {
+			p, ok := packages[key]
+			if !ok || keys[key] {
+				return errors.New("asset package coverage is missing or repeated")
+			}
+			keys[key] = true
+			if binding.Asset.Domain != "candidate" && p.ExecutionDomain == "candidate-only" {
+				return errors.New("checker-visible asset was classified candidate-only")
+			}
+		}
+	}
+	return nil
+}

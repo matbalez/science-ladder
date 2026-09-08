@@ -30,11 +30,17 @@ type PackageCoordinate struct {
 	SourceName      string `json:"sourceName,omitempty"`
 	SourceVersion   string `json:"sourceVersion,omitempty"`
 }
+type AssetInventoryBinding struct {
+	Asset                    protocol.EvaluationAsset `json:"asset"`
+	ComponentInventoryDigest string                   `json:"componentInventoryDigest"`
+	PackageKeys              []string                 `json:"packageKeys"`
+}
 type RuntimeInventory struct {
-	APIVersion               string              `json:"apiVersion"`
-	RuntimeImageDigest       string              `json:"runtimeImageDigest"`
-	ComponentInventoryDigest string              `json:"componentInventoryDigest,omitempty"`
-	Packages                 []PackageCoordinate `json:"packages"`
+	Assets                   []AssetInventoryBinding `json:"assets,omitempty"`
+	APIVersion               string                  `json:"apiVersion"`
+	RuntimeImageDigest       string                  `json:"runtimeImageDigest"`
+	ComponentInventoryDigest string                  `json:"componentInventoryDigest,omitempty"`
+	Packages                 []PackageCoordinate     `json:"packages"`
 }
 type AdvisorySource struct {
 	URL           string    `json:"url"`
@@ -118,6 +124,16 @@ func normalizePackage(p PackageCoordinate) (PackageCoordinate, error) {
 	case "Debian":
 		if strings.ContainsAny(p.Name+p.Version, "\n\r\x00 ") || !regexp.MustCompile(`^[a-z0-9][a-z0-9+.-]*$`).MatchString(p.Name) {
 			return p, errors.New("invalid Debian package coordinate")
+		}
+	case "Git":
+		if !regexp.MustCompile(`^github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$`).MatchString(p.Name) || !regexp.MustCompile(`^[0-9a-f]{40}$`).MatchString(p.Version) || !protocol.ValidDigest(p.Digest) {
+			return p, errors.New("Git packages require exact repository, commit and component bytes")
+		}
+	case "Generic":
+		// Statically linked upstream libraries are not fictitious Debian packages.
+		// Exact bytes and explicit signed primary-source coverage remain required.
+		if !regexp.MustCompile(`^[a-z0-9][a-z0-9._+-]*$`).MatchString(p.Name) || strings.ContainsAny(p.Version, "\n\r\x00 ") || !protocol.ValidDigest(p.Digest) {
+			return p, errors.New("generic components require canonical names, exact versions and pinned bytes")
 		}
 	case "CPython":
 		if p.Name != "cpython" {
@@ -249,7 +265,7 @@ func filepathBase(filename string) string {
 func BuildSBOM(runtimeDigest string, packages []PackageCoordinate) ([]byte, error) {
 	components := []any{map[string]any{"type": "container", "name": "science-ladder-python-runtime", "version": runtimeDigest, "hashes": []any{map[string]any{"alg": "SHA-256", "content": strings.TrimPrefix(runtimeDigest, "sha256:")}}}}
 	for _, p := range packages {
-		kind := map[string]string{"Debian": "deb/debian", "PyPI": "pypi", "CPython": "generic"}[p.Ecosystem]
+		kind := map[string]string{"Debian": "deb/debian", "PyPI": "pypi", "CPython": "generic", "Git": "generic", "Generic": "generic"}[p.Ecosystem]
 		if kind == "" {
 			return nil, errors.New("unsupported SBOM ecosystem")
 		}
@@ -379,6 +395,9 @@ func (b *Builder) Scan(files map[string][]byte, m protocol.Manifest, sbomPath st
 	config := b.Runtime.Config
 	inventory, err := ReadRuntimeInventory(config.RuntimeInventory)
 	if err != nil {
+		return scan, protocol.ObjectRef{}, err
+	}
+	if err := validateAssetInventory(config, inventory); err != nil {
 		return scan, protocol.ObjectRef{}, err
 	}
 	if inventory.RuntimeImageDigest != m.Validator.RuntimeImageDigest {

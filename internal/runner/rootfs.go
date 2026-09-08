@@ -18,6 +18,9 @@ var rootfsScript []byte
 //go:embed assets/native-rootfs-build.sh
 var nativeRootfsScript []byte
 
+//go:embed assets/candidate-sandbox.c
+var nativeSandboxSource []byte
+
 // BuildRootFS composes a pinned guest filesystem from approved platform images.
 // It runs no creator code. The filesystem-tools image must contain tar, coreutils
 // and mke2fs; both OCI references must include immutable SHA-256 digests.
@@ -77,6 +80,23 @@ func BuildRootFSForProfile(ctx context.Context, pythonImage, toolsImage, guestIn
 		command.Stdout = logs
 		command.Stderr = logs
 		return command.Run()
+	}
+	if profile == "native-evaluator-v2" {
+		if err := os.WriteFile(filepath.Join(work, "candidate-sandbox.c"), nativeSandboxSource, 0400); err != nil {
+			return err
+		}
+		// Compile only first-party launcher source with the same immutable native
+		// image's private compiler. Its bytes are part of the resulting rootfs pin.
+		compile := `import os
+r='/opt/sl-private/toolchain'
+for x in ('lib','lib64','bin','sbin'):
+ if not os.path.lexists(r+'/'+x):os.symlink('usr/'+x,r+'/'+x)
+os.environ['LD_LIBRARY_PATH']=r+'/usr/lib/x86_64-linux-gnu'
+os.environ['PATH']=r+'/usr/bin:/usr/bin:/bin'
+os.execv(r+'/usr/bin/gcc',['gcc','--sysroot='+r,'-O2','-static','/input/candidate-sandbox.c','-o','/input/sl-candidate-sandbox'])`
+		if err := run("run", "--rm", "--network=none", "--cap-drop=ALL", "--security-opt=no-new-privileges", "--pids-limit=128", "--memory=2g", "--cpus=2", "--platform=linux/amd64", "--mount", "type=bind,src="+work+",dst=/input", "--entrypoint", "/usr/local/bin/python3", pythonImage, "-c", compile); err != nil {
+			return fmt.Errorf("compile pinned candidate launcher: %w: %s", err, logs.b.String())
+		}
 	}
 	if err := run("create", "--name", name, "--platform=linux/amd64", pythonImage); err != nil {
 		return fmt.Errorf("create pinned runtime image: %w", err)

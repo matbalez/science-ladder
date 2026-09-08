@@ -19,7 +19,7 @@ func (b *candidateBroker) prepareBaseline(m protocol.Manifest) error {
 	if err != nil || digest != policy.BaselineDigest {
 		return errors.New("frozen baseline artifact does not match measurement policy")
 	}
-	base := &candidateBroker{assets: b.assets, program: b.program, root: "/sl/baseline"}
+	base := &candidateBroker{privateProc: b.privateProc, assets: b.assets, program: b.program, root: "/sl/baseline"}
 	base.program.Build = policy.BaselineBuild
 	base.program.Run = policy.BaselineRun
 	if err := base.prepareRootFrom(m.Submission, source); err != nil {

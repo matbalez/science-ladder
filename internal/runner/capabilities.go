@@ -40,6 +40,13 @@ func validateCapabilitiesBinding(c Config, a HostAttestation) error {
 		}
 		seen[disk.Asset.Name] = true
 	}
+	if len(c.Assets) > 0 {
+		inventory, err := ReadRuntimeInventory(c.RuntimeInventory)
+		if err != nil {
+			return err
+		}
+		return validateAssetInventory(c, inventory)
+	}
 	return nil
 }
 

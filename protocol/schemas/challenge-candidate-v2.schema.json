@@ -190,6 +190,10 @@
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
         },
+        "domain": {
+          "maxLength": 131072,
+          "type": "string"
+        },
         "name": {
           "maxLength": 131072,
           "type": "string"

@@ -27,6 +27,7 @@ const checkerUID = 65534
 // Candidate source never runs with the checker UID or sees checker/suite mounts.
 // The outer VMM still isolates both domains from the physical host and app.
 type candidateBroker struct {
+	privateProc               bool
 	assets                    []protocol.EvaluationAsset
 	program                   protocol.CandidateProgram
 	baseline                  *candidateBroker
@@ -47,6 +48,11 @@ func startCandidateBroker(ctx context.Context, m protocol.Manifest) (*candidateB
 		return nil, errors.New("candidate broker requires guest PID 1 and a frozen program contract")
 	}
 	b := &candidateBroker{assets: m.Evaluation.Assets, program: *m.Evaluation.Program, root: "/sl/candidate", done: make(chan struct{})}
+	for _, feature := range m.Evaluation.Executor.Features {
+		if feature == "private-process-view" {
+			b.privateProc = true
+		}
+	}
 	if err := b.prepareRootFrom(m.Submission, "/sl/submission"); err != nil {
 		return nil, err
 	}
@@ -96,15 +102,20 @@ func (b *candidateBroker) prepareRootFrom(contract protocol.SubmissionContract, 
 			return err
 		}
 	}
+	if b.privateProc {
+		if err := os.Mkdir(filepath.Join(b.root, "proc"), 0755); err != nil {
+			return err
+		}
+	}
 	for _, asset := range b.assets {
-		if asset.Visibility != "public" {
+		if asset.Visibility != "public" || asset.Domain == "checker" {
 			continue
 		}
 		target := filepath.Join(b.root, "assets", asset.Name)
 		if err := os.Mkdir(target, 0755); err != nil {
 			return err
 		}
-		if err := bindReadOnly(filepath.Join("/sl/assets", asset.Name), target); err != nil {
+		if err := bindReadOnly(assetGuestPath(asset), target); err != nil {
 			return err
 		}
 	}
@@ -316,10 +327,17 @@ func (b *candidateBroker) execute(parent context.Context, argv []string, budget 
 		fileLimit = budget.MaxOutputBytes
 	}
 	args := append([]string{strconv.FormatInt(fileLimit, 10)}, argv...)
-	command := exec.CommandContext(ctx, "/usr/local/bin/sl-candidate-sandbox", args...)
+	launcher := "/usr/local/bin/sl-candidate-sandbox"
+	if b.privateProc {
+		launcher = "/usr/local/bin/sl-candidate-setup"
+	}
+	command := exec.CommandContext(ctx, launcher, args...)
 	command.Dir = "/work"
 	command.Env = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/tmp", "TMPDIR=/tmp", "TZ=UTC", "LC_ALL=C.UTF-8", "PYTHONHASHSEED=0", "PYTHONDONTWRITEBYTECODE=1", "SOURCE_DATE_EPOCH=0", "CARGO_HOME=/tmp/cargo", "OPENBLAS_NUM_THREADS=1", "OMP_NUM_THREADS=1"}
 	command.SysProcAttr = &syscall.SysProcAttr{Chroot: b.root, Credential: &syscall.Credential{Uid: candidateUID, Gid: candidateUID}, Cloneflags: syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC | syscall.CLONE_NEWUTS, UseCgroupFD: true, CgroupFD: int(group.Fd()), Pdeathsig: syscall.SIGKILL}
+	if b.privateProc {
+		command.SysProcAttr.Credential = nil
+	}
 	command.Cancel = func() error { return killGuestValidatorCgroup(cg) }
 	command.WaitDelay = 2 * time.Second
 	stdout, stderr := &boundedBuffer{max: int(budget.MaxOutputBytes)}, &boundedBuffer{max: 65536}

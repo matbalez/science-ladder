@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     char *end = NULL;
     errno = 0;
     unsigned long long output = strtoull(argv[1], &end, 10);
-    if (errno || !end || *end || output == 0 || output > (1ULL<<30)) return 121;
+    if (errno || !end || *end || output == 0 || output > (16ULL<<30)) return 121;
     struct rlimit files = {output, output}, core = {0,0}, descriptors = {128,128};
     if (setrlimit(RLIMIT_FSIZE,&files) || setrlimit(RLIMIT_CORE,&core) || setrlimit(RLIMIT_NOFILE,&descriptors)) return 122;
     if (prctl(PR_SET_NO_NEW_PRIVS,1,0,0,0)) return 123;

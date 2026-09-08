@@ -27,9 +27,19 @@ import (
 )
 
 func main() {
+	if filepath.Base(os.Args[0]) == "sl-candidate-setup" {
+		if err := runner.CandidateSetup(os.Args[1:]); err != nil {
+			fmt.Fprintln(os.Stderr, "candidate setup:", err)
+			os.Exit(127)
+		}
+		return
+	}
 	if filepath.Base(os.Args[0]) == "sl-init" || len(os.Args) > 1 && os.Args[1] == "guest-init" {
 		if err := runner.GuestInit(); err != nil {
 			fmt.Fprintln(os.Stderr, "SL_BOOT_ERROR:", err)
+			// Allow the serial console to drain before PID 1 exits and the kernel
+			// panics; otherwise the useful boot error can be cut off mid-word.
+			time.Sleep(250 * time.Millisecond)
 			os.Exit(1)
 		}
 		return
@@ -137,13 +147,15 @@ func run(args []string) error {
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
-	if args[0] == "hardware-probe" || args[0] == "native-hardware-probe" {
+	if args[0] == "hardware-probe" || args[0] == "native-hardware-probe" || args[0] == "proof-hardware-probe" {
 		if *out == "" {
 			return errors.New("--out required")
 		}
 		var receipt protocol.Envelope
 		var probeErr error
-		if args[0] == "native-hardware-probe" {
+		if args[0] == "proof-hardware-probe" {
+			receipt, probeErr = runtime.ProofHardwareProbe(ctx, os.Stderr)
+		} else if args[0] == "native-hardware-probe" {
 			receipt, probeErr = runtime.NativeHardwareProbe(ctx, os.Stderr)
 		} else {
 			receipt, probeErr = runtime.HardwareProbe(ctx, os.Stderr)

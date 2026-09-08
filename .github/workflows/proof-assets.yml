@@ -1,0 +1,20 @@
+name: Build and test proof assets
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: proof-assets-build
+  cancel-in-progress: false
+jobs:
+  proof-assets:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build from pinned upstream sources and test certificates
+        run: python3 tools/proof/build.py "$RUNNER_TEMP/proof-assets"
+      - name: Record resulting immutable asset bytes
+        run: cat "$RUNNER_TEMP/proof-assets/asset-bytes.json"

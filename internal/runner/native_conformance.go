@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/matbalez/science-ladder/pkg/protocol"
@@ -34,28 +35,57 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 	runtime.probeDiagnostics = diagnostics
 	checks := []map[string]any{}
 	var probeErr error
-	for _, test := range []struct {
+	type probeCase struct {
 		name, filename, source string
 		build                  []string
 		cases                  string
-	}{
+	}
+	tests := []probeCase{
 		{"candidate-isolation", "probe.c", nativeIsolationC, []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, `[(b"isolation", "valid", b"isolated\n"), (b"memory", "resource_limit", None), (b"timeout", "resource_limit", None), (b"output", "output_limit", None), (b"descendant", "valid", b"done\n")]`},
 		{"cpp-toolchain", "probe.cpp", "#include <iostream>\n#include <Eigen/Dense>\nint main(){Eigen::Matrix2d a; a<<2,1,1,2; std::cout<<a.determinant()<<'\\n';}\n", []string{"/usr/bin/g++", "-O2", "-I/usr/include/eigen3", "probe.cpp", "-o", "/work/probe"}, `[(b"", "valid", b"3\n")]`},
 		{"rust-toolchain", "probe.rs", "fn main(){let h=std::thread::spawn(|| 6*7); println!(\"{}\",h.join().unwrap());}\n", []string{"/usr/bin/rustc", "-O", "probe.rs", "-o", "/work/probe"}, `[(b"", "valid", b"42\n")]`},
 		{"python-numerics", "probe.py", "import numpy as np; from scipy.sparse import csc_matrix; from scipy.sparse.linalg import spsolve; print(round(float(np.sum(spsolve(csc_matrix([[2.,1.],[1.,2.]]),np.array([3.,3.]))))))\n", []string{"/usr/local/bin/python3", "-I", "-c", "import py_compile; py_compile.compile('probe.py', cfile='/work/probe.pyc', doraise=True)"}, `[(b"", "valid", b"2\n")]`},
 		{"paired-timing", "probe.c", nativeTimingCandidate, []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, ""},
-	} {
+	}
+	for _, feature := range r.Config.Capabilities.Features {
+		if feature == "proof-timing-composition" {
+			tests = append(tests, probeCase{"paired-timing-proof", "probe.c", nativeTimingCandidate, []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, ""})
+		}
+	}
+	for _, test := range tests {
 		root := filepath.Join(workspace, test.name)
 		if err := os.Mkdir(root, 0700); err != nil {
 			return protocol.Envelope{}, err
 		}
 		m := nativeProbeManifest(r.Config.RuntimeImageDigest, test.filename, test.build)
+		privateProc := false
+		for _, feature := range r.Config.Capabilities.Features {
+			if feature == "private-process-view" {
+				privateProc = true
+				m.Evaluation.Executor.Features = append(m.Evaluation.Executor.Features, feature)
+			}
+		}
+		if privateProc && test.name == "candidate-isolation" {
+			test.source = "#define PRIVATE_PROC 1\n" + test.source
+		}
 		if test.name == "python-numerics" {
 			m.Evaluation.Program.Run = []string{"/usr/local/bin/python3", "-I", "/work/probe.py"}
 			m.Evaluation.Program.RunBudget.MemoryMB = 512
 		}
-		if test.name == "paired-timing" {
+		if strings.HasPrefix(test.name, "paired-timing") {
 			m = nativeTimingManifest(m, r.Config.Capabilities.HardwareClass)
+		}
+		if test.name == "paired-timing-proof" {
+			m.Evaluation.Executor.Features = append(m.Evaluation.Executor.Features, "native-proof-checker", "sealed-products", "proof-timing-composition")
+			m.Evaluation.Proof = &protocol.ProofContract{Format: "drat", StatementPath: "statements/target.cnf", StatementDigest: protocol.DigestBytes([]byte(nativeProofFormula)), CertificatePath: "certificate", AllowedAxioms: []string{}, CheckDescription: "Replay the exact fixed CNF certificate before accepting paired quality measurements; this conformance does not assert that the formula proves program semantics."}
+			m.Evaluation.Program.Products = []protocol.BuildProduct{{Path: "certificate", MaxBytes: 1024}}
+			m.Evaluation.Program.Build = []string{"/usr/local/bin/python3", "-I", "-c", "import subprocess; from pathlib import Path; subprocess.run(['/usr/bin/gcc','-O2','probe.c','-o','/work/probe'],check=True); Path('/work/certificate').write_text('1 0\\n0\\n')"}
+			for _, asset := range r.Config.Assets {
+				if asset.Asset.Name == "proof-tools" {
+					m.Evaluation.Assets = append(m.Evaluation.Assets, asset.Asset)
+					m.Evaluation.Executor.Features = append(m.Evaluation.Executor.Features, "asset-domains")
+				}
+			}
 		}
 		if err := protocol.ValidateManifest(m); err != nil {
 			return protocol.Envelope{}, err
@@ -73,9 +103,14 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 		if test.name == "python-numerics" {
 			files["challenge"]["check.py"] = append([]byte("import numpy; import scipy.sparse.linalg\n"), files["challenge"]["check.py"]...)
 		}
-		if test.name == "paired-timing" {
+		if strings.HasPrefix(test.name, "paired-timing") {
 			files["challenge"]["check.py"] = []byte(nativeTimingChecker)
 			files["challenge"]["baseline/source/probe.c"] = []byte(nativeTimingBaseline)
+		}
+		if test.name == "paired-timing-proof" {
+			files["challenge"]["statements/target.cnf"] = []byte(nativeProofFormula)
+			check := strings.Replace(nativeTimingChecker, "if passed:\n for i in range(11):", "if passed:\n passed=subprocess.run(['/sl/assets/proof-tools/drat-trim','/sl/challenge/statements/target.cnf','/sl/products/certificate'],stdout=subprocess.DEVNULL).returncode==0\nif passed:\n for i in range(11):", 1)
+			files["challenge"]["check.py"] = []byte("import subprocess\n" + check)
 		}
 		b := Builder{MakeSquashFS: r.Config.MakeSquashFS}
 		refs := map[string]protocol.ObjectRef{}
@@ -112,7 +147,7 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 			}
 		}
 		passed := runErr == nil && run.Outcome == "valid" && run.Gates["isolation"] && run.CleanupAttested
-		if test.name == "paired-timing" {
+		if strings.HasPrefix(test.name, "paired-timing") {
 			passed = passed && run.ValidatorResult != nil && run.ValidatorResult.Timing != nil && protocol.ValidateRunMeasurementEvidence(run, m) == nil
 		}
 		checks = append(checks, map[string]any{"name": test.name, "passed": passed, "outcome": run.Outcome, "receipt": envelope})
@@ -194,7 +229,14 @@ int main(void){
  if(!strcmp(b,"output")){for(int i=0;i<20000;i++)puts("overflow");return 0;}
  if(!strcmp(b,"descendant")){if(fork()==0){close(0);close(1);close(2);setsid();for(;;)pause();}puts("done");return 0;}
  if(getuid()!=65533 || geteuid()!=65533 || getgroups(0,NULL)!=0)return 10;
- const char *forbidden[]={"/proc","/sl/suite/canary.txt","/sl/challenge/check.py","/sl/broker/control.sock","/sl/output/result.json"};
+ #ifdef PRIVATE_PROC
+ if(getpid()!=1 || getppid()!=0)return 16;
+ char exe[4096];int n=readlink("/proc/self/exe",exe,sizeof(exe));if(n<1)return 17;
+ const char *forbidden[]={"/proc/sys","/proc/meminfo","/proc/uptime","/proc/1/root/sl",
+#else
+ const char *forbidden[]={"/proc",
+#endif
+"/sl/suite/canary.txt","/sl/challenge/check.py","/sl/broker/control.sock","/sl/output/result.json"};
  for(unsigned i=0;i<sizeof(forbidden)/sizeof(*forbidden);i++){if(access(forbidden[i],F_OK)==0)return 11;}
  if(socket(AF_INET,SOCK_STREAM,0)>=0 || errno!=EPERM)return 12;
  if(unshare(CLONE_NEWUSER)==0 || errno!=EPERM)return 13;
@@ -247,3 +289,5 @@ if passed:
   passed=passed and quality and call({'action':'assess','qualityPassed':quality})['outcome']=='valid'
 Path('/sl/output/result.json').write_text(json.dumps({'apiVersion':'science-ladder/v2','kind':'ValidatorResult','comparisonId':'internal-native-conformance-v1','score':'0/1','measurements':{'speedup':'0/1'},'gates':{'isolation':passed}}))
 `
+
+const nativeProofFormula = "p cnf 2 4\n1 2 0\n-1 2 0\n1 -2 0\n-1 -2 0\n"

@@ -69,13 +69,21 @@ func GuestInit() error {
 		if err := syscall.Mount("tmpfs", "/sl/assets", "tmpfs", syscall.MS_NOSUID|syscall.MS_NODEV, "size=1m,mode=0755"); err != nil {
 			return err
 		}
+		if err := syscall.Mount("tmpfs", "/opt/sl-private/assets", "tmpfs", syscall.MS_NOSUID|syscall.MS_NODEV, "size=1m,mode=0700"); err != nil {
+			return fmt.Errorf("mount private asset directory: %w", err)
+		}
 		for i, a := range manifest.Evaluation.Assets {
-			target := filepath.Join("/sl/assets", a.Name)
+			target := assetGuestPath(a)
+			if a.Domain == "candidate" {
+				if err := os.MkdirAll(filepath.Dir(target), 0700); err != nil {
+					return err
+				}
+			}
 			if err := os.Mkdir(target, 0755); err != nil {
 				return err
 			}
 			flags := uintptr(syscall.MS_RDONLY | syscall.MS_NOSUID | syscall.MS_NODEV)
-			if a.Purpose != "toolchain" {
+			if a.Purpose != "toolchain" && a.Domain != "checker" {
 				flags |= syscall.MS_NOEXEC
 			}
 			if err := syscall.Mount(fmt.Sprintf("/dev/vd%c", 'g'+i), target, "squashfs", flags, ""); err != nil {

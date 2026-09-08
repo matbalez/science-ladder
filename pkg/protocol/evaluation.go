@@ -107,6 +107,7 @@ type CandidateProgram struct {
 }
 
 type EvaluationAsset struct {
+	Domain     string `json:"domain,omitempty"` // candidate, checker; empty means inert shared data
 	Name       string `json:"name"`
 	Digest     string `json:"digest"`
 	Size       int64  `json:"size"`
@@ -303,7 +304,11 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 		if err := validateStageArgv(p.Run); err != nil {
 			return err
 		}
-		if p.MaxRuns < 1 || p.MaxRuns > 10000 || p.MinRuns < 1 || p.MinRuns > p.MaxRuns || p.ScratchMB < 16 || p.ScratchMB > resources.MemoryMB {
+		minimumRuns := 1
+		if e.Mode == "proof" && len(p.Products) > 0 {
+			minimumRuns = 0 // The sealed certificate is the build's output, replayed by the checker.
+		}
+		if p.MaxRuns < 1 || p.MaxRuns > 10000 || p.MinRuns < minimumRuns || p.MinRuns > p.MaxRuns || p.ScratchMB < 16 || p.ScratchMB > resources.MemoryMB {
 			return errors.New("invalid candidate run count or scratch budget")
 		}
 		if len(p.Products) > 0 && !features["sealed-products"] {
@@ -328,6 +333,10 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 		if m.Direction != "maximize" {
 			return errors.New("paired speedup must be maximized")
 		}
+		baselineTicks, err := NormalizeScore("1", m)
+		if err != nil || baselineTicks != m.BaselineTicks {
+			return errors.New("paired speedup baseline must represent a ratio of exactly one")
+		}
 		for _, d := range e.Measurements {
 			if d.Role == "primary" && d.Type != "rational" {
 				return errors.New("paired timing primary is the exact rational lower confidence bound")
@@ -342,8 +351,11 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 	} else if e.Measurement != nil {
 		return errors.New("timing policy requires performance mode")
 	}
-	if e.Mode == "proof" && !features["native-proof-checker"] {
+	if (e.Mode == "proof" || e.Proof != nil) && !features["native-proof-checker"] {
 		return errors.New("proof evaluation requires a proof-checker capability")
+	}
+	if e.Mode == "performance" && e.Proof != nil && !features["proof-timing-composition"] {
+		return errors.New("proof-checked timing requires an enrolled composed pipeline")
 	}
 	if err := validateProofContract(e); err != nil {
 		return err
@@ -357,6 +369,18 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 			return errors.New("invalid immutable asset binding")
 		}
 		assetNames[a.Name] = true
+		if a.Domain != "" && a.Domain != "candidate" && a.Domain != "checker" {
+			return errors.New("unknown asset execution domain")
+		}
+		if a.Purpose == "toolchain" && (a.Domain != "candidate" || a.Visibility != "public") {
+			return errors.New("toolchain assets must be isolated candidate-only public inputs")
+		}
+		if a.Domain == "checker" && a.Purpose != "proof" {
+			return errors.New("executable checker assets require reviewed proof-tool purpose")
+		}
+		if a.Domain != "" && !features["asset-domains"] {
+			return errors.New("asset domains require an enrolled capability")
+		}
 		if a.Visibility != "public" && a.Visibility != "hidden" {
 			return errors.New("asset disclosure policy required")
 		}

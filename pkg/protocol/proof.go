@@ -44,11 +44,11 @@ func validateBuildProducts(p *CandidateProgram) error {
 }
 func validateProofContract(e EvaluationContract) error {
 	p := e.Proof
-	if e.Mode != "proof" {
-		if p != nil {
-			return errors.New("proof contract requires proof evaluation")
-		}
+	if p == nil && e.Mode != "proof" {
 		return nil
+	}
+	if e.Mode != "proof" && e.Mode != "performance" {
+		return errors.New("proof contract requires proof or proof-checked performance evaluation")
 	}
 	if p == nil || ValidatePath(p.StatementPath) != nil || !strings.HasPrefix(p.StatementPath, "statements/") || !ValidDigest(p.StatementDigest) || ValidatePath(p.CertificatePath) != nil || len(strings.TrimSpace(p.CheckDescription)) < 20 || len(p.CheckDescription) > 8192 {
 		return errors.New("proof requires a frozen statement, certificate and replay description")

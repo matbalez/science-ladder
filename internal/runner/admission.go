@@ -78,6 +78,9 @@ func LoadAdmissionWindow(config Config, keys map[string]crypto.PublicKey) (Admis
 	if inventory.APIVersion != "science-ladder-runtime-inventory/v1" || len(inventory.Packages) == 0 || inventory.RuntimeImageDigest != config.RuntimeImageDigest {
 		return window, errors.New("admission inventory does not bind the configured runtime")
 	}
+	if err := validateAssetInventory(config, inventory); err != nil {
+		return window, err
+	}
 	// Check signed structure, provenance and exact coverage at generation time;
 	// Check/Purposes below apply the distinct authorization and preflight deadlines.
 	if _, status := ScanAdvisoriesForDomains(inventory.Packages, advisory, advisory.GeneratedAt, separatedToolchain(config, inventory)); status != "pass" {

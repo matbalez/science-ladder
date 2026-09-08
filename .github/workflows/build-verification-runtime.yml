@@ -1,0 +1,46 @@
+name: Build verification runtime
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: build-verification-runtime
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: 1.27.1
+          cache: true
+      - name: Build first-party verifier and filesystem builder
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-X github.com/matbalez/science-ladder/internal/buildinfo.Commit=$GITHUB_SHA" -o "$RUNNER_TEMP/release/runnerd" ./cmd/runnerd
+          go build -o "$RUNNER_TEMP/rootfs-builder" ./cmd/runnerd
+          docker build --platform linux/amd64 --build-arg BASE_IMAGE=python@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e --build-arg DEBIAN_SNAPSHOT=20260801T000000Z -f internal/runner/assets/platform-tools.Dockerfile -t science-ladder-proof-builder-local internal/runner/assets
+                - name: Compose pinned guest
+        run: |
+          # BuildRootFS requires an OCI manifest pin. Publish only to a local
+          # temporary registry so the build does not depend on an unpinned tag.
+          docker run -d --name local-registry -p 127.0.0.1:5000:5000 registry:2@sha256:a3d8aaa63ed8681a604f1dea0aa03f100d5895b6a58ace528858a7b332415373
+          docker tag science-ladder-proof-builder-local localhost:5000/sl-tools:build
+          docker push localhost:5000/sl-tools:build
+          TOOLS_DIGEST=$(docker inspect --format '{{index .RepoDigests 0}}' localhost:5000/sl-tools:build)
+          "$RUNNER_TEMP/rootfs-builder" build-rootfs --profile native-evaluator-v2 --python-image ghcr.io/matbalez/science-ladder-native@sha256:5167ee2dc5e3241824ed49ee9b5df28676e2c2b56983d5d5600aec32af4ae22b --tools-image "$TOOLS_DIGEST" --guest-init "$RUNNER_TEMP/release/runnerd" --out "$RUNNER_TEMP/guest"
+          (cd "$RUNNER_TEMP/guest" && sha256sum rootfs.ext4) > "$RUNNER_TEMP/release/rootfs.sha256"
+          zstd -T2 -8 "$RUNNER_TEMP/guest/rootfs.ext4" -o "$RUNNER_TEMP/release/rootfs.ext4.zst"
+          (cd "$RUNNER_TEMP/release" && sha256sum runnerd rootfs.ext4.zst) > "$RUNNER_TEMP/release/downloads.sha256"
+          printf '%s\n' "$GITHUB_SHA" > "$RUNNER_TEMP/release/source-commit.txt"
+      - name: Publish uncommissioned build for hardware testing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="verification-${GITHUB_SHA:0:12}"
+          printf 'Built from commit %s. This build is not commissioned until its exact profile passes signed hardware conformance. No scientific or independent-security claim is implied.\n' "$GITHUB_SHA" > "$RUNNER_TEMP/release-notes.md"
+          gh release create "$TAG" "$RUNNER_TEMP/release/runnerd" "$RUNNER_TEMP/release/rootfs.ext4.zst" "$RUNNER_TEMP/release/rootfs.sha256" "$RUNNER_TEMP/release/downloads.sha256" "$RUNNER_TEMP/release/source-commit.txt" --target "$GITHUB_SHA" --prerelease --title "Verification build ${GITHUB_SHA:0:12}" --notes-file "$RUNNER_TEMP/release-notes.md"
