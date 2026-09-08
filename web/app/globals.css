@@ -3624,3 +3624,18 @@ small {
   .challenge-header-actions > button { white-space: nowrap; }
   .challenge-header-actions { align-items: flex-start; flex-direction: column; }
 }
+
+.triangle-explorer { background:#f3f0e7; color:#25291f; border:1px solid #d2cebf; border-radius:20px; padding:clamp(20px,4vw,48px); margin:32px 0; }
+.triangle-intro { display:flex; justify-content:space-between; align-items:start; gap:24px; }
+.triangle-intro h2 { font-size:clamp(23px,2.2vw,34px); margin:0 0 10px; }
+.triangle-intro p,.triangle-reading p { color:#646b56; line-height:1.6; }
+.triangle-intro .button { color:#25291f; background:transparent; border:1px solid #acae98; white-space:nowrap; }
+.triangle-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr); gap:clamp(24px,4vw,64px); align-items:center; }
+.triangle-square { width:100%; height:auto; touch-action:none; overflow:visible; }
+.triangle-square circle:focus-visible { stroke:#476a21; stroke-width:2; outline:none; }
+.triangle-reading strong { display:block; font-size:clamp(24px,2.7vw,38px); font-variant-numeric:tabular-nums; margin-top:12px; }
+.triangle-reading span,.triangle-reading small { font-size:14px; line-height:1.6; color:#646b56; }
+.triangle-reading label { display:block; margin:28px 0; font-size:14px; }
+.triangle-reading input { display:block; width:100%; margin-top:16px; accent-color:#ad512d; }
+@media(max-width:700px) { .triangle-intro { flex-direction:column; gap:10px; } .triangle-layout { grid-template-columns:1fr; gap:0; } .triangle-reading { padding:0 12px 12px; } }
+.detail-stat-row .score-number { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }

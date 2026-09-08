@@ -43,6 +43,8 @@ import {
 } from "./ui";
 import { SubmissionTable } from "./submission";
 import { ChallengeEducation, challengeEducation } from "./challenge-education";
+import { SmallestTriangleExplorer } from "./smallest-triangle";
+import { TRIANGLE_SOURCE } from "@/lib/triangle-reference";
 import { LoadPathsExplorer } from "./load-paths";
 import { MeasurementContract } from "./measurement-contract";
 import { Participate } from "./participate";
@@ -193,16 +195,14 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         </div>
       </header>
       {hasNativeLoadPathsChecker(c) && <LoadPathsExplorer />}
+      {c.repository === "matbalez/science-ladder-smallest-triangle" && c.sourceCommit === TRIANGLE_SOURCE && <SmallestTriangleExplorer />}
       <div className="detail-stat-row">
         <div>
           <span className="tiny-label">
             {c.publicFrontier ? "PUBLIC FRONTIER" : "BASELINE"}
           </span>
           <strong>
-            {formatTicks(
-              c.publicFrontier?.scoreTicks || c.metric.baselineTicks,
-              c.metric.quantum,
-            )}
+            <span className="score-number" title={formatTicks(c.publicFrontier?.scoreTicks || c.metric.baselineTicks, c.metric.quantum)}>{formatTicks(c.publicFrontier?.scoreTicks || c.metric.baselineTicks, c.metric.quantum)}</span>
             <small>{c.metric.units}</small>
           </strong>
           <span>
@@ -213,7 +213,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         <div>
           <span className="tiny-label">VERIFIED BEST</span>
           <strong>
-            {formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}
+            <span className="score-number" title={formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}>{formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}</span>
           </strong>
           <span>
             {c.verifiedBest
