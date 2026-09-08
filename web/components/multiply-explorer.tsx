@@ -111,6 +111,11 @@ export function MultiplyExplorer() {
           <br />
           {contribution.slice(6).join(", ")}
         </p>
+        <p>
+          <a href="/attributions/matrix-reference.txt">
+            Reference attribution and MIT notices
+          </a>
+        </p>
       </details>
       <p className="subtle">
         These numbers illustrate the reference. Verification proves the formula

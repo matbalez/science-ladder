@@ -1,3 +1,4 @@
+// Attribution and MIT notices: public/attributions/matrix-reference.txt
 // Display data from the attributed, verified reference. Scientific checking is separate.
 export const MULTIPLY_SOURCE = "fa8ba6a6fa7ef0c5161198de0e79ef78ecce38cf";
 export const MULTIPLY_REFERENCE = {
