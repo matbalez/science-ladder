@@ -3554,6 +3554,172 @@
           }
         }
       }
+    },
+    "/editor/notifications/test": {
+      "post": {
+        "operationId": "post_editor_notifications_test",
+        "summary": "Queue a review notification test (one per hour)",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          },
+          "429": {
+            "description": "Test email rate limit exceeded"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/editor/notifications/{id}/retry": {
+      "post": {
+        "operationId": "post_editor_notifications_id_retry",
+        "summary": "Retry a failed or uncertain review email",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          },
+          "429": {
+            "description": "Test email rate limit exceeded"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "confirmPossibleDuplicate": {
+                    "type": "boolean",
+                    "description": "Required true for uncertain sends; check SendGrid activity before retrying."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

@@ -12,6 +12,9 @@ import (
 )
 
 func (s *Server) RunWorker(ctx context.Context) error {
+	emailDone := make(chan struct{})
+	go func() { defer close(emailDone); s.runReviewNotifications(ctx) }()
+	defer func() { <-emailDone }()
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	for {

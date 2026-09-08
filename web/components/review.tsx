@@ -5,6 +5,10 @@ import { Check, ClipboardCheck, Flag, LockKeyhole } from "lucide-react";
 import { useAction, useResource } from "@/lib/api";
 import { asText, dateLabel } from "@/lib/scientific";
 import { useSession } from "./shell";
+import {
+  ReviewNotifications,
+  type NotificationState,
+} from "./review-notifications";
 import { ResearcherEditor } from "./researchers";
 import {
   Badge,
@@ -28,8 +32,9 @@ export function ReviewConsole({
     flags: Record<string, unknown>[];
     reviews: Record<string, unknown>[];
     candidates: Record<string, unknown>[];
+    notifications?: NotificationState;
   }>(allowed ? "/editor/queue" : null, 15000);
-  const [versionId, setVersionId] = useState("");
+  const [versionId, setVersionId] = useState(initialVersion);
   const [decision, setDecision] = useState("human_reviewed");
   const [reason, setReason] = useState("");
   const [done, setDone] = useState(false);
@@ -58,6 +63,10 @@ export function ReviewConsole({
       ) : (
         <>
           <ErrorMessage error={queue.error} retry={queue.refresh} />
+          <ReviewNotifications
+            data={queue.data?.notifications}
+            refresh={queue.refresh}
+          />
           <ResearcherEditor
             initialChallenge={initialChallenge}
             initialVersion={initialVersion}
@@ -81,6 +90,11 @@ export function ReviewConsole({
                       queue.data[key as "flags"].map((item, i) => (
                         <article
                           key={asText(item.id, String(i))}
+                          id={
+                            key === "candidates"
+                              ? `candidate-${asText(item.id)}`
+                              : undefined
+                          }
                           className="queue-item"
                         >
                           <div className="section-title">

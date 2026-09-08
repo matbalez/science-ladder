@@ -48,7 +48,11 @@ func (s *Server) editorQueue(w http.ResponseWriter, r *http.Request, u *User) er
 	if err != nil {
 		return err
 	}
-	respond(w, 200, map[string]any{"flags": flags, "reviews": reviews, "candidates": candidates})
+	notifications, err := s.notificationStatus(r.Context())
+	if err != nil {
+		return err
+	}
+	respond(w, 200, map[string]any{"flags": flags, "reviews": reviews, "candidates": candidates, "notifications": notifications})
 	return nil
 }
 func (s *Server) editorDecision(w http.ResponseWriter, r *http.Request, u *User) error {

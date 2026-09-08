@@ -47,6 +47,8 @@ func (s *Server) routes(m *http.ServeMux) {
 	m.HandleFunc("GET /v1/submissions/{id}", s.wrap(false, s.getSubmission))
 	m.HandleFunc("POST /v1/submissions/{id}/publish", s.wrap(true, s.publishSubmission))
 	m.HandleFunc("POST /v1/flags", s.wrap(true, s.createFlag))
+	m.HandleFunc("POST /v1/editor/notifications/test", s.wrap(true, s.testReviewEmail))
+	m.HandleFunc("POST /v1/editor/notifications/{id}/retry", s.wrap(true, s.retryReviewEmail))
 	m.HandleFunc("GET /v1/editor/queue", s.wrap(true, s.editorQueue))
 	m.HandleFunc("POST /v1/editor/decisions", s.wrap(true, s.editorDecision))
 	m.HandleFunc("POST /v1/editor/challenge-versions/{id}/researchers", s.wrap(true, s.editResearchers))

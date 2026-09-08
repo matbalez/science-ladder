@@ -45,7 +45,7 @@ All routes use `/v1`. JSON camelCase, UUID resource IDs, RFC3339 timestamps, exa
 ## Editorial and access
 
 - `POST /v1/flags` with `{versionId,category,message,evidenceUrl?}` → `{id,status:"open"}`.
-- `GET /v1/editor/queue` → `{flags:[],reviews:[],candidates:[]}` (editor/operator).
+- `GET /v1/editor/queue` → `{flags:[],reviews:[],candidates:[],notifications:{configured,counts:[],recent:[]}}` (editor/operator).
 - `POST /v1/editor/decisions` with `{versionId,action:"approve_review"|"changes_required"|"reject"|"feature"|"unfeature"|"human_reviewed"|"pause"|"resume"|"compromise",reason}` → `{id,action}`.
 - `POST /v1/invites` with `{githubId,role:"member"|"editor",validationQuota:20}` → `{githubId,role,validationQuota}` (operator).
 - `POST /v1/auth/cli-sessions` with `{}` → `{id,userCode,verificationUrl,expiresAt}` (unauthenticated).
@@ -81,3 +81,11 @@ Scientific review independently resolves the final locked candidate manifest sou
 New manifests default to `platform` and new locks explicitly freeze `verificationPolicy`. Platform preflight requires baseline and valid fixtures to run twice in fresh isolated VMs with signed child-run evidence; submission acceptance requires one enrolled host group and a separate primary and fresh confirmation job. Matching repeats produce `platform_verified`, never independent replication. `independent` additionally requires two distinct enrolled host groups for preflight and submission confirmation and produces `independently_replicated`. Existing locks and jobs without the field preserve their historical `independent` requirement. Changing the policy requires a new version and lock.
 
 Assurance is separate from `deploymentMode` and `officialAcceptance`: controlled demos may show genuine platform verification while external release gates remain incomplete. `/me.configuration.officialRunner` is a compatibility alias for platform host availability; use `platformRunner` and `independentRunner` for explicit UI labels.
+
+### Review email notifications
+
+- `POST /v1/editor/notifications/test` with `{}` queues a clearly labeled test email; one per hour. Editor browser session and idempotency key required.
+- `POST /v1/editor/notifications/{id}/retry` with `{confirmPossibleDuplicate:boolean}` retries failed or uncertain mail. Uncertain mail requires acknowledgement because the provider may already have accepted it.
+- Queue notification states: pending, sending, accepted, failed, uncertain, cancelled. `accepted` is provider acceptance, not inbox delivery. Recipient and credentials are never returned.
+
+See [SendGrid setup and operations](review-notifications.md).
