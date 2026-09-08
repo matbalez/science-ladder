@@ -166,80 +166,39 @@ test("candidate import validates YAML and preserves canonical prompt inputs", as
   await page.getByRole("button", { name: "Validate candidate" }).click();
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
 });
-test("submission independently fetches exact SHA before acceptance", async ({
+test("adopted educational context and agent submission instructions are public", async ({
   page,
 }) => {
   await base(page);
   await page.route("**/v1/challenges/test-only", (r) =>
-    r.fulfill({ json: challenge }),
-  );
-  let submitted: Record<string, unknown> = {};
-  await page.route("**/v1/submission-intents", async (r) => {
-    submitted = r.request().postDataJSON();
-    expect(r.request().headers()["idempotency-key"]).toBeTruthy();
-    await r.fulfill({
-      status: 202,
-      json: {
-        id: "test-intent",
-        versionId: "test-version",
-        status: "ready",
-        repository: "test-owner/solve",
-        sourceCommit: "b".repeat(40),
-        artifactDigest: "sha256:" + "1".repeat(64),
-        findings: [],
-        createdAt: "2026-09-04T11:00:00Z",
-      },
-    });
-  });
-  await page.route("**/v1/submission-intents/test-intent", (r) =>
     r.fulfill({
       json: {
-        id: "test-intent",
-        status: "ready",
-        artifactDigest: "sha256:" + "1".repeat(64),
-        findings: [],
-      },
-    }),
-  );
-  await page.route("**/v1/submission-intents/test-intent/accept", (r) =>
-    r.fulfill({
-      json: {
-        submissionId: "test-submission",
-        sequence: 1,
-        receiptDigest: "sha256:" + "2".repeat(64),
-        status: "accepted",
+        ...challenge,
+        education: {
+          frontier: "TEST ONLY research frontier from the adopted candidate.",
+          significance:
+            "TEST ONLY direct metric progress with explicit claim limits.",
+        },
       },
     }),
   );
   await page.goto("/challenges/test-only");
-  await page.getByRole("button", { name: "Submit a solution" }).click();
+  await expect(
+    page.getByText("TEST ONLY research frontier from the adopted candidate."),
+  ).toBeVisible();
   await expect(
     page.getByText(
-      "The best verified score is public even when its artifact remains private.",
-      { exact: false },
+      "TEST ONLY direct metric progress with explicit claim limits.",
     ),
   ).toBeVisible();
-  await page
-    .getByLabel("GitHub repository", { exact: true })
-    .fill("test-owner/solve");
-  await page
-    .getByLabel("Exact pushed commit", { exact: false })
-    .fill("b".repeat(40));
-  await page
-    .getByLabel("I agree that public-frontier artifacts", { exact: false })
-    .check();
-  await page
-    .getByRole("button", { name: "Fetch & inspect exact commit" })
-    .click();
-  await page
-    .getByRole("button", { name: "Accept & reserve validation" })
-    .click();
   await expect(
-    page.getByRole("link", { name: "Open submission receipt" }),
-  ).toBeVisible();
-  expect(submitted.ref).toBe("b".repeat(40));
-  expect(submitted.license).toBe("MIT");
-  expect(submitted).not.toHaveProperty("score");
+    page.getByRole("button", { name: "Submit a solution" }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Participate", exact: true }).click();
+  const prompt = await page.getByLabel(/agent instructions/i).inputValue();
+  expect(prompt).toContain(challenge.sourceCommit);
+  expect(prompt).toContain("sl submit");
+  expect(prompt).toContain(challenge.versionId);
 });
 test("completed preflight object remains readable and can lock the reviewed contract", async ({
   page,

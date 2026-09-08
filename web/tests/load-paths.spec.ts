@@ -54,6 +54,8 @@ for (const width of [1440, 390]) {
       name: "Load Paths reference explorer",
     });
     await expect(explorer).toBeVisible();
+    await expect(explorer.locator("[data-density-contour]")).toHaveCount(5);
+    await explorer.getByLabel("Density display").selectOption("mesh");
     await expect(explorer.locator("polygon")).toHaveCount(36 * 16);
     await explorer.getByRole("button", { name: "tall", exact: true }).click();
     await expect(explorer.locator("polygon")).toHaveCount(28 * 20);
