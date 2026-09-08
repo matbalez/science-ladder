@@ -38,7 +38,7 @@ export function ReviewNotifications({
   }
   return (
     <section
-      className="panel content-section"
+      className="panel"
       aria-label="Review email notifications"
     >
       <div className="section-title">
