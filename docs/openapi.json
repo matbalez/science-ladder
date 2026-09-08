@@ -3295,6 +3295,102 @@
           }
         }
       }
+    },
+    "/challenges/{slug}/ask": {
+      "post": {
+        "operationId": "ask_challenge",
+        "summary": "Ask the public challenge learning guide",
+        "description": "Anonymous, bounded explanatory conversation; no Idempotency-Key required. Current public version only. Does not execute or submit solutions. Questions, recent exchanges and explicit browser visualization state are sent to OpenAI with store=false. No conversation is persisted in the platform database. See docs/challenge-learning.md.",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "versionId",
+                  "messages"
+                ],
+                "properties": {
+                  "versionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "messages": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 15,
+                    "description": "Alternating user/assistant messages, ending with a user question. At most seven previous exchanges. Current question <=2000 UTF-8 bytes; each other message <=8000; total <=24000.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "role",
+                        "content"
+                      ],
+                      "properties": {
+                        "role": {
+                          "enum": [
+                            "user",
+                            "assistant"
+                          ]
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "view": {
+                    "description": "Untrusted, explicit browser display context, limited to 16000 UTF-8 bytes."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SSE data events: start {versionId}, delta {text}, done, or error {message}. Only done signals successful completion. Disconnect cancels the upstream response.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or oversized input"
+          },
+          "403": {
+            "description": "Origin mismatch"
+          },
+          "404": {
+            "description": "Version is not the current public version"
+          },
+          "429": {
+            "description": "Public hourly, daily or concurrency limit reached"
+          },
+          "502": {
+            "description": "Provider unavailable"
+          },
+          "503": {
+            "description": "Guide not configured"
+          }
+        }
+      }
     }
   },
   "components": {

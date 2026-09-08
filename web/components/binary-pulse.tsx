@@ -1,10 +1,20 @@
 "use client";
+import { useLearningView } from "./challenge-learning";
 import { useMemo, useState } from "react";
 import { pulseStatistics } from "@/lib/signals";
 
 export function BinaryPulse({ pulse }: { pulse: number[] }) {
   const [visibleLags, setVisibleLags] = useState(128);
   const stats = useMemo(() => pulseStatistics(pulse), [pulse]);
+  useLearningView("binary pulse", {
+    description:
+      "Top grid shows binary signs. Bottom plot shows aperiodic autocorrelation sidelobes. Lag zero is omitted; energy includes every nonzero lag regardless of visible range.",
+    visibleLags,
+    energy: stats.energy,
+    peak: stats.peak,
+    merit: stats.merit,
+    correlations: stats.correlations,
+  });
   const scale = 110 / Math.max(stats.peak, 1);
   return (
     <div className="binary-pulse-preview">

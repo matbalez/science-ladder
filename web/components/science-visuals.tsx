@@ -1,4 +1,5 @@
 "use client";
+import { useLearningView } from "./challenge-learning";
 import { useEffect, useMemo, useState } from "react";
 import { Box, Download, RotateCw } from "lucide-react";
 import { formatTicks, plotRatio } from "@/lib/scientific";
@@ -119,6 +120,21 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
     [challenge],
   );
   const [selected, setSelected] = useState<number>();
+  useLearningView("frontier chart", {
+    description:
+      "Score history ordered by acceptance receipt, with a step line for improvements over the reference. A flat baseline means no advance. Dots are valid submitted results; horizontal lines are milestone targets.",
+    selectedSequence: selected,
+    advances: events
+      .map((e) => ({ sequence: e.sequence, scoreTicks: e.scoreTicks }))
+      .slice(-30),
+    visibleResults: items
+      .map((s) => ({
+        sequence: s.sequence,
+        scoreTicks: s.scoreTicks,
+        verificationStatus: s.verificationStatus,
+      }))
+      .slice(-30),
+  });
   const maxSequence = Math.max(...items.map((s) => s.sequence), 1);
   const x = (seq: number) => 90 + (seq / maxSequence) * 760;
   const y = (score: string) => 248 - plotRatio(score, min, max) * 200;

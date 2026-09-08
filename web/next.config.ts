@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   output: "standalone",
+  // Allow the bounded learning stream to finish through the API rewrite.
+  experimental: { proxyTimeout: 120000 },
   async rewrites() {
     const api = (process.env.API_URL || "http://127.0.0.1:8080").replace(
       /\/$/,

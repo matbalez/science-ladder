@@ -1,4 +1,5 @@
 "use client";
+import { useLearningView } from "./challenge-learning";
 import { useState } from "react";
 import { MULTIPLY_REFERENCE as reference } from "@/lib/multiply-reference";
 
@@ -48,6 +49,22 @@ export function MultiplyExplorer() {
     ),
   );
   const contribution = W[term].map((value) => value * left * right);
+  useLearningView("matrix multiplication", {
+    description:
+      "Green entries and signs select coefficients for the current bilinear product; output highlights show where that product is added or subtracted. The final answer matrix shows the sum of all 23 products, not just this contribution.",
+    selectedProduct: term + 1,
+    totalProducts: 23,
+    A: a,
+    B: b,
+    answer,
+    leftCoefficients: U[term],
+    rightCoefficients: V[term],
+    outputCoefficients: W[term],
+    leftSum: left,
+    rightSum: right,
+    product: left * right,
+    contribution,
+  });
   return (
     <section
       className="multiply-explorer"

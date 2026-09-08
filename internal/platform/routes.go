@@ -24,6 +24,7 @@ func (s *Server) routes(m *http.ServeMux) {
 	})
 	m.HandleFunc("GET /v1/challenges", s.wrap(false, s.listChallenges))
 	m.HandleFunc("GET /v1/challenges/{slug}", s.wrap(false, s.getChallenge))
+	m.HandleFunc("POST /v1/challenges/{slug}/ask", s.wrap(false, s.challengeTutor))
 	m.HandleFunc("GET /v1/dashboard", s.wrap(true, s.dashboard))
 	m.HandleFunc("GET /v1/prompts/challenge-scout/{version}", s.wrap(false, s.scout))
 	m.HandleFunc("POST /v1/prompts/challenge-scout/{version}/prefill", s.wrap(false, s.scout))
