@@ -42,7 +42,7 @@ func TestNewScoutRequiresEducationButLegacyCandidateRemainsReadable(t *testing.T
 	if err = ValidateCandidate(c); err != nil {
 		t.Fatal(err)
 	}
-	for _, version := range []string{"1.3.0", "1.4.0", "1.5.0", ScoutVersion} {
+	for _, version := range []string{"1.3.0", "1.4.0", "1.5.0", "1.6.0", ScoutVersion} {
 		c.PromptVersion = version
 		if err = ValidateCandidate(c); err == nil || !strings.Contains(err.Error(), "education") {
 			t.Fatalf("missing education for %s: %v", version, err)

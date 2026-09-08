@@ -160,11 +160,12 @@ export default function Page() {
                   <code>promptVersion</code>
                 </td>
                 <td>
-                  <code>"1.6.0"</code> for the current Scout prompt;{" "}
-                  <code>"1.5.0"</code>, <code>"1.4.0"</code>,{" "}
-                  <code>"1.3.0"</code>, <code>"1.2.0"</code>,{" "}
-                  <code>"1.1.0"</code> and <code>"1.0.0"</code> remain accepted.
-                  Record the version actually used.
+                  <code>"1.7.0"</code> for the current Scout prompt;{" "}
+                  <code>"1.6.0"</code>, <code>"1.5.0"</code>,{" "}
+                  <code>"1.4.0"</code>, <code>"1.3.0"</code>,{" "}
+                  <code>"1.2.0"</code>, <code>"1.1.0"</code> and{" "}
+                  <code>"1.0.0"</code> remain accepted. Record the version
+                  actually used.
                 </td>
               </tr>
               <tr>
@@ -221,26 +222,29 @@ export default function Page() {
       <section id="visualization">
         <h2>Make the science visible</h2>
         <p>
-          Scout 1.6 requires an educational visualization that explains the
-          scientific object, the frontier bottleneck, and how a verified
-          improvement would matter. Include a working local preview, sourced
-          reference data, accessible controls, learning-guide context and a
-          record of actual checks in the repository’s visualization folder.
+          Scout 1.7 requires a visual explanation of the science. A labeled
+          diagram, annotated plot, geometric construction or illustrated example
+          is sufficient. Include the image, a caption, accessible description
+          and appropriate source attribution. Interactivity is optional.
         </p>
         <p>
-          List these files in <code>repositoryPlan</code>; the visualization is
-          separate from the scored manifest. Candidate lint does not inspect its
-          rendered quality. Scientific review assesses the explanation and
-          evidence, and the creator must inspect the preview. Creator packages
-          still need reviewed site integration; uploading them does not
-          automatically host them.
+          List the image and <code>visualization/visual.json</code> in
+          <code> repositoryPlan</code>. A static visual needs no code, browser
+          preview or dynamic agent-state interface. Its explanation also gives
+          the learning guide context. Scientific review assesses accuracy and
+          educational usefulness; candidate lint does not inspect the image.
         </p>
         <p>
-          <ExternalLink href="https://github.com/matbalez/science-ladder/blob/main/docs/specs/visualization-v1.md">
+          Automatic creator-image display is the next integration step. Existing
+          interactive showcases remain available; creator packages are not yet
+          hosted automatically.
+        </p>
+        <p>
+          <ExternalLink href="https://github.com/matbalez/science-ladder/blob/main/docs/specs/visualization-v2.md">
             Visualization specification
           </ExternalLink>
           {" · "}
-          <ExternalLink href="https://github.com/matbalez/science-ladder/blob/main/docs/templates/visualization-brief.md">
+          <ExternalLink href="https://github.com/matbalez/science-ladder/blob/main/docs/templates/science-visual-brief.md">
             Brief template
           </ExternalLink>
           {" · "}

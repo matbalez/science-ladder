@@ -1,7 +1,7 @@
 # Educational context
 
 Every new challenge must explain **where the research stands** and **what progress
-would mean**. Scout 1.3 introduced (and current Scout 1.6 generates) `education.frontier` and
+would mean**. Scout 1.3 introduced (and current Scout 1.7 generates) `education.frontier` and
 `education.significance` in the candidate YAML, beside `manifest`. These are
 plain text, not HTML. Cite titles and locations from the candidate's primary
 sources. Explain a concrete score improvement, preserved conditions, scientific
@@ -40,11 +40,17 @@ make both distinctions explicit.
 
 ## Visualization requirement
 
-Scout 1.6 requires the repository package in [visualization v1](specs/visualization-v1.md),
-using the [brief template](templates/visualization-brief.md). The
-[showcase briefs](showcase-visualizations.md) explain what each existing challenge’s
-visualization should teach and distinguish current features from planned additions.
-This is an authoring and scientific-review requirement; candidate lint does not
-render previews, and generic creator-package hosting remains separate work.
+Scout 1.7 requires at least a visual explanation of the science under
+[Science visual v2](specs/visualization-v2.md). A static diagram, annotated plot,
+construction or illustrated example with a caption and accessible description is
+sufficient. Use the [short brief](templates/science-visual-brief.md).
+[Showcase examples](showcase-visualizations.md) distinguish static minimums from
+optional interactive enhancements. A conceptual image need not compute the metric;
+quantitative values it does show must be accurate and appropriately sourced.
+
+This is an authoring and scientific-review requirement. Candidate lint does not
+inspect images. Automatic image-and-caption display is the next integration step;
+generic interactive hosting is a separate enhancement. Static explanatory text
+also supplies learning-guide context without a dynamic state interface.
 Historical Load Paths discussion above describes its numerical demonstration;
 that challenge remains withdrawn for failing the frontier-reference bar.

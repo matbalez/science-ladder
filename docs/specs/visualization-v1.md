@@ -1,5 +1,10 @@
 # Challenge visualization specification v1
 
+**Archived universal package requirement.** [Science visual v2](visualization-v2.md)
+is the current standard: a static visual is sufficient. The implementation details
+below remain useful for the optional interactive path; they are not requirements
+for every challenge.
+
 Every newly authored challenge must include a substantive educational visualization.
 Its job is to help a curious reader understand the scientific object, the obstacle
 at the frontier, and what a verified improvement would mean. A leaderboard alone

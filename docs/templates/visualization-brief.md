@@ -1,4 +1,7 @@
-# Visualization brief
+# Visualization brief — optional interactive package
+
+For the default static path, use the shorter [science visual brief](science-visual-brief.md).
+The current standard is [Science visual v2](../specs/visualization-v2.md).
 
 Specification: Science Ladder visualization v1
 

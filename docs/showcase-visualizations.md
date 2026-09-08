@@ -1,12 +1,17 @@
 # Visualization briefs for the published showcases
 
-These are concrete design and acceptance specifications under
-[visualization v1](specs/visualization-v1.md). They describe the intended consistent
-experience, including improvements still to implement. They are not claims that
-all controls or package files below already exist. Current scientific source
-versions and their verification contracts remain unchanged.
+The current [science visual v2 standard](specs/visualization-v2.md) requires a visual
+explanation of the science; interactivity is optional. Each challenge below has a
+static minimum and a richer optional design. Existing interactive features can
+remain. Planned controls are enhancements, not publication requirements. These
+notes do not change scientific source versions or verification contracts.
 
 ## One Less Multiply
+
+**Sufficient static version.** An annotated A × B = C diagram highlighting one
+worked multiplication and its contribution to the output. Explain how combining
+linear forms allows products to be reused. Add a caption and accessible explanation;
+no input editor, product selector or browser arithmetic is required.
 
 **Learning goal.** Understand how additions and reuse allow all nine entries of a
 3×3 matrix product to be assembled from 23 bilinear products, and why finding an
@@ -53,6 +58,11 @@ identity check. Selection/input changes must appear in the next guide snapshot.
 
 ## Smallest Triangle
 
+**Sufficient static version.** A labeled point configuration in a square with one
+smallest triangle shaded. Explain that every triple forms a triangle and the aim is
+to make the smallest one larger. A conceptual example may use fewer points if it
+is labeled clearly. Dragging points and recalculating areas are optional.
+
 **Learning goal.** Understand max–min optimization: moving one point can improve
 some triangles while making another smaller. A better configuration must raise
 the smallest triangle among all 364 triples of 14 points in the unit square.
@@ -95,6 +105,12 @@ original coordinates. Compare representative browser computations against exact
 checker calculations, and keep the official comparison bound unrounded.
 
 ## Quiet Echoes
+
+**Sufficient static version.** A binary sequence beside a shifted copy, with the
+matching and opposing terms marked, plus a small annotated correlation plot or
+schematic. Explain how unwanted shifted matches create sidelobes. A short teaching
+sequence is sufficient when identified as illustrative; interactive sign flipping
+and displaying all 512 signs are optional.
 
 **Learning goal.** Understand aperiodic autocorrelation: the unwanted match between
 a binary sequence and a shifted copy. Learn why reducing total squared sidelobe

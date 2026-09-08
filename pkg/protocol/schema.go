@@ -127,7 +127,7 @@ func schemaVersion(name string, v2 bool) (map[string]any, error) {
 	}
 	set("Candidate", "promptVersion", map[string]any{"enum": []string{"1.1.0", "1.0.0"}})
 	if v2 {
-		set("Candidate", "promptVersion", map[string]any{"enum": []string{ScoutVersion, "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0"}})
+		set("Candidate", "promptVersion", map[string]any{"enum": []string{ScoutVersion, "1.6.0", "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0"}})
 	}
 	set("Candidate", "disposition", map[string]any{"enum": []string{"viable", "needs_work", "rejected"}})
 	if c, ok := definitions["Candidate"].(map[string]any); ok {
