@@ -51,6 +51,15 @@ sl submit --api https://science-ladder.fly.dev --version VERSION_ID \
 Use the actual checker documented for the pinned challenge. `sl claim` executes the
 explicit command with the user's local permissions, without a shell unless the user
 explicitly selects one. It permits at most 30 minutes and 64 KiB of report data.
+Legacy native drivers that raise on scientific invalidity and write only
+`score` and `measurements` can use `--checked-gates name1,name2,...`. List exactly
+the frozen gates actually checked by that driver. After successful execution the
+CLI supplies version/comparison metadata and those explicit gate assertions, then
+applies the same full report validation. This is a local attestation, not a server
+certification. The pinned One Less Multiply and Smallest Triangle Participate
+instructions include their corresponding checked gates. New creators should emit
+the complete ValidatorResult directly.
+
 Report and claim paths must be fresh and outside the artifact. To capture a container
 check, omit `--report` and supply `-- sl validate --local --unsafe-local ...`; its JSON
 stdout includes the complete result. Docker Desktop is not required for native checks.

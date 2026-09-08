@@ -62,6 +62,7 @@ func claimCommand(args []string) error {
 	report := f.String("report", "", "new result file written by checker; default is checker stdout")
 	out := f.String("out", "", "new claim file outside artifact directory")
 	estimate := f.String("estimated-score-ticks", "", "frontier estimate for server-only measurement")
+	checkedGates := f.String("checked-gates", "", "explicit comma-separated gates checked by a native driver whose report contains only score and measurements")
 	reason := f.String("measurement-reason", "", "why local qualification predicts improvement on server-only measurements")
 	if e := f.Parse(args); e != nil {
 		return e
@@ -174,6 +175,29 @@ func claimCommand(args []string) error {
 				return errors.New("local report must be valid, match the artifact and include its validator result; update the CLI")
 			}
 			c.Result = local.Result
+		} else if kind.Kind == "" && *checkedGates != "" {
+			// Legacy native drivers raise on invalid scientific output and return
+			// only measurements. The caller explicitly names the gates it checked;
+			// metadata comes from the frozen manifest, never from candidate output.
+			var native struct {
+				Score        string            `json:"score"`
+				Measurements map[string]string `json:"measurements"`
+			}
+			if e = protocol.DecodeStrict(data, &native); e != nil {
+				return e
+			}
+			gates := map[string]bool{}
+			for _, gate := range strings.Split(*checkedGates, ",") {
+				if gate == "" || gates[gate] {
+					return errors.New("checked gates must be unique manifest gate names")
+				}
+				gates[gate] = true
+			}
+			comparison := ""
+			if m.Evaluation != nil {
+				comparison = m.Evaluation.ComparisonID
+			}
+			c.Result = &protocol.ValidatorResult{APIVersion: m.APIVersion, Kind: "ValidatorResult", ComparisonID: comparison, Score: native.Score, Measurements: native.Measurements, Gates: gates}
 		} else {
 			var result protocol.ValidatorResult
 			if e = protocol.DecodeStrict(data, &result); e != nil {

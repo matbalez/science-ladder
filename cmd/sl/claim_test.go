@@ -96,4 +96,20 @@ func TestClaimFinalCheckAndSubmissionBinding(t *testing.T) {
 			t.Fatal("failed check left claim file", mode)
 		}
 	}
+	t.Setenv("SL_CLAIM_TEST_MODE", "")
+	t.Setenv("SL_CLAIM_TEST_RESULT", `{"score":"17992","measurements":{}}`)
+	for _, extra := range []string{"", ",unknown-gate"} {
+		out := filepath.Join(dir, "native"+fmt.Sprint(len(extra))+".json")
+		nativeArgs := args(out)
+		i := len(nativeArgs) - 3
+		nativeArgs = append(append(append([]string{}, nativeArgs[:i]...), "--checked-gates", strings.Join(m.HardGates, ",")+extra), nativeArgs[i:]...)
+		e := claimCommand(nativeArgs)
+		if extra == "" && e != nil {
+			t.Fatal(e)
+		}
+		if extra != "" && e == nil {
+			t.Fatal("native driver asserted unknown gate")
+		}
+	}
+
 }
