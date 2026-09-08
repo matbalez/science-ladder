@@ -38,3 +38,21 @@ test("Load Paths is withdrawn and Quiet Echoes remains published with its origin
     page.getByRole("button", { name: "Participate", exact: true }),
   ).toBeVisible();
 });
+
+test('Smallest Triangle publishes the exact frontier and three honest hosted attempts', async ({page,request}) => {
+  test.skip(process.env.LIVE_RELEASE_CHECK !== '1','Explicit read-only production smoke check');
+  const response=await request.get('/v1/challenges/smallest-triangle');expect(response.ok()).toBe(true);
+  const challenge=await response.json();
+  expect(challenge.status).toBe('published');expect(challenge.reviewStatus).toBe('automated_pass');
+  expect(challenge.sourceCommit).toBe('b34fc3b226798d67286e5af1d2cd72201510dd57');
+  expect(challenge.metric.baselineTicks).toBe('24303979620992486');
+  expect(challenge.lockDigest).toBe('sha256:f75ce1411c53bd2200045e0d7a33feea915f7d2f1e74b93825aadad0a068ddd0');
+  expect(challenge.submissions.length).toBeGreaterThanOrEqual(3);
+  expect(challenge.milestones.every((m:{claimedBy:string|null})=>!m.claimedBy)).toBe(true);
+  await page.goto('/challenges/smallest-triangle');
+  await expect(page.getByRole('region',{name:'Fourteen-point geometry explorer'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Where the research stands'})).toBeVisible();
+  await page.getByRole('button',{name:'Participate',exact:true}).click();
+  const prompt=await page.getByLabel(/agent instructions/i).inputValue();
+  expect(prompt).toContain(challenge.sourceCommit);expect(prompt).toContain('python3 local.py');expect(prompt).toContain('Docker Desktop is not a prerequisite');
+});
