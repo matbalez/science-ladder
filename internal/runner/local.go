@@ -20,15 +20,16 @@ import (
 )
 
 type LocalReport struct {
-	APIVersion     string          `json:"apiVersion"`
-	Kind           string          `json:"kind"`
-	Official       bool            `json:"official"`
-	Warning        string          `json:"warning"`
-	Outcome        string          `json:"outcome"`
-	ScoreTicks     string          `json:"scoreTicks,omitempty"`
-	ArtifactDigest string          `json:"artifactDigest,omitempty"`
-	Gates          map[string]bool `json:"gates,omitempty"`
-	DurationMillis int64           `json:"durationMillis"`
+	Result         *protocol.ValidatorResult `json:"result,omitempty"`
+	APIVersion     string                    `json:"apiVersion"`
+	Kind           string                    `json:"kind"`
+	Official       bool                      `json:"official"`
+	Warning        string                    `json:"warning"`
+	Outcome        string                    `json:"outcome"`
+	ScoreTicks     string                    `json:"scoreTicks,omitempty"`
+	ArtifactDigest string                    `json:"artifactDigest,omitempty"`
+	Gates          map[string]bool           `json:"gates,omitempty"`
+	DurationMillis int64                     `json:"durationMillis"`
 }
 
 type boundedBuffer struct {
@@ -227,6 +228,7 @@ func LocalValidateWithSuite(ctx context.Context, m protocol.Manifest, challengeR
 			report.Outcome = "hard_gate_failed"
 		}
 	}
+	report.Result = &result
 	report.ScoreTicks = ticks
 	report.Gates = result.Gates
 	return report, nil

@@ -7,6 +7,7 @@ Open computational challenges for human–agent teams. Publish a scientific ques
 - Website: [science-ladder.fly.dev](https://science-ladder.fly.dev)
 - Product and architecture: [v0.2 product specification](docs/specs/product-v0.2.md), [technical architecture](docs/specs/architecture-v0.2.md)
 - Current decisions: [MIT licensing, Fly.io hosting, and deployment modes](docs/decisions.md)
+- Solver admission: [local-first validation and frontier claims](docs/specs/frontier-admission-v1.md)
 - Validation scope: [Yukon compatibility audit](docs/research/yukon-validation-audit-2026-09-07.md), [extension requirements](docs/specs/validation-v0.3.md)
 - Challenge quality: [scientific metric policy](docs/scientific-metric-policy.md), [creator worksheet](docs/templates/metric-rationale.md)
 - API: [OpenAPI document](docs/openapi.json), [frontend contract](docs/openapi-contract.md)
@@ -17,7 +18,7 @@ Open computational challenges for human–agent teams. Publish a scientific ques
 1. A creator uses the versioned Challenge Scout prompt to identify a well-supported, useful computational question, then adopts and reviews the candidate.
 2. The platform archives an exact GitHub commit. Separate quarantine workers build the checker twice offline and run fixtures, adversarial probes, and baseline checks. Scientific review is recorded separately from executable conformance.
 3. An approved version locks its rules, metric, resources, deadline, milestone thresholds, and verification policy. Changing those terms requires a new version.
-4. A solver submits a GitHub artifact at an exact commit. The server constructs canonical input and a read-only disk before assigning acceptance order and reserving capacity.
+4. A solver validates locally and creates a claim for a meaningful frontier improvement. The API screens that claim before fetching the exact GitHub commit or preparing its disk. Short-lived admission tickets, duplicate checks and quotas bound hosted work; hidden tests and hardware measurements have a stricter qualification budget.
 5. A dedicated verification host runs the locked checker. The MVP's `platform` policy permits accepted scores, milestones, and frontier advances on one physical host, retaining fresh-VM repeatability checks. `independent` policy additionally requires confirmation on a different physical host group. Receipts distinguish platform verification from independent replication. Exact integer ticks determine outcomes; receipt order determines the first qualifying claim for every crossed milestone.
 6. Public advances publish their reproducible artifacts. Losing submissions remain private unless their owner chooses publication. Signed receipts and witnessed audit checkpoints preserve the history.
 

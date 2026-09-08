@@ -160,12 +160,12 @@ export default function Page() {
                   <code>promptVersion</code>
                 </td>
                 <td>
-                  <code>"1.7.0"</code> for the current Scout prompt;{" "}
-                  <code>"1.6.0"</code>, <code>"1.5.0"</code>,{" "}
-                  <code>"1.4.0"</code>, <code>"1.3.0"</code>,{" "}
-                  <code>"1.2.0"</code>, <code>"1.1.0"</code> and{" "}
-                  <code>"1.0.0"</code> remain accepted. Record the version
-                  actually used.
+                  <code>"1.8.0"</code> for the current Scout prompt;{" "}
+                  <code>"1.7.0"</code>, <code>"1.6.0"</code>,{" "}
+                  <code>"1.5.0"</code>, <code>"1.4.0"</code>,{" "}
+                  <code>"1.3.0"</code>, <code>"1.2.0"</code>,{" "}
+                  <code>"1.1.0"</code> and <code>"1.0.0"</code> remain accepted.
+                  Record the version actually used.
                 </td>
               </tr>
               <tr>
@@ -222,7 +222,7 @@ export default function Page() {
       <section id="visualization">
         <h2>Make the science visible</h2>
         <p>
-          Scout 1.7 requires a visual explanation of the science. A labeled
+          Scout 1.8 requires a visual explanation of the science. A labeled
           diagram, annotated plot, geometric construction or illustrated example
           is sufficient. Include the image, a caption, accessible description
           and appropriate source attribution. Interactivity is optional.

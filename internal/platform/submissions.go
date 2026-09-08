@@ -9,6 +9,7 @@ import (
 )
 
 type IntentRequest struct {
+	AdmissionTicket      string         `json:"admissionTicket"`
 	VersionID            string         `json:"versionId"`
 	Repository           string         `json:"repository"`
 	Ref                  string         `json:"ref"`
@@ -75,12 +76,18 @@ func (s *Server) createIntent(w http.ResponseWriter, r *http.Request, u *User) e
 		if existingErr != pgx.ErrNoRows {
 			return 0, nil, existingErr
 		}
+		if in.AdmissionTicket == "" {
+			return 0, nil, fail(422, "frontier_claim_required", "Run local validation and obtain a frontier admission ticket before submitting")
+		}
 		if err := s.reservePreparation(r.Context(), tx, u); err != nil {
 			return 0, nil, err
 		}
 		id := ID()
 		_, err := tx.Exec(r.Context(), `INSERT INTO submission_intents(id,version_id,owner_id,repository,ref,request) VALUES($1,$2,$3,$4,$5,$6)`, id, in.VersionID, u.ID, in.Repository, in.Ref, raw(in))
 		if err != nil {
+			return 0, nil, err
+		}
+		if err = consumeFrontierTicket(r.Context(), tx, u, in, id); err != nil {
 			return 0, nil, err
 		}
 		if err = enqueue(r.Context(), tx, "fetch_submission", id); err != nil {
@@ -207,6 +214,23 @@ func (s *Server) acceptIntent(w http.ResponseWriter, r *http.Request, u *User) e
 		salt := secret()
 		commitment := hash(salt + "\x00" + artifact)
 		receipt := protocol.Receipt{VerificationPolicy: policy, DeploymentMode: s.Config.DeploymentMode, OfficialAcceptance: s.Config.DeploymentMode == "production", APIVersion: protocol.APIVersion, Kind: "SubmissionAcceptanceReceipt", ID: ID(), CreatedAt: created, Producer: "science-ladder", SubjectDigest: artifact, EconomicMode: "none", Data: map[string]any{"submissionId": submission, "versionId": version, "challengeLockDigest": lockDigest, "sequence": formatInt(sequence), "grantId": grant, "artifactDigest": artifact, "commitment": commitment, "commitmentSalt": salt, "submissionDiskDigest": disk, "resourceClass": m.Resources.Class, "parentFrontierDigest": in.ParentFrontierDigest, "attribution": in.Attribution}}
+		if in.AdmissionTicket != "" {
+			var claimData []byte
+			var frontier string
+			if err = tx.QueryRow(ctx, `SELECT claim,frontier_ticks FROM frontier_tickets WHERE id=$1 AND intent_id=$2 AND owner_id=$3 AND artifact_digest=$4 AND consumed_at IS NOT NULL`, in.AdmissionTicket, id, u.ID, artifact).Scan(&claimData, &frontier); err != nil {
+				return 0, nil, fail(409, "admission_binding_mismatch", "Prepared artifact does not match its consumed admission ticket")
+			}
+			var claim protocol.FrontierClaim
+			if err = json.Unmarshal(claimData, &claim); err != nil {
+				return 0, nil, err
+			}
+			claimDigest, err := protocol.Digest(claim)
+			if err != nil {
+				return 0, nil, err
+			}
+			receipt.Data["admission"] = map[string]any{"ticketId": in.AdmissionTicket, "claimDigest": claimDigest, "mode": claim.Mode, "frontierTicks": frontier, "claimVerified": false}
+		}
+
 		digest, err := protocol.Digest(receipt)
 		if err != nil {
 			return 0, nil, err

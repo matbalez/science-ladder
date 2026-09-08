@@ -177,11 +177,16 @@ func TestProtocolMaximumTicksPersistAndAdjudicate(t *testing.T) {
 
 func TestPreparationQuotaAndExactSnapshotDedup(t *testing.T) {
 	s := testDB(t)
-	u, v := seed(t, s)
+	u, v := seed(t, s, protocol.VerificationPlatform)
 	ctx := context.Background()
+	claim := admissionFixture(t, s, v, 1)
+	ticket, err := admissionRequest(s, u, claim, "prep-claim-ticket", s.createFrontierTicket)
+	if err != nil {
+		t.Fatal(err)
+	}
 	s.DB.Exec(ctx, `UPDATE users SET validation_quota=0 WHERE id=$1`, u.ID)
 	send := func(key string) (map[string]any, error) {
-		input := IntentRequest{VersionID: v, Repository: "test/repo", Ref: strings.Repeat("a", 40), Attribution: map[string]any{}, Publish: false}
+		input := IntentRequest{AdmissionTicket: ticket["ticketId"].(string), PreviewDigest: claim.Claim.ArtifactDigest, VersionID: v, Repository: "test/repo", Ref: claim.Ref, Attribution: map[string]any{}, Publish: false}
 		r := httptest.NewRequest("POST", "/v1/submission-intents", strings.NewReader(string(raw(input))))
 		r.Header.Set("Idempotency-Key", key)
 		w := httptest.NewRecorder()

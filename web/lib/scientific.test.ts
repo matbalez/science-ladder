@@ -90,6 +90,13 @@ test("solver bootstrap binds exact metadata and preserves generic artifact paths
   } as unknown as import("./types.ts").Challenge;
   const prompt = solverInstructions(challenge);
   assert.ok(prompt.includes(`cmd/sl@${CLI_SOURCE}`));
+  assert.ok(prompt.includes("sl claim --api"));
+  assert.ok(prompt.includes('--claim "$SL_FINAL_RUN/claim.json"'));
+  assert.ok(
+    prompt.indexOf("FINAL LOCAL CHECK AND FRONTIER CLAIM") <
+      prompt.indexOf("Create a dedicated artifact-only GitHub repository"),
+  );
+  assert.ok(prompt.includes("-- sl validate --local"));
   assert.ok(prompt.includes("git checkout --detach '" + "a".repeat(40) + "'"));
   assert.ok(prompt.includes("--version 'test-version'"));
   assert.ok(prompt.includes("Test tier: 8"));

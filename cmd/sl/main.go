@@ -29,7 +29,7 @@ func run(args []string) error {
 	}
 	switch args[0] {
 	case "version":
-		fmt.Println("Science Ladder protocol v1 · CLI 0.1.0 · MIT")
+		fmt.Println("Science Ladder protocol v1 · CLI 0.2.0 · MIT")
 		return nil
 	case "scout-prompt":
 		f := flag.NewFlagSet("scout-prompt", flag.ContinueOnError)
@@ -74,6 +74,8 @@ func run(args []string) error {
 			return conformance(args[2:])
 		}
 		return errors.New("unknown challenge command")
+	case "claim":
+		return claimCommand(args[1:])
 	case "validate":
 		f := flag.NewFlagSet("validate", flag.ContinueOnError)
 		local := f.Bool("local", false, "local development only")
@@ -168,7 +170,7 @@ func run(args []string) error {
 		return runner.WriteJSON(os.Stdout, map[string]any{"signatureValid": true, "payload": json.RawMessage(payload), "note": "Verify key delegation/validity and audit checkpoint history separately before granting official authority."})
 	case "suite":
 		return suiteCommand(args[1:])
-	case "auth", "submit", "status", "export":
+	case "auth", "submit", "resume", "status", "export":
 		return remoteCommand(args)
 	}
 	return fmt.Errorf("unknown command %q; run sl --help", args[0])
@@ -244,7 +246,9 @@ const help = `Science Ladder · payment-free scientific challenge protocol
   sl receipt verify --receipt receipt.json --keys trusted-keys.json
   sl auth login --api https://YOUR-API
   sl suite upload --api URL --files PRIVATE_DIRECTORY --license MIT --provenance "dataset provenance"
-  sl submit --api URL --version ID --repository OWNER/REPO --commit FULL_SHA --license MIT
+  sl claim --api URL --version ID --artifact DIR --out claim.json -- CHECKER ARGS
+  sl submit --api URL --version ID --repository OWNER/REPO --commit FULL_SHA --license MIT --claim claim.json --artifact DIR
+  sl resume --api URL --intent ID
   sl status --api URL --submission ID
   sl export --api URL --version ID --out challenge-export.json
 

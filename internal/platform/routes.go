@@ -39,6 +39,8 @@ func (s *Server) routes(m *http.ServeMux) {
 	m.HandleFunc("GET /v1/preflights/{id}", s.wrap(true, s.getPreflight))
 	m.HandleFunc("POST /v1/challenge-versions/{id}/lock", s.wrap(true, s.lockChallenge))
 	m.HandleFunc("POST /v1/challenge-versions/{id}/publish", s.wrap(true, s.publishChallenge))
+	m.HandleFunc("GET /v1/challenge-versions/{id}/admission", s.wrap(false, s.getFrontierPolicy))
+	m.HandleFunc("POST /v1/frontier-claims", s.wrap(true, s.createFrontierTicket))
 	m.HandleFunc("POST /v1/submission-intents", s.wrap(true, s.createIntent))
 	m.HandleFunc("GET /v1/submission-intents/{id}", s.wrap(true, s.getIntent))
 	m.HandleFunc("POST /v1/submission-intents/{id}/accept", s.wrap(true, s.acceptIntent))

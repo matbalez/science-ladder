@@ -1690,6 +1690,10 @@
                   },
                   "publish": {
                     "type": "boolean"
+                  },
+                  "admissionTicket": {
+                    "type": "string",
+                    "format": "uuid"
                   }
                 },
                 "required": [
@@ -1697,13 +1701,16 @@
                   "repository",
                   "ref",
                   "license",
-                  "publish"
+                  "publish",
+                  "admissionTicket",
+                  "previewDigest"
                 ],
                 "additionalProperties": false
               }
             }
           }
-        }
+        },
+        "description": "Requires a matching unexpired admissionTicket and previewDigest from local-first frontier admission; consumes the ticket before queueing source preparation."
       }
     },
     "/submission-intents/{id}": {
@@ -3388,6 +3395,162 @@
           },
           "503": {
             "description": "Guide not configured"
+          }
+        }
+      }
+    },
+    "/frontier-claims": {
+      "post": {
+        "operationId": "create_frontier_claim",
+        "summary": "Screen an unverified local frontier claim and issue a single-use admission ticket",
+        "responses": {
+          "200": {
+            "description": "Success; long-running operations may also return 202",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted for asynchronous processing"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invitation, identity, or role required"
+          },
+          "409": {
+            "description": "State, idempotency, or integrity conflict"
+          },
+          "422": {
+            "description": "Contract validation failed"
+          },
+          "503": {
+            "description": "A required dependency or trust gate is not ready"
+          },
+          "201": {
+            "description": "Single-use ticket, expires in 15 minutes"
+          },
+          "429": {
+            "description": "Admission budget or quota exhausted"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "repository",
+                  "ref",
+                  "claim"
+                ],
+                "properties": {
+                  "repository": {
+                    "type": "string"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{40}$"
+                  },
+                  "claim": {
+                    "type": "object",
+                    "required": [
+                      "apiVersion",
+                      "versionId",
+                      "lockDigest",
+                      "artifactDigest",
+                      "mode"
+                    ],
+                    "properties": {
+                      "apiVersion": {
+                        "const": "science-ladder/frontier-claim/v1"
+                      },
+                      "versionId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "lockDigest": {
+                        "type": "string"
+                      },
+                      "artifactDigest": {
+                        "type": "string"
+                      },
+                      "mode": {
+                        "enum": [
+                          "frontier",
+                          "qualification"
+                        ]
+                      },
+                      "result": {
+                        "type": "object"
+                      },
+                      "qualification": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/challenge-versions/{id}/admission": {
+      "get": {
+        "operationId": "get_frontier_admission_policy",
+        "summary": "Frozen manifest and current public frontier for local validation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "manifest, lockDigest, frontierTicks and server-derived admission mode"
+          },
+          "409": {
+            "description": "Intake closed"
           }
         }
       }

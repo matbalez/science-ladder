@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/matbalez/science-ladder/internal/runner"
+	"github.com/matbalez/science-ladder/pkg/protocol"
 )
 
 type apiClient struct {
@@ -106,8 +107,12 @@ func remoteCommand(args []string) error {
 	license := f.String("license", "MIT", "artifact license")
 	model := f.String("model", "", "model attribution")
 	harness := f.String("harness", "", "harness attribution")
+	claimPath := f.String("claim", "", "unverified local frontier claim file")
+	artifactPath := f.String("artifact", "", "artifact-only directory checked locally")
+	manifestPath := f.String("manifest", "science-ladder.yaml", "frozen manifest")
 	publish := f.Bool("publish", false, "publish a non-winning submission voluntarily")
 	submission := f.String("submission", "", "submission ID")
+	intentID := f.String("intent", "", "existing intent ID to resume")
 	out := f.String("out", "", "export destination")
 	if err := f.Parse(rest); err != nil {
 		return err
@@ -126,8 +131,42 @@ func remoteCommand(args []string) error {
 		if _, err := hex.DecodeString(*commit); err != nil {
 			return errors.New("commit must be hexadecimal")
 		}
+		if *claimPath == "" || *artifactPath == "" {
+			return errors.New("--claim and --artifact required; first run sl claim with the final local checker")
+		}
+		data, err := boundedClaimFile(*claimPath)
+		if err != nil {
+			return err
+		}
+		var claim protocol.FrontierClaim
+		if err = protocol.DecodeStrict(data, &claim); err != nil {
+			return err
+		}
+		m, err := readManifest(*manifestPath)
+		if err != nil {
+			return err
+		}
+		if _, err = claim.Validate(m); err != nil {
+			return err
+		}
+		_, digest, err := protocol.CanonicalArtifact(*artifactPath, m.Submission)
+		if err != nil {
+			return err
+		}
+		if claim.VersionID != *version || claim.ArtifactDigest != digest {
+			return errors.New("claim version or artifact changed; rerun final local validation")
+		}
+		var ticket struct {
+			ID string `json:"ticketId"`
+		}
+		if err = client.request("POST", "/v1/frontier-claims", map[string]any{"repository": *repository, "ref": *commit, "claim": claim}, &ticket); err != nil {
+			return err
+		}
+		if ticket.ID == "" {
+			return errors.New("API did not return an admission ticket")
+		}
 		var intent map[string]any
-		body := map[string]any{"versionId": *version, "repository": *repository, "ref": *commit, "license": *license, "attribution": map[string]any{"model": *model, "harness": *harness}, "publish": *publish}
+		body := map[string]any{"versionId": *version, "repository": *repository, "ref": *commit, "license": *license, "attribution": map[string]any{"model": *model, "harness": *harness}, "publish": *publish, "admissionTicket": ticket.ID, "previewDigest": claim.ArtifactDigest}
 		if err := client.request("POST", "/v1/submission-intents", body, &intent); err != nil {
 			return err
 		}
@@ -141,28 +180,12 @@ func remoteCommand(args []string) error {
 		if err := runner.WriteJSON(os.Stdout, intent); err != nil {
 			return err
 		}
-		fmt.Fprintln(os.Stderr, "Source intent created; waiting for immutable source preparation.")
-		deadline := time.Now().Add(10 * time.Minute)
-		for time.Now().Before(deadline) {
-			var status map[string]any
-			if err := client.request("GET", "/v1/submission-intents/"+url.PathEscape(id), nil, &status); err != nil {
-				return err
-			}
-			state, _ := status["status"].(string)
-			if state == "ready" || state == "structurally_valid" {
-				var accepted any
-				if err := client.request("POST", "/v1/submission-intents/"+url.PathEscape(id)+"/accept", map[string]any{}, &accepted); err != nil {
-					return err
-				}
-				return runner.WriteJSON(os.Stdout, accepted)
-			}
-			if state == "failed" || state == "rejected" {
-				_ = runner.WriteJSON(os.Stdout, status)
-				return errors.New("submission preparation failed")
-			}
-			time.Sleep(2 * time.Second)
+		return waitForIntent(client, id)
+	case "resume":
+		if *intentID == "" {
+			return errors.New("--intent required")
 		}
-		return fmt.Errorf("intent %s remains pending; inspect it in the app before retrying", id)
+		return waitForIntent(client, *intentID)
 	case "status":
 		if *submission == "" {
 			return errors.New("--submission required")
@@ -245,4 +268,32 @@ func login(client *apiClient) error {
 		time.Sleep(3 * time.Second)
 	}
 	return errors.New("device login expired")
+}
+
+func waitForIntent(client *apiClient, id string) error {
+	fmt.Fprintln(os.Stderr, "Waiting for immutable source preparation.")
+	deadline := time.Now().Add(10 * time.Minute)
+	for time.Now().Before(deadline) {
+		var status map[string]any
+		if err := client.request("GET", "/v1/submission-intents/"+url.PathEscape(id), nil, &status); err != nil {
+			return err
+		}
+		state, _ := status["status"].(string)
+		if state == "accepted" {
+			return runner.WriteJSON(os.Stdout, status)
+		}
+		if state == "ready" || state == "structurally_valid" {
+			var accepted any
+			if err := client.request("POST", "/v1/submission-intents/"+url.PathEscape(id)+"/accept", map[string]any{}, &accepted); err != nil {
+				return err
+			}
+			return runner.WriteJSON(os.Stdout, accepted)
+		}
+		if state == "failed" || state == "rejected" {
+			_ = runner.WriteJSON(os.Stdout, status)
+			return errors.New("submission preparation failed")
+		}
+		time.Sleep(2 * time.Second)
+	}
+	return fmt.Errorf("intent %s remains pending; resume with sl resume --api %s --intent %s", id, client.base, id)
 }

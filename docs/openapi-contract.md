@@ -28,7 +28,9 @@ All routes use `/v1`. JSON camelCase, UUID resource IDs, RFC3339 timestamps, exa
 
 ## Solver
 
-- `POST /v1/submission-intents` with `{versionId,repository,ref,previewDigest?,parentFrontierDigest?,license,attribution:{model?,harness?,disclosure?,platformSeeded?:boolean},publish:boolean}` → Intent.
+- `GET /v1/challenge-versions/{id}/admission` → `{manifest,lockDigest,frontierTicks,mode:"frontier"|"qualification"}`. Public, no execution.
+- `POST /v1/frontier-claims` with `{repository,ref,claim}` → `{ticketId,expiresAt,mode,resumeOnly?}`. Untrusted local report, 64 KiB limit, frontier screen and durable budgets; see [admission specification](specs/frontier-admission-v1.md).
+- `POST /v1/submission-intents` with `{versionId,repository,ref,admissionTicket,previewDigest,parentFrontierDigest?,license,attribution:{model?,harness?,disclosure?,platformSeeded?:boolean},publish:boolean}` → Intent.
 - Intent: `{id,versionId,status,repository,sourceCommit?,artifactDigest?,findings,submissionId?,createdAt}`. Status `github_fetch`, `quarantine_pending`, `ready`, `failed`, `accepted`.
 - `GET /v1/submission-intents/{id}` → Intent.
 - `POST /v1/submission-intents/{id}/accept` with `{}` → `{submissionId,sequence,receiptDigest,status:"accepted"}`. Only ready intents; no place in line until capacity and grants are atomically reserved.

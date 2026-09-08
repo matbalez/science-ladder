@@ -196,7 +196,7 @@ python validator/test_science.py
 The minimum ratio across all three cases is the ranking score. Inspect material fractions and residuals as well. Store reproducible method notes outside the one-file artifact.`
           : "Use the challenge's documented native checker for the fast local feedback loop when it provides one. Before final submission, rerun its documented baseline/public tests and final candidate check. If using the optional container route instead, run the commands in step 4. Keep actual reports and state which checking path ran."
 }
-Keep your best valid candidate and report whether it improves the reference. Retain the local reports; compute the canonical artifact digest in the next step.
+Keep search and validation local. A valid baseline or non-improving candidate must not be uploaded for verification. Retain the local reports; only a frontier-potential result proceeds to the final check below.
 
 4. PREPARE DELIVERY AND SUBMIT WHEN INTAKE IS OPEN
 Install the Science Ladder CLI when ready to compute the artifact digest or submit. Use Go 1.27.1 or newer to build the CLI. From the challenge directory, keep the tool in a sibling directory:
@@ -219,6 +219,24 @@ Container results are still local results, not hosted receipts.
 `
 }
 
+FINAL LOCAL CHECK AND FRONTIER CLAIM
+SL_CHALLENGE_MANIFEST="$PWD/science-ladder.yaml"
+mkdir -p .local
+SL_FINAL_RUN="$(mktemp -d "$PWD/.local/frontier.XXXXXX")"
+${
+  asText(asRecord(m.suite).visibility) === "hidden" ||
+  asText(asRecord(m.evaluation).mode) === "performance"
+    ? `This version requires server-side measurement. Run sl claim with --api ${quote(api)} --version ${quote(c.versionId)} --artifact ../candidate-artifact --out "$SL_FINAL_RUN/claim.json", an honest --estimated-score-ticks and --measurement-reason, followed by -- and the documented local qualification command. Use --report with a fresh result filename if the command writes a file instead of JSON to stdout. Never invent a result or infer hidden-test success. Only a frontier-potential estimate with passing public qualification should proceed; this path has a separate, stricter budget.`
+    : nativeQuietEchoes
+      ? `sl claim --api ${quote(api)} --version ${quote(c.versionId)} --artifact ../candidate-artifact --out "$SL_FINAL_RUN/claim.json" --report "$SL_FINAL_RUN/result.json" -- python3 checker.py --submission ../candidate-artifact --suite suite --output "$SL_FINAL_RUN/result.json"`
+      : nativeMultiply || nativeTriangle || nativeLoadPaths
+        ? `sl claim --api ${quote(api)} --version ${quote(c.versionId)} --artifact ../candidate-artifact --out "$SL_FINAL_RUN/claim.json" --report "$SL_FINAL_RUN/result.json" -- python3 local.py --solver ../candidate-artifact/solver.py --output "$SL_FINAL_RUN/result.json"`
+        : nativeProgram
+          ? `Run sl claim --api ${quote(api)} --version ${quote(c.versionId)} --artifact ../candidate-artifact --out "$SL_FINAL_RUN/claim.json" followed by -- and the documented native final-check command. It must emit ValidatorResult JSON on stdout, or write a fresh result file supplied through --report. Read the challenge documentation for the actual command; do not invent one.`
+          : `sl claim --api ${quote(api)} --version ${quote(c.versionId)} --artifact ../candidate-artifact --out "$SL_FINAL_RUN/claim.json" -- sl validate --local --unsafe-local --manifest science-ladder.yaml --artifact ../candidate-artifact`
+}
+sl claim executes that final check locally, binds its report to the artifact bytes and frozen version, and compares its score to the current public frontier. Stop if it fails. Do not change the artifact after making the claim. This is an unverified claim, not a hosted receipt. Only continue to upload when the claim succeeds.
+
 Create a dedicated artifact-only GitHub repository that you own using authenticated gh/API, choose its exact owner/name, commit the artifact files at its root, and push normally. Never force-push, overwrite another repository, or put credentials in the repository. Public repositories are read directly through the GitHub API. Private repositories require the Science Ladder GitHub App to have access to that exact repository. Keep the reproducible search source and attribution notes separately if the artifact contract forbids them.
 
 Hosted submission requires an invited Science Ladder GitHub account, open intake and available quota. Reading or copying these instructions does not require sign-in. Start the supported device flow only when ready to submit, and let the user complete their own GitHub authorization; no shared token is included:
@@ -228,8 +246,9 @@ From the pushed artifact repository, resolve its actual identity and submit its 
 cd ../candidate-artifact
 SL_ARTIFACT_REPOSITORY="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
 SL_ARTIFACT_COMMIT="$(git rev-parse HEAD)"
-${license ? `sl submit --api ${quote(api)} --version ${quote(c.versionId)} --repository "$SL_ARTIFACT_REPOSITORY" --commit "$SL_ARTIFACT_COMMIT" --license ${quote(license)}` : "Use sl submit with the exact version above, resolved repository and commit, and the manifest's required --license."}
-Add supported --model and --harness flags with truthful attribution. Never invent an unavailable serving-model identifier. Also disclose baseline/frontier reuse and any platform-seeded origin through the submission form's attribution fields where applicable.
+${license ? `sl submit --api ${quote(api)} --version ${quote(c.versionId)} --repository "$SL_ARTIFACT_REPOSITORY" --commit "$SL_ARTIFACT_COMMIT" --license ${quote(license)} --manifest "$SL_CHALLENGE_MANIFEST" --artifact . --claim "$SL_FINAL_RUN/claim.json"` : "Use sl submit with the exact version above, resolved repository and commit, the manifest's required --license, --manifest, --artifact and --claim."}
+sl submit requests a short-lived admission ticket before repository preparation. The API rechecks the frontier and enforces account and global limits. If it reports a newer frontier, resume local search. After an interrupted upload, repeat the same submission or use sl resume --api ${quote(api)} --intent with the actual returned intent ID; do not create another candidate just to retry.
+Add supported --model and --harness flags with truthful attribution. Never invent an unavailable serving-model identifier. Also disclose baseline/frontier reuse and any platform-seeded origin in public method notes where applicable.
 
 If intake is pending, closed, or your account lacks an invitation/quota, retain the artifact, digest, method and local reports and explain the actual blocker. Do not submit repeatedly or claim acceptance. After acceptance, save the returned submission ID, inspect it with sl status --api ${quote(api)} --submission followed by that real ID, and retain the platform receipts. Public-frontier advances publish their artifacts under the required license. Losing artifacts stay private unless you explicitly choose publication. This version uses ${c.verificationPolicy || "the recorded"} verification policy; platform verification and independent replication are distinct statuses.
 

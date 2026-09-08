@@ -1,7 +1,7 @@
 # Educational context
 
 Every new challenge must explain **where the research stands** and **what progress
-would mean**. Scout 1.3 introduced (and current Scout 1.7 generates) `education.frontier` and
+would mean**. Scout 1.3 introduced (and current Scout 1.8 generates) `education.frontier` and
 `education.significance` in the candidate YAML, beside `manifest`. These are
 plain text, not HTML. Cite titles and locations from the candidate's primary
 sources. Explain a concrete score improvement, preserved conditions, scientific
