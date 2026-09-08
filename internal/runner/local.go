@@ -67,6 +67,9 @@ func LocalValidateWithSuite(ctx context.Context, m protocol.Manifest, challengeR
 	if err := protocol.ValidateManifest(m); err != nil {
 		return report, err
 	}
+	if m.Validator.Profile == "native-evaluator-v2" {
+		return report, errors.New("native evaluator requires the hosted isolated broker; use the challenge documented native reproduction command for unofficial local feedback")
+	}
 	_, digest, err := protocol.CanonicalArtifact(artifactRoot, m.Submission)
 	if err != nil {
 		report.Outcome = "invalid_output"

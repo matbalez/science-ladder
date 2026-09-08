@@ -58,6 +58,13 @@ func GuestInit() error {
 	if err != nil {
 		return fmt.Errorf("parse immutable manifest: %w", err)
 	}
+	if manifest.Evaluation != nil && manifest.Evaluation.Proof != nil {
+		proof := manifest.Evaluation.Proof
+		statement, err := os.ReadFile(filepath.Join("/sl/challenge", proof.StatementPath))
+		if err != nil || protocol.DigestBytes(statement) != proof.StatementDigest {
+			return errors.New("frozen proof statement binding failed")
+		}
+	}
 	if manifest.Evaluation != nil && len(manifest.Evaluation.Assets) > 0 {
 		if err := syscall.Mount("tmpfs", "/sl/assets", "tmpfs", syscall.MS_NOSUID|syscall.MS_NODEV, "size=1m,mode=0755"); err != nil {
 			return err
@@ -81,7 +88,7 @@ func GuestInit() error {
 	}
 	fileLimit := uint64(65536)
 	if manifest.APIVersion == protocol.ManifestV2 {
-		fileLimit = 1 << 30
+		fileLimit = 16 << 30
 	}
 	if err := syscall.Setrlimit(syscall.RLIMIT_FSIZE, &syscall.Rlimit{Cur: fileLimit, Max: fileLimit}); err != nil {
 		return fmt.Errorf("set output file size limit: %w", err)

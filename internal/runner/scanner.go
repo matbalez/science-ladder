@@ -414,7 +414,7 @@ func (b *Builder) Scan(files map[string][]byte, m protocol.Manifest, sbomPath st
 		return scan, ref, err
 	}
 	var envelope protocol.Envelope
-	if err := protocol.DecodeStrict(data, &envelope); err != nil {
+	if err := protocol.DecodeStrictBounded(data, &envelope, 2*protocol.MaxDocumentBytes); err != nil {
 		return scan, ref, err
 	}
 	payload, err := protocol.Verify(envelope, keys)

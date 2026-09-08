@@ -44,6 +44,7 @@ import {
   Status,
 } from "./ui";
 import { SubmissionTable } from "./submission";
+import { MeasurementContract } from "./measurement-contract";
 import { Participate } from "./participate";
 import { ResearcherSection } from "./researchers";
 import {
@@ -502,6 +503,9 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                 <TextList
                   title="Allowed artifact paths"
                   value={task.editablePaths}
+                />
+                <MeasurementContract
+                  evaluation={asRecord(manifest.evaluation)}
                 />
                 <h3>Tests & reproducibility</h3>
                 <p>

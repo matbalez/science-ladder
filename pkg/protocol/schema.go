@@ -125,7 +125,10 @@ func schemaVersion(name string, v2 bool) (map[string]any, error) {
 	for typ, kind := range map[string]string{"Candidate": "ChallengeCandidate", "Manifest": "ChallengeManifest", "ValidatorResult": "ValidatorResult", "RunnerJob": "ValidationJob", "RunReceipt": "ValidationRunReceipt", "Lock": "ChallengeLockReceipt", "ArtifactTree": "ScienceLadderArtifactTree"} {
 		set(typ, "kind", map[string]any{"const": kind})
 	}
-	set("Candidate", "promptVersion", map[string]any{"enum": []string{ScoutVersion, "1.0.0"}})
+	set("Candidate", "promptVersion", map[string]any{"enum": []string{"1.1.0", "1.0.0"}})
+	if v2 {
+		set("Candidate", "promptVersion", map[string]any{"enum": []string{ScoutVersion, "1.1.0", "1.0.0"}})
+	}
 	set("Candidate", "disposition", map[string]any{"enum": []string{"viable", "needs_work", "rejected"}})
 	if c, ok := definitions["Candidate"].(map[string]any); ok {
 		c["allOf"] = []any{map[string]any{"if": map[string]any{"properties": map[string]any{"disposition": map[string]any{"const": "viable"}}}, "then": map[string]any{"required": []string{"manifest"}}}}

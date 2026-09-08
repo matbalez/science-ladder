@@ -264,6 +264,8 @@ func (b *candidateBroker) serve(ctx context.Context) {
 					if err := b.sealWork(); err != nil {
 						b.fault = err
 						response.Outcome = "infrastructure_fault"
+					} else if err := b.publishProducts(); err != nil {
+						response.Outcome = "invalid_output"
 					} else {
 						b.ready = true
 					}
@@ -309,7 +311,11 @@ func (b *candidateBroker) execute(parent context.Context, argv []string, budget 
 	defer group.Close()
 	ctx, cancel := context.WithTimeout(parent, time.Duration(budget.TimeoutSeconds)*time.Second)
 	defer cancel()
-	args := append([]string{strconv.FormatInt(budget.MaxOutputBytes, 10)}, argv...)
+	fileLimit := budget.MaxFileBytes
+	if fileLimit == 0 {
+		fileLimit = budget.MaxOutputBytes
+	}
+	args := append([]string{strconv.FormatInt(fileLimit, 10)}, argv...)
 	command := exec.CommandContext(ctx, "/usr/local/bin/sl-candidate-sandbox", args...)
 	command.Dir = "/work"
 	command.Env = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/tmp", "TMPDIR=/tmp", "TZ=UTC", "LC_ALL=C.UTF-8", "PYTHONHASHSEED=0", "PYTHONDONTWRITEBYTECODE=1", "SOURCE_DATE_EPOCH=0", "CARGO_HOME=/tmp/cargo", "OPENBLAS_NUM_THREADS=1", "OMP_NUM_THREADS=1"}

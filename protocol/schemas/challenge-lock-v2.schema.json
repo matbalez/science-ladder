@@ -1,5 +1,24 @@
 {
   "$defs": {
+    "BuildProduct": {
+      "additionalProperties": false,
+      "properties": {
+        "maxBytes": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "path": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "maxBytes"
+      ],
+      "type": "object"
+    },
     "CandidateProgram": {
       "additionalProperties": false,
       "properties": {
@@ -23,6 +42,13 @@
           "maximum": 9007199254740991,
           "minimum": 0,
           "type": "integer"
+        },
+        "products": {
+          "items": {
+            "$ref": "#/$defs/BuildProduct"
+          },
+          "maxItems": 4096,
+          "type": "array"
         },
         "run": {
           "items": {
@@ -119,6 +145,9 @@
         },
         "program": {
           "$ref": "#/$defs/CandidateProgram"
+        },
+        "proof": {
+          "$ref": "#/$defs/ProofContract"
         },
         "rationale": {
           "$ref": "#/$defs/MetricRationale"
@@ -765,6 +794,48 @@
       ],
       "type": "object"
     },
+    "ProofContract": {
+      "additionalProperties": false,
+      "properties": {
+        "allowedAxioms": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "certificatePath": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "checkDescription": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "format": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "statementDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "statementPath": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "statementPath",
+        "statementDigest",
+        "certificatePath",
+        "allowedAxioms",
+        "checkDescription"
+      ],
+      "type": "object"
+    },
     "Resources": {
       "additionalProperties": false,
       "properties": {
@@ -850,6 +921,11 @@
     "StageBudget": {
       "additionalProperties": false,
       "properties": {
+        "maxFileBytes": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
         "maxOutputBytes": {
           "maximum": 9007199254740991,
           "minimum": 0,

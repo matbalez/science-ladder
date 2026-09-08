@@ -330,6 +330,13 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 	if sourceManifestDigest != manifestDigest {
 		return report, errors.New("source manifest does not match signed job")
 	}
+	if m.Evaluation != nil && m.Evaluation.Proof != nil {
+		p := m.Evaluation.Proof
+		statement, ok := snapshot.Files[p.StatementPath]
+		if !ok || protocol.DigestBytes(statement) != p.StatementDigest {
+			return report, errors.New("proof statement differs from frozen digest")
+		}
+	}
 	if !b.UnsafeLocal {
 		if b.Runtime == nil {
 			return report, errors.New("certified quarantine runtime required")

@@ -1,0 +1,11 @@
+# Certificate validation
+
+A v2 proof contract pins a statement under `statements/`, its content digest, the certificate path, format, allowed axioms and the actual replay procedure. The preflight and guest both verify the statement digest. This binding identifies the scientific target; it cannot prove that an arbitrary checker correctly interprets that target.
+
+Proof search or elaboration can run through `evaluation.program` in the candidate domain. The frozen build may declare `products`, each with an exact relative path and byte limit. After every compiler descendant is killed and the work tree is sealed, the broker copies only those regular files to `/sl/products` and remounts them read-only and non-executable. Missing, oversized or linked products fail. The candidate cannot access this checker-side directory. Stage `maxFileBytes` is distinct from bounded stdout; omitted values preserve the earlier stdout-sized file limit. A profile must explicitly advertise `sealed-products`.
+
+A successful build is not a proof. The frozen checker must validate the certificate against the frozen statement and its axiom policy. A DRAT adapter checks unsatisfiability of the exact input formula, including the required empty-clause conclusion. A Lean adapter must compare the target statement, reject unapproved axioms and replay a validated serialized proof. Importing attacker-created raw `.olean` files into the authoritative checker is not sufficient against malicious proof artifacts. Candidate elaboration and export belong inside the isolated candidate stage; exported syntax is untrusted data.
+
+The platform has no generic theorem oracle. Every adapter requires positive, negative and adversarial fixtures, pinned toolchain assets, source/rights review and scientific review. A rankable search gradient may coexist with a proof predicate; only the proof predicate can establish the theorem milestone. Toolchain/schema support does not imply a specific adapter has been commissioned.
+
+Primary references: [Lean proof validation](https://lean-lang.org/doc/reference/latest/ValidatingProofs/), [Comparator](https://github.com/leanprover/comparator), and [DRAT-trim](https://github.com/marijnheule/drat-trim).

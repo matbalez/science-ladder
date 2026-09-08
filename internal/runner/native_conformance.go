@@ -220,7 +220,7 @@ func nativeTimingManifest(m protocol.Manifest, hardware string) protocol.Manifes
 
 const nativeTimingBaseline = "#include <stdio.h>\nint main(){volatile unsigned long x=0;for(unsigned i=0;i<100000000;i++)x+=i;puts(\"42\");}\n"
 const nativeTimingCandidate = "#include <stdio.h>\nint main(){volatile unsigned long x=0;for(unsigned i=0;i<50000000;i++)x+=i;puts(\"42\");}\n"
-const nativeTimingChecker = `import base64,json,socket
+const nativeTimingChecker = `import base64,json,socket,os
 from pathlib import Path
 def call(request):
  s=socket.socket(socket.AF_UNIX);s.connect('/sl/broker/control.sock');s.sendall(json.dumps(request).encode());s.shutdown(socket.SHUT_WR);parts=[]

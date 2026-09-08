@@ -1,7 +1,7 @@
 import type { Challenge } from "./types.ts";
 import { asList, asRecord, asText } from "./scientific.ts";
 
-export const CLI_SOURCE = "7fc2435cdf09cc720b4a6700f5bab2720ac36aca";
+export const CLI_SOURCE = "c8bbd347e29cd627a5e89cb40676a9a6dc2db4fa";
 const quote = (value: string) => "'" + value.replace(/'/g, "'\\''") + "'";
 
 /** The native path belongs to a verified immutable source, not its display slug. */
@@ -13,6 +13,17 @@ export function hasNativeQuietEchoesChecker(
     c.sourceCommit === "f42f527e97563b1c068a1835732c6da44f21223f"
   );
 }
+export const LOAD_PATHS_SOURCE = "67815eb048b381b59a2697552c9d114feff498e0";
+export function hasNativeLoadPathsChecker(
+  c: Pick<Challenge, "repository" | "sourceCommit">,
+): boolean {
+  return (
+    c.repository === "matbalez/science-ladder-load-paths" &&
+    c.sourceCommit === LOAD_PATHS_SOURCE
+  );
+}
+const loadPathsSetup =
+  "python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install -r requirements.txt\npython validator/test_science.py\npython local.py";
 export function challengeSetupCommands(c: Challenge): string {
   if (
     !/^[a-f0-9]{40}$/.test(c.sourceCommit) ||
@@ -24,7 +35,9 @@ export function challengeSetupCommands(c: Challenge): string {
     checkout +
     (hasNativeQuietEchoesChecker(c)
       ? "\npython3 tools/reproduce.py --check\npython3 -m unittest discover -s tests -v"
-      : "\n# Read README.md and the manifest.\n# Follow the documented native baseline and test commands, if provided.")
+      : hasNativeLoadPathsChecker(c)
+        ? "\n" + loadPathsSetup
+        : "\n# Read README.md and the manifest.\n# Follow the documented native baseline and test commands, if provided.")
   );
 }
 
@@ -46,6 +59,8 @@ export function solverInstructions(c: Challenge): string {
     /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(c.repository);
   // Native commands are documented and tested for this exact scientific source only.
   const nativeQuietEchoes = hasNativeQuietEchoesChecker(c);
+  const nativeLoadPaths = hasNativeLoadPathsChecker(c);
+  const nativeProgram = asRecord(m.validator).profile === "native-evaluator-v2";
   const page = `https://science-ladder.fly.dev/challenges/${encodeURIComponent(c.slug)}`;
   const api = "https://science-ladder.fly.dev";
   const license = asText(contract.license);
@@ -62,7 +77,7 @@ Status at instruction generation: ${c.status}; scientific review: ${c.reviewStat
 ${c.status === "published" ? "Inspect the frozen version and current intake before hosted submission. The pinned source and local checks are available now." : "This version may still be awaiting review or publication. Public access can return 404 before publication. You may explore the pinned public source and run local checks now. Check current intake and the frozen version before hosted submission; never substitute another version silently."}
 
 1. PREPARE THE WORKSPACE
-Use a new empty working directory. ${nativeQuietEchoes ? "For this exact Quiet Echoes source, use Git and Python 3.13 or newer on macOS or Linux. Its native checker uses only the Python standard library." : "Use Git and the native runtime documented by this challenge, if it provides a native checking path. Do not assume its checker is Python or invent setup commands."} The Science Ladder CLI and Go can wait until the digest/submission stage. Authenticated GitHub CLI is only needed when publishing your artifact. Docker Desktop is not a prerequisite; an optional container check is described in step 4. There is no separate Science Ladder agent skill to install.
+Use a new empty working directory. ${nativeQuietEchoes ? "For this exact Quiet Echoes source, use Git and Python 3.13 or newer on macOS or Linux. Its native checker uses only the Python standard library." : "Use Git and the native runtime documented by this challenge, if it provides a native checking path. Do not assume its checker is Python or invent setup commands."} The Science Ladder CLI and Go can wait until the digest/submission stage. Authenticated GitHub CLI is only needed when publishing your artifact. Docker Desktop is not a prerequisite. There is no separate Science Ladder agent skill to install.
 
 ${
   pinned
@@ -94,7 +109,11 @@ python3 checker.py --submission fixtures/baseline --suite suite --output "$SL_BA
 cat "$SL_BASELINE_RUN/result.json"
 
 Expect the reproduced baseline energy 17996 and every gate true. The checker refuses to overwrite output; the fresh directory above keeps each report without deleting earlier results.`
-    : "Use the native setup, baseline and public-test commands documented by this exact challenge, if available. If no native checker is documented, report that limitation instead of inventing commands. The optional container checks in step 4 can reproduce the pinned runtime. Do not claim baseline verification until a supported checker has actually run."
+    : nativeLoadPaths
+      ? `Run from the pinned checkout:
+${loadPathsSetup}
+Expect all scientific tests to pass and the local reference score to reproduce 1.000000. Read docs/science.md and docs/submitting.md before editing submission/solver.py. Local source runs with your account permissions.`
+      : "Use the native setup, baseline and public-test commands documented by this exact challenge, if available. If no native checker is documented, report that limitation instead of inventing commands. The optional container checks in step 4 can reproduce the pinned runtime. Do not claim baseline verification until a supported checker has actually run."
 }
 If the baseline or fixtures fail, diagnose and report the discrepancy before search. Local results are unofficial; hosted verification runs separately. Private-suite challenges expose only their authorized public checks; never try to extract hidden tests.
 
@@ -103,7 +122,7 @@ Artifact paths allowed by this manifest: ${JSON.stringify(contract.allowedPaths 
 Allowed extensions: ${JSON.stringify(contract.allowedExtensions || [])}
 Maximum files: ${asText(contract.maxFiles, "read the manifest")}; maximum bytes: ${asText(contract.maxBytes, "read the manifest")}.
 Required artifact license: ${license || "read and confirm the manifest license"}.
-Keep an artifact-only directory at ../candidate-artifact. Paths above are relative to that directory. Keep search code, notes, logs, credentials and extra files outside it. ${nativeQuietEchoes ? "For Quiet Echoes, sequence.txt contains exactly 512 ASCII '+' or '-' characters followed by one LF; executable solver code is not the submitted artifact." : "Follow the exact data format and hard gates documented by this challenge."}
+Keep an artifact-only directory at ../candidate-artifact. Paths above are relative to that directory. Keep search code, notes, logs, credentials and extra files outside it. ${nativeQuietEchoes ? "For Quiet Echoes, sequence.txt contains exactly 512 ASCII '+' or '-' characters followed by one LF; executable solver code is not the submitted artifact." : nativeLoadPaths ? "For Load Paths, submit solver.py alone. It reads one case from stdin and writes a JSON density grid. The hosted checker computes all nine load compliances and enforces the 35% physical material budget." : "Follow the exact data format and hard gates documented by this challenge."}
 ${
   safePath
     ? `To start from the attributed baseline after reproducing it:
@@ -128,7 +147,12 @@ Before final submission, repeat the full native checks:
 python3 tools/reproduce.py --check
 python3 -m unittest discover -s tests -v
 Then repeat the candidate checker commands above using a new output directory and retain the final result.`
-    : "Use the challenge's documented native checker for the fast local feedback loop when it provides one. Before final submission, rerun its documented baseline/public tests and final candidate check. If using the optional container route instead, run the commands in step 4. Keep actual reports and state which checking path ran."
+    : nativeLoadPaths
+      ? `After editing the artifact:
+python local.py --solver ../candidate-artifact/solver.py
+python validator/test_science.py
+The minimum ratio across all three cases is the ranking score. Inspect material fractions and residuals as well. Store reproducible method notes outside the one-file artifact.`
+      : "Use the challenge's documented native checker for the fast local feedback loop when it provides one. Before final submission, rerun its documented baseline/public tests and final candidate check. If using the optional container route instead, run the commands in step 4. Keep actual reports and state which checking path ran."
 }
 Keep your best valid candidate and report whether it improves the reference. Retain the local reports; compute the canonical artifact digest in the next step.
 
@@ -142,11 +166,16 @@ sl version
 sl challenge lint science-ladder.yaml
 sl artifact digest --manifest science-ladder.yaml --artifact ../candidate-artifact
 
-OPTIONAL EXACT-RUNTIME CONTAINER CHECK
+${
+  nativeProgram
+    ? "Use the challenge’s native reproduction driver for local feedback. The hosted native evaluator uses an isolated candidate broker; sl validate --local and sl challenge test do not reproduce that broker."
+    : `OPTIONAL EXACT-RUNTIME CONTAINER CHECK
 For an additional local check against the manifest's pinned runtime, use a Docker-compatible daemon; Docker Desktop itself is optional. These container commands require that daemon.${nativeQuietEchoes ? " The native checks above do not." : ""} If you need this path earlier, install the CLI and run it before search:
 sl challenge test --manifest science-ladder.yaml --unsafe-local
 ${safePath ? `sl validate --local --unsafe-local --manifest science-ladder.yaml --artifact ${quote(baselinePath)}\n` : ""}${containerValidation}
 Container results are still local results, not hosted receipts.
+`
+}
 
 Create a dedicated artifact-only GitHub repository that you own using authenticated gh/API, choose its exact owner/name, commit the artifact files at its root, and push normally. Never force-push, overwrite another repository, or put credentials in the repository. The Science Ladder GitHub App must have access to this exact repository; selected-installation enrollment may require explicit repository access. Do not grant access to all personal repositories as a shortcut. Keep the reproducible search source and attribution notes separately if the artifact contract forbids them.
 

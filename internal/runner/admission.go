@@ -60,7 +60,7 @@ func LoadAdmissionWindow(config Config, keys map[string]crypto.PublicKey) (Admis
 		return window, err
 	}
 	var envelope protocol.Envelope
-	if err := protocol.DecodeStrict(data, &envelope); err != nil {
+	if err := protocol.DecodeStrictBounded(data, &envelope, 2*protocol.MaxDocumentBytes); err != nil {
 		return window, err
 	}
 	payload, err = protocol.Verify(envelope, advisoryKeys)

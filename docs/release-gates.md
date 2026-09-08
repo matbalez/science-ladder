@@ -14,7 +14,7 @@ This checklist separates implemented mechanisms, observed tests, and external la
 ## Required before official competition
 
 - Independent security assessment of archive parsing, quarantine, Firecracker/Jailer boundary, authorizations, and result acceptance.
-- Two inventory-backed physical failure domains; official runner isolation and adversarial probes observed on the exact deployment profile.
+- Inventory-backed dedicated host with isolation and adversarial probes on the exact execution profile. The platform policy uses fresh confirmations on one host. Only challenges explicitly requesting independent replication require a second physical failure domain.
 - KMS root/online signing separation, revocable per-host identities, signed key-history bootstrap and rotation drill.
 - Three independently administered witnesses, a verified 2-of-3 quorum, and tested fork detection/outage recovery.
 - Database restoration to an isolated environment with receipt ordering, object digests, and audit checkpoints reconciled.

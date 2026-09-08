@@ -2,7 +2,7 @@
 
 7 September 2026. Companion to the [Yukon compatibility audit](../research/yukon-validation-audit-2026-09-07.md) and [scientific metric policy](../scientific-metric-policy.md).
 
-**Status:** implementation in progress. The source now includes explicitly versioned v2 measurement contracts, exact achievement predicates, scientific-metric review gates and paired-timing arithmetic, with regression tests. The native candidate broker has passed fixed hostile C and C++/Rust toolchain probes on Scaleway; capability enrollment/routing and streamed input verification have regression tests. Trusted-timing integration, proof adapters and release commissioning are still being built; the deployed API remains unchanged, with `artifact-checker-v1` as its only execution profile. The profile families below remain acceptance targets until their hosted conformance tests pass. Do not weaken the existing profile or change published locks to simulate broader support.
+**Status, 8 September 2026:** the public API includes v2 typed measurements, achievement predicates, scientific-metric assessments, executor enrollment/routing and paired timing. The new Linux profile passed four signed Scaleway conformance probes (candidate isolation, C++, Rust and paired timing) and runs alongside the original Quiet Echoes profile on the same physical host. Build-product handoff and frozen proof statements are implemented in source; proof-toolchain conformance and the Load Paths public flow are still being completed. Apple/Metal is representable in the execution contract but has no commissioned backend. Do not describe pending adapters or hardware as available, or modify existing locks to simulate broader support.
 
 ## Objective
 

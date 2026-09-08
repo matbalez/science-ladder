@@ -88,6 +88,38 @@ export default function Page() {
       </p>
 
       <section>
+        <h2>Program, proof and performance challenges</h2>
+        <p>
+          Use the{" "}
+          <ExternalLink href={`${schemaRoot}challenge-manifest-v2.schema.json`}>
+            v2 manifest schema
+          </ExternalLink>{" "}
+          and{" "}
+          <ExternalLink
+            href={`${schemaRoot}challenge-candidate-v2.schema.json`}
+          >
+            v2 candidate schema
+          </ExternalLink>{" "}
+          for typed measurements and executable submissions. The candidate
+          envelope still uses <code>science-ladder/v1</code>; its manifest uses{" "}
+          <code>science-ladder/v2</code>.
+        </p>
+        <p>
+          Declare the evaluation mode, comparison, executor, named measurements
+          and scientific rationale. Programs also need frozen build/run commands
+          and budgets. Performance rankings require a pinned baseline, quality
+          checks and a paired timing policy. Hardware must be available on an
+          enrolled executor before preflight can start.
+        </p>
+        <p>
+          The rationale must explain why a better score advances the stated
+          scientific objective, what conditions stay fixed, how shortcuts are
+          prevented and what the result cannot establish. A search gradient is
+          distinct from proof of the target.
+        </p>
+      </section>
+
+      <section>
         <h2>Required candidate fields</h2>
         <div className={styles.tableWrap}>
           <table>
@@ -128,9 +160,9 @@ export default function Page() {
                   <code>promptVersion</code>
                 </td>
                 <td>
-                  <code>"1.1.0"</code> for the current Scout prompt;{" "}
-                  <code>"1.0.0"</code> is also accepted. Record the version
-                  actually used.
+                  <code>"1.2.0"</code> for the current Scout prompt;{" "}
+                  <code>"1.1.0"</code> and <code>"1.0.0"</code> remain accepted.
+                  Record the version actually used.
                 </td>
               </tr>
               <tr>

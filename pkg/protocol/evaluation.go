@@ -25,6 +25,7 @@ type EvaluationContract struct {
 	Rationale    MetricRationale         `json:"rationale"`
 	Program      *CandidateProgram       `json:"program,omitempty"`
 	Measurement  *MeasurementPolicy      `json:"measurement,omitempty"`
+	Proof        *ProofContract          `json:"proof,omitempty"`
 	Assets       []EvaluationAsset       `json:"assets,omitempty"`
 }
 
@@ -88,19 +89,21 @@ type StageBudget struct {
 	MemoryMB       int   `json:"memoryMb"`
 	MaxOutputBytes int64 `json:"maxOutputBytes"`
 	MaxProcesses   int   `json:"maxProcesses"`
+	MaxFileBytes   int64 `json:"maxFileBytes,omitempty"`
 }
 
 // Commands are frozen by the creator; candidate-provided source, build hooks and
 // generated executables all run in the candidate domain, including compilation.
 // No command may run in the API, host broker or trusted checker process.
 type CandidateProgram struct {
-	Build       []string    `json:"build"`
-	Run         []string    `json:"run"`
-	BuildBudget StageBudget `json:"buildBudget"`
-	RunBudget   StageBudget `json:"runBudget"`
-	MaxRuns     int         `json:"maxRuns"`
-	MinRuns     int         `json:"minRuns"`
-	ScratchMB   int         `json:"scratchMb"`
+	Build       []string       `json:"build"`
+	Run         []string       `json:"run"`
+	BuildBudget StageBudget    `json:"buildBudget"`
+	RunBudget   StageBudget    `json:"runBudget"`
+	MaxRuns     int            `json:"maxRuns"`
+	MinRuns     int            `json:"minRuns"`
+	ScratchMB   int            `json:"scratchMb"`
+	Products    []BuildProduct `json:"products,omitempty"`
 }
 
 type EvaluationAsset struct {
@@ -285,12 +288,12 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 	if primary != 1 {
 		return errors.New("exactly one primary measurement required; use separate tracks for incomparable objectives")
 	}
-	if e.Mode == "program" || e.Mode == "performance" {
+	if e.Mode == "program" || e.Mode == "performance" || (e.Mode == "proof" && e.Program != nil) {
 		if e.Program == nil || !features["isolated-candidate"] {
 			return errors.New("program evaluation requires an isolated candidate and frozen program contract")
 		}
 	} else if e.Program != nil {
-		return errors.New("artifact and proof modes cannot silently execute submitted programs")
+		return errors.New("artifact mode cannot silently execute submitted programs")
 	}
 	if e.Program != nil {
 		p := e.Program
@@ -303,7 +306,16 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 		if p.MaxRuns < 1 || p.MaxRuns > 10000 || p.MinRuns < 1 || p.MinRuns > p.MaxRuns || p.ScratchMB < 16 || p.ScratchMB > resources.MemoryMB {
 			return errors.New("invalid candidate run count or scratch budget")
 		}
+		if len(p.Products) > 0 && !features["sealed-products"] {
+			return errors.New("build products require an enrolled sealed-products capability")
+		}
+		if err := validateBuildProducts(p); err != nil {
+			return err
+		}
 		for _, b := range []StageBudget{p.BuildBudget, p.RunBudget} {
+			if b.MaxFileBytes < 0 || b.MaxFileBytes > int64(p.ScratchMB)<<20 {
+				return errors.New("file budget exceeds bounded candidate work space")
+			}
 			if b.TimeoutSeconds < 1 || b.TimeoutSeconds > resources.TimeoutSeconds || b.MemoryMB < 32 || b.MemoryMB > resources.MemoryMB-256 || b.MaxOutputBytes < 1 || b.MaxOutputBytes > 1<<30 || b.MaxProcesses < 1 || b.MaxProcesses > 256 {
 				return errors.New("stage budget exceeds session envelope")
 			}
@@ -332,6 +344,9 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 	}
 	if e.Mode == "proof" && !features["native-proof-checker"] {
 		return errors.New("proof evaluation requires a proof-checker capability")
+	}
+	if err := validateProofContract(e); err != nil {
+		return err
 	}
 	if len(e.Assets) > 16 {
 		return errors.New("too many immutable assets")

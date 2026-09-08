@@ -5,6 +5,7 @@ umask 022
 export LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=0 E2FSPROGS_FAKE_TIME=0
 mkdir -p /work/root
 tar --extract --file=/input/base.tar --directory=/work/root --no-same-owner
+mkdir -p /work/root/usr/sbin
 mkdir -p /work/root/sbin /work/root/proc /work/root/sys /work/root/dev /work/root/tmp
 mkdir -p /work/root/sl/validator /work/root/sl/submission /work/root/sl/suite
 mkdir -p /work/root/sl/challenge /work/root/sl/config /work/root/sl/work /work/root/sl/output
