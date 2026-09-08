@@ -3678,7 +3678,7 @@ small {
 .learning-form textarea { flex: 1; min-width: 0; resize: vertical; min-height: 46px; max-height: 180px; border: 0; padding: 3px; background: transparent; color: #edf2e5; font: inherit; font-size: 15px; outline: none; box-shadow: none; }
 .learning-send { flex-shrink: 0; display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 8px; background: #d4f88b; color: #20291b; cursor: pointer; }
 .learning-send:disabled { opacity: .35; cursor: default; }
-.learning-log { max-height: 480px; overflow-y: auto; overscroll-behavior: contain; margin: 0 0 20px; padding-right: 14px; scrollbar-color: #49523c transparent; }
+.learning-log { max-height: 480px; overflow-y: auto; margin: 0 0 20px; padding-right: 14px; scrollbar-color: #49523c transparent; }
 .learning-turn { padding: 5px 0 22px; }
 .learning-question { background: #232d1d; border-radius: 9px; padding: 13px 16px; margin: 0 0 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .learning-question > span, .learning-reply > span { display: block; color: #a2b291; font-size: 11px; font-weight: 500; margin-bottom: 7px; }
