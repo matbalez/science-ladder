@@ -14,7 +14,7 @@ import (
 	"github.com/matbalez/science-ladder/pkg/protocol"
 )
 
-func testFinishSignedRun(t *testing.T, s *Server, version, submission, purpose, score string, host runnerIdentity, key *ecdsa.PrivateKey) error {
+func testFinishSignedRun(t *testing.T, s *Server, version, submission, purpose, score string, host runnerIdentity, key *ecdsa.PrivateKey, measurements ...map[string]string) error {
 	t.Helper()
 	ctx := context.Background()
 	var jobData []byte
@@ -35,6 +35,9 @@ func testFinishSignedRun(t *testing.T, s *Server, version, submission, purpose, 
 	run := protocol.RunReceipt{VerificationPolicy: job.VerificationPolicy, APIVersion: protocol.APIVersion, Kind: "ValidationRunReceipt", ID: ID(), CreatedAt: time.Now().UTC(), Producer: host.ID, JobID: job.ID, JobDigest: digest, AcceptanceReceiptDigest: job.AcceptanceReceiptDigest, ChallengeLockDigest: job.ChallengeLockDigest, ArtifactDigest: job.ArtifactDigest, SuiteDigest: job.SuiteDigest, ExecutionProfileDigest: job.ExecutionProfileDigest, RunnerEpoch: job.RunnerEpoch, FencingToken: job.FencingToken, HostID: host.ID, HostGroup: host.Group, Official: true, CleanupAttested: true, DeploymentMode: job.DeploymentMode, OfficialAcceptance: job.OfficialAcceptance, Outcome: "valid", ScoreTicks: score, Gates: map[string]bool{}}
 	for _, g := range job.Manifest.HardGates {
 		run.Gates[g] = true
+	}
+	if len(measurements) > 0 {
+		run.ValidatorResult = &protocol.ValidatorResult{APIVersion: protocol.ManifestV2, Kind: "ValidatorResult", ComparisonID: job.Manifest.Evaluation.ComparisonID, Score: score, Measurements: measurements[0], Gates: run.Gates}
 	}
 	envelope, err := protocol.Sign(host.ID, key, run)
 	if err != nil {

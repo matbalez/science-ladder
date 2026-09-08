@@ -169,9 +169,6 @@ func (s *Server) preflight(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	if err = enqueue(ctx, tx, "scientific_review", version); err != nil {
-		return err
-	}
 	var document []byte
 	var source string
 	if err = tx.QueryRow(ctx, `SELECT manifest,source_digest FROM challenge_versions WHERE id=$1`, version).Scan(&document, &source); err != nil {

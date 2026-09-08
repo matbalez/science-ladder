@@ -13,7 +13,7 @@ export function hasNativeQuietEchoesChecker(
     c.sourceCommit === "f42f527e97563b1c068a1835732c6da44f21223f"
   );
 }
-export const LOAD_PATHS_SOURCE = "76b380538806d2bbf9e2d6c4bf475dd3e59c663b";
+export const LOAD_PATHS_SOURCE = "f738b962986c192a6f6b986db6151f57737d2f28";
 export function hasNativeLoadPathsChecker(
   c: Pick<Challenge, "repository" | "sourceCommit">,
 ): boolean {
@@ -177,7 +177,7 @@ Container results are still local results, not hosted receipts.
 `
 }
 
-Create a dedicated artifact-only GitHub repository that you own using authenticated gh/API, choose its exact owner/name, commit the artifact files at its root, and push normally. Never force-push, overwrite another repository, or put credentials in the repository. The Science Ladder GitHub App must have access to this exact repository; selected-installation enrollment may require explicit repository access. Do not grant access to all personal repositories as a shortcut. Keep the reproducible search source and attribution notes separately if the artifact contract forbids them.
+Create a dedicated artifact-only GitHub repository that you own using authenticated gh/API, choose its exact owner/name, commit the artifact files at its root, and push normally. Never force-push, overwrite another repository, or put credentials in the repository. Public repositories are read directly through the GitHub API. Private repositories require the Science Ladder GitHub App to have access to that exact repository. Keep the reproducible search source and attribution notes separately if the artifact contract forbids them.
 
 Hosted submission requires an invited Science Ladder GitHub account, open intake and available quota. Reading or copying these instructions does not require sign-in. Start the supported device flow only when ready to submit, and let the user complete their own GitHub authorization; no shared token is included:
 sl auth login --api ${quote(api)}

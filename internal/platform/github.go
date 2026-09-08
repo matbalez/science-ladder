@@ -147,6 +147,13 @@ func (s *Server) fetchSnapshot(ctx context.Context, repository, commit string, c
 	if tree.Truncated || len(tree.Tree) > 5000 {
 		return result, fail(422, "repository_too_large", "Repository exceeds snapshot limits")
 	}
+	var archive map[string][]byte
+	if token == "" && !repo.Private {
+		archive, err = s.publicGitArchive(ctx, repository, commit)
+		if err != nil {
+			return result, err
+		}
+	}
 	files := map[string][]byte{}
 	var total int64
 	for _, entry := range tree.Tree {
@@ -177,21 +184,28 @@ func (s *Server) fetchSnapshot(ctx context.Context, repository, commit string, c
 		if entry.Size > 20<<20 || total+entry.Size > 40<<20 {
 			return result, fail(422, "snapshot_too_large", "Snapshot exceeds the configured byte limit")
 		}
-		var blob struct {
-			Content, Encoding string
-			Size              int64
+		data, exists := archive[entry.Path]
+		if archive != nil && !exists {
+			return result, fail(422, "git_archive_incomplete", "Exact public archive omitted a selected Git tree file")
 		}
-		if err = s.github(ctx, "GET", "/repos/"+repository+"/git/blobs/"+entry.SHA, token, nil, &blob); err != nil {
-			return result, err
+		if archive == nil {
+			var blob struct {
+				Content, Encoding string
+				Size              int64
+			}
+			if err = s.github(ctx, "GET", "/repos/"+repository+"/git/blobs/"+entry.SHA, token, nil, &blob); err != nil {
+				return result, err
+			}
+			if blob.Encoding != "base64" {
+				return result, fail(422, "unsupported_git_blob", "GitHub blob encoding is not supported")
+			}
+			data, err = base64.StdEncoding.DecodeString(strings.ReplaceAll(blob.Content, "\n", ""))
+			if err != nil {
+				return result, err
+			}
+
 		}
-		if blob.Encoding != "base64" {
-			return result, fail(422, "unsupported_git_blob", "GitHub blob encoding is not supported")
-		}
-		data, err := base64.StdEncoding.DecodeString(strings.ReplaceAll(blob.Content, "\n", ""))
-		if err != nil {
-			return result, err
-		}
-		if int64(len(data)) != entry.Size {
+		if int64(len(data)) != entry.Size || !matchesGitBlob(data, entry.SHA) {
 			return result, fail(422, "git_blob_mismatch", "GitHub blob size did not match its tree descriptor")
 		}
 		if bytes.HasPrefix(data, []byte("version https://git-lfs.github.com/spec/v1")) {

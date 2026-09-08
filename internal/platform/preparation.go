@@ -275,6 +275,9 @@ func (s *Server) commitBuild(ctx context.Context, tx pgx.Tx, job protocol.Runner
 	if _, err = tx.Exec(ctx, `UPDATE preflights SET status='pass',findings='[]',reports=$2,machine_receipt_digest=$3 WHERE id=$1`, *preflight, raw(b), receiptDigest); err != nil {
 		return err
 	}
-	_, err = tx.Exec(ctx, `UPDATE challenge_versions SET status='review_ready' WHERE id=$1 AND lock_digest IS NULL`, version)
-	return err
+	if _, err = tx.Exec(ctx, `UPDATE challenge_versions SET status='review_ready' WHERE id=$1 AND lock_digest IS NULL`, version); err != nil {
+		return err
+	}
+	// Review the completed authenticated evidence, avoiding a race with fixtures.
+	return enqueue(ctx, tx, "scientific_review", version)
 }

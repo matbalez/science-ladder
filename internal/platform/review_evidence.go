@@ -16,7 +16,7 @@ import (
 	"github.com/matbalez/science-ladder/pkg/protocol"
 )
 
-const reviewEvidencePolicy = "pinned-text-evidence-v1"
+const reviewEvidencePolicy = "pinned-text-evidence-v2"
 const reviewEvidenceLimit = 192 << 10
 
 type reviewEvidenceFile struct {
@@ -66,7 +66,7 @@ func selectReviewEvidence(document []byte, sourceDigest, commit string, reposito
 		return result, errors.New("scientific evidence manifest binding mismatch")
 	}
 	result.ManifestDigest = expected
-	selected := []string{"challenge-brief.md", "THIRD_PARTY_NOTICES.md", "LICENSE", "DATA_LICENSE.md", "literature/reference.json", "docs/source-evidence.json", "tests/test_checker.py", "tools/reproduce.py"}
+	selected := []string{manifest.Validator.DependencyLock, "docs/science.md", "docs/method.md", "docs/numerical-validation.json", "challenge-brief.md", "THIRD_PARTY_NOTICES.md", "LICENSE", "DATA_LICENSE.md", "literature/reference.json", "docs/source-evidence.json", "tests/test_checker.py", "tools/reproduce.py"}
 	for _, arg := range manifest.Validator.Entrypoint {
 		if strings.HasPrefix(arg, "/sl/challenge/") {
 			selected = append(selected, strings.TrimPrefix(arg, "/sl/challenge/"))
@@ -81,6 +81,16 @@ func selectReviewEvidence(document []byte, sourceDigest, commit string, reposito
 				if strings.HasPrefix(name, f.Path+"/") {
 					selected = append(selected, name)
 				}
+			}
+		}
+	}
+	// Native challenges often split the checker into several source modules.
+	// Review those frozen public modules and scientific tests, not just the wrapper.
+	if manifest.APIVersion == protocol.ManifestV2 {
+		for name := range snapshot.Files {
+			if strings.HasPrefix(name, "validator/") || strings.HasPrefix(name, "tests/") ||
+				(manifest.Suite.Visibility == "public" && strings.HasPrefix(name, manifest.Suite.Path+"/")) {
+				selected = append(selected, name)
 			}
 		}
 	}
@@ -125,7 +135,7 @@ func safeReviewPath(name string, m protocol.Manifest) bool {
 		return false
 	}
 	switch strings.ToLower(path.Ext(name)) {
-	case ".md", ".txt", ".json", ".py":
+	case ".md", ".txt", ".json", ".py", ".rs", ".c", ".h", ".cpp", ".hpp", ".lean", ".lock":
 		return true
 	case "":
 		return path.Base(name) == "LICENSE"

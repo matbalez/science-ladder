@@ -3120,6 +3120,7 @@ small {
   }
   .challenge-header-actions {
     gap: 10px;
+    flex-wrap: wrap;
   }
   .challenge-header-actions .button {
     font-size: 10px;
@@ -3617,4 +3618,9 @@ small {
 
 .account-settings > p {
   margin: 14px 0 18px;
+}
+
+@media (max-width: 480px) {
+  .challenge-header-actions > button { white-space: nowrap; }
+  .challenge-header-actions { align-items: flex-start; flex-direction: column; }
 }

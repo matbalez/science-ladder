@@ -46,6 +46,6 @@ Tests use mocked GitHub API responses and real disposable local Git repositories
 
 ## Public source ingestion
 
-The platform reads public challenge and submission commits through the GitHub API without requiring an App installation. Repository creation and pushes remain API/CLI operations. Private or ambiguous visibility still requires the exact repository installation grant. Anonymous public reads are subject to GitHub’s unauthenticated rate limit; production ingestion should add a cache or authenticated public-read capacity as volume grows.
+The platform reads public challenge and submission commits through the GitHub API without requiring an App installation. Repository creation and pushes remain API/CLI operations. Private or ambiguous visibility still requires the exact repository installation grant. Public ingestion uses bounded codeload archives and checks selected files against the API-provided Git tree hashes, avoiding one API request per file. Metadata requests remain subject to GitHub’s unauthenticated rate limit; a cache or authenticated public-read capacity remains useful at higher volume. Archives containing links, duplicate paths, excessive expansion or missing selected files fail closed.
 
 V2 snapshot identities bind each file’s SHA-256 and byte length, allowing large scientific fixtures without oversized canonical JSON strings. V1 source identities are unchanged.

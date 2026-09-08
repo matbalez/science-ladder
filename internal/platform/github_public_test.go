@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
 	"crypto/sha1"
@@ -11,6 +12,7 @@ import (
 	"github.com/matbalez/science-ladder/pkg/protocol"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 )
@@ -32,6 +34,14 @@ func TestPublicSourceNeedsNoInstallationAndBindsLargeV2File(t *testing.T) {
 		calls++
 		if r.Header.Get("Authorization") != "" {
 			t.Fatal("public source request gained a credential")
+		}
+		if r.URL.Host == "codeload.github.com" {
+			var buffer bytes.Buffer
+			archive := zip.NewWriter(&buffer)
+			entry, _ := archive.Create("source-" + commit + "/solver.py")
+			entry.Write(data)
+			archive.Close()
+			return &http.Response{StatusCode: 200, Body: io.NopCloser(bytes.NewReader(buffer.Bytes())), Header: http.Header{}}, nil
 		}
 		var value any
 		switch r.URL.Path {
@@ -75,5 +85,34 @@ func TestPublicSourceNeedsNoInstallationAndBindsLargeV2File(t *testing.T) {
 		if calls != before+1 {
 			t.Fatal("attempted source fetch after failed permission")
 		}
+	}
+}
+
+func TestPublicArchiveRejectsUnsafeOrAmbiguousMembers(t *testing.T) {
+	commit := strings.Repeat("a", 40)
+	for _, names := range [][]string{{"repo-" + commit + "/../escape"}, {"repo-" + commit + "/solver.py", "repo-" + commit + "/solver.py"}, {"repo-" + commit + "/solver.py", "repo-" + commit + "/SOLVER.py"}, {"wrong-root/solver.py"}} {
+		var buffer bytes.Buffer
+		writer := zip.NewWriter(&buffer)
+		for _, name := range names {
+			w, _ := writer.Create(name)
+			w.Write([]byte("test"))
+		}
+		writer.Close()
+		if _, err := decodePublicGitArchive(buffer.Bytes(), commit); err == nil {
+			t.Fatal("unsafe archive accepted", names)
+		}
+	}
+	var buffer bytes.Buffer
+	writer := zip.NewWriter(&buffer)
+	header := &zip.FileHeader{Name: "repo-" + commit + "/link"}
+	header.SetMode(0777 | os.ModeSymlink)
+	w, _ := writer.CreateHeader(header)
+	w.Write([]byte("/private"))
+	writer.Close()
+	if _, err := decodePublicGitArchive(buffer.Bytes(), commit); err == nil {
+		t.Fatal("symlink accepted")
+	}
+	if matchesGitBlob([]byte("tampered"), strings.Repeat("a", 40)) {
+		t.Fatal("forged tree hash accepted")
 	}
 }

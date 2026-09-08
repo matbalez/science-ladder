@@ -42,6 +42,7 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 		{"candidate-isolation", "probe.c", nativeIsolationC, []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, `[(b"isolation", "valid", b"isolated\n"), (b"memory", "resource_limit", None), (b"timeout", "resource_limit", None), (b"output", "output_limit", None), (b"descendant", "valid", b"done\n")]`},
 		{"cpp-toolchain", "probe.cpp", "#include <iostream>\n#include <Eigen/Dense>\nint main(){Eigen::Matrix2d a; a<<2,1,1,2; std::cout<<a.determinant()<<'\\n';}\n", []string{"/usr/bin/g++", "-O2", "-I/usr/include/eigen3", "probe.cpp", "-o", "/work/probe"}, `[(b"", "valid", b"3\n")]`},
 		{"rust-toolchain", "probe.rs", "fn main(){let h=std::thread::spawn(|| 6*7); println!(\"{}\",h.join().unwrap());}\n", []string{"/usr/bin/rustc", "-O", "probe.rs", "-o", "/work/probe"}, `[(b"", "valid", b"42\n")]`},
+		{"python-numerics", "probe.py", "import numpy as np; from scipy.sparse import csc_matrix; from scipy.sparse.linalg import spsolve; print(round(float(np.sum(spsolve(csc_matrix([[2.,1.],[1.,2.]]),np.array([3.,3.]))))))\n", []string{"/usr/local/bin/python3", "-I", "-c", "import py_compile; py_compile.compile('probe.py', cfile='/work/probe.pyc', doraise=True)"}, `[(b"", "valid", b"2\n")]`},
 		{"paired-timing", "probe.c", nativeTimingCandidate, []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, ""},
 	} {
 		root := filepath.Join(workspace, test.name)
@@ -49,6 +50,10 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 			return protocol.Envelope{}, err
 		}
 		m := nativeProbeManifest(r.Config.RuntimeImageDigest, test.filename, test.build)
+		if test.name == "python-numerics" {
+			m.Evaluation.Program.Run = []string{"/usr/local/bin/python3", "-I", "/work/probe.py"}
+			m.Evaluation.Program.RunBudget.MemoryMB = 512
+		}
 		if test.name == "paired-timing" {
 			m = nativeTimingManifest(m, r.Config.Capabilities.HardwareClass)
 		}
@@ -64,6 +69,9 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 			"suite":      {"canary.txt": []byte("HIDDEN_NATIVE_BOUNDARY_CANARY")},
 			"validator":  {"empty.txt": []byte("No third-party checker dependencies")},
 			"challenge":  {"check.py": []byte(fmt.Sprintf(nativeProbeChecker, test.cases)), "science-ladder.yaml": mBytes, "requirements.lock": []byte("# pinned platform tools only\n")},
+		}
+		if test.name == "python-numerics" {
+			files["challenge"]["check.py"] = append([]byte("import numpy; import scipy.sparse.linalg\n"), files["challenge"]["check.py"]...)
 		}
 		if test.name == "paired-timing" {
 			files["challenge"]["check.py"] = []byte(nativeTimingChecker)
