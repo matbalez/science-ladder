@@ -221,7 +221,7 @@ export default function Page() {
           If you already have a repository, prepare the candidate file using its
           manifest and evidence. Import that file, then enter{" "}
           <code>owner/repository</code> and the full 40-character commit SHA.
-          The GitHub App needs access to that repository.
+          Public repositories can be read directly. Private repositories need access through the Science Ladder GitHub App.
         </p>
         <p>
           The manifest specifies the question and evidence, score and baseline,

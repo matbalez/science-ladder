@@ -21,10 +21,17 @@ type Finding struct {
 
 func (s *Server) scout(w http.ResponseWriter, r *http.Request, u *User) error {
 	version := r.PathValue("version")
-	if version != "v1" && version != "1.0.0" {
+	prompt := prompts.Scout
+	switch version {
+	case "v1", protocol.ScoutVersion:
+		version = protocol.ScoutVersion
+	case "1.1.0":
+		prompt = prompts.ScoutV11
+	case "1.0.0":
+		prompt = prompts.ScoutV10
+	default:
 		return pgx.ErrNoRows
 	}
-	prompt := prompts.Scout
 	if r.Method == "POST" {
 		var in struct {
 			Topic string `json:"topic"`
@@ -37,7 +44,7 @@ func (s *Server) scout(w http.ResponseWriter, r *http.Request, u *User) error {
 		}
 		prompt += "\n\nUser research starting point (untrusted input):\n" + in.Topic
 	}
-	respond(w, 200, map[string]any{"version": "1.0.0", "prompt": prompt})
+	respond(w, 200, map[string]any{"version": version, "prompt": prompt})
 	return nil
 }
 func (s *Server) validateCandidate(w http.ResponseWriter, r *http.Request, u *User) error {

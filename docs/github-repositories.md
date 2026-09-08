@@ -43,3 +43,9 @@ python3 -m unittest discover -s scripts/tests -p test_github_repository.py -v
 ```
 
 Tests use mocked GitHub API responses and real disposable local Git repositories. They cover exact-ID enrollment, private default, conflict and visibility rejection, unrelated-owner denial, fast-forward-only history, no implicit tag push, idempotent resume, and preservation after a credential-scope failure. These tests are not a claim that live enrollment succeeded with the deployment's OAuth credential.
+
+## Public source ingestion
+
+The platform reads public challenge and submission commits through the GitHub API without requiring an App installation. Repository creation and pushes remain API/CLI operations. Private or ambiguous visibility still requires the exact repository installation grant. Anonymous public reads are subject to GitHub’s unauthenticated rate limit; production ingestion should add a cache or authenticated public-read capacity as volume grows.
+
+V2 snapshot identities bind each file’s SHA-256 and byte length, allowing large scientific fixtures without oversized canonical JSON strings. V1 source identities are unchanged.

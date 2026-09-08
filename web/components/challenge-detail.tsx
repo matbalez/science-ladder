@@ -44,10 +44,12 @@ import {
   Status,
 } from "./ui";
 import { SubmissionTable } from "./submission";
+import { LoadPathsExplorer } from "./load-paths";
 import { MeasurementContract } from "./measurement-contract";
 import { Participate } from "./participate";
 import { ResearcherSection } from "./researchers";
 import {
+  hasNativeLoadPathsChecker,
   challengeSetupCommands,
   solverInstructions,
 } from "@/lib/solver-prompt";
@@ -199,6 +201,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         </div>
       </header>
       {showSubmit && <SubmitForm challenge={c} onAccepted={() => refresh()} />}
+      {hasNativeLoadPathsChecker(c) && <LoadPathsExplorer />}
       <div className="detail-stat-row">
         <div>
           <span className="tiny-label">

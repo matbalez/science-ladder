@@ -6,3 +6,9 @@ import _ "embed"
 //
 //go:embed challenge-scout-v1.2.md
 var Scout string
+
+//go:embed challenge-scout-v1.md
+var ScoutV11 string
+
+//go:embed challenge-scout-v1.0.md
+var ScoutV10 string

@@ -13,7 +13,7 @@ export function hasNativeQuietEchoesChecker(
     c.sourceCommit === "f42f527e97563b1c068a1835732c6da44f21223f"
   );
 }
-export const LOAD_PATHS_SOURCE = "67815eb048b381b59a2697552c9d114feff498e0";
+export const LOAD_PATHS_SOURCE = "76b380538806d2bbf9e2d6c4bf475dd3e59c663b";
 export function hasNativeLoadPathsChecker(
   c: Pick<Challenge, "repository" | "sourceCommit">,
 ): boolean {

@@ -93,9 +93,22 @@ func (s *Server) fetchSnapshot(ctx context.Context, repository, commit string, c
 	if !repoRE.MatchString(repository) || !commitRE.MatchString(commit) {
 		return result, fail(400, "invalid_github_ref", "Use owner/repository and the complete 40-character lowercase Git commit SHA")
 	}
-	token, err := s.installationToken(ctx, repository)
-	if err != nil {
-		return result, err
+	// Public source needs no installation grant. Probe visibility without any
+	// credential; private repositories still require their exact App permission.
+	var public struct {
+		ID         int64  `json:"id"`
+		Private    bool   `json:"private"`
+		Visibility string `json:"visibility"`
+		FullName   string `json:"full_name"`
+	}
+	publicErr := s.github(ctx, "GET", "/repos/"+repository, "", nil, &public)
+	token := ""
+	var err error
+	if publicErr != nil || public.ID < 1 || public.Private || public.Visibility != "public" || !strings.EqualFold(public.FullName, repository) {
+		token, err = s.installationToken(ctx, repository)
+		if err != nil {
+			return result, err
+		}
 	}
 	var repo struct {
 		Owner struct {
@@ -197,7 +210,23 @@ func (s *Server) fetchSnapshot(ctx context.Context, repository, commit string, c
 	for p, b := range files {
 		encoded[p] = base64.StdEncoding.EncodeToString(b)
 	}
-	digest, err := protocol.Digest(map[string]any{"kind": "GitSourceSnapshot", "repositoryId": repo.ID, "commit": commit, "files": encoded})
+	var identity any = map[string]any{"kind": "GitSourceSnapshot", "repositoryId": repo.ID, "commit": commit, "files": encoded}
+	native := contract != nil && contract.Format == "source-v2"
+	if contract == nil {
+		if m, e := protocol.ParseManifest(files["science-ladder.yaml"]); e == nil {
+			native = m.APIVersion == protocol.ManifestV2
+		}
+	}
+	if native {
+		// Commit to bounded per-file hashes rather than embedding large base64
+		// strings in a protocol document. Existing v1 source identities stay exact.
+		entries := map[string]any{}
+		for name, data := range files {
+			entries[name] = map[string]any{"digest": protocol.DigestBytes(data), "size": len(data)}
+		}
+		identity = map[string]any{"kind": "GitSourceSnapshotV2", "repositoryId": repo.ID, "commit": commit, "files": entries}
+	}
+	digest, err := protocol.Digest(identity)
 	if err != nil {
 		return result, err
 	}
