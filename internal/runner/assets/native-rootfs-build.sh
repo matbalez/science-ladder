@@ -26,4 +26,4 @@ truncate -s 4G /output/rootfs.ext4
 mke2fs -q -F -t ext4 -b 4096 -U 17d26c2c-fd47-4e0a-9987-d757ca687ee5 \
   -O '^has_journal' -E lazy_itable_init=0,lazy_journal_init=0,hash_seed=5d3e6088-904c-4b6e-bd06-e594e8175202 \
   -d /work/root /output/rootfs.ext4
-chmod 0400 /output/rootfs.ext4
+chmod 0444 /output/rootfs.ext4

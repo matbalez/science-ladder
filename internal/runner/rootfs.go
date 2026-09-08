@@ -94,7 +94,7 @@ for x in ('lib','lib64','bin','sbin'):
 os.environ['LD_LIBRARY_PATH']=r+'/usr/lib/x86_64-linux-gnu'
 os.environ['PATH']=r+'/usr/bin:/usr/bin:/bin'
 os.execv(r+'/usr/bin/gcc',['gcc','--sysroot='+r,'-O2','-static','/input/candidate-sandbox.c','-o','/input/sl-candidate-sandbox'])`
-		if err := run("run", "--rm", "--network=none", "--cap-drop=ALL", "--security-opt=no-new-privileges", "--pids-limit=128", "--memory=2g", "--cpus=2", "--platform=linux/amd64", "--mount", "type=bind,src="+work+",dst=/input", "--entrypoint", "/usr/local/bin/python3", pythonImage, "-c", compile); err != nil {
+		if err := run("run", "--rm", "--network=none", "--cap-drop=ALL", "--cap-add=DAC_OVERRIDE", "--security-opt=no-new-privileges", "--pids-limit=128", "--memory=2g", "--cpus=2", "--platform=linux/amd64", "--mount", "type=bind,src="+work+",dst=/input", "--entrypoint", "/usr/local/bin/python3", pythonImage, "-c", compile); err != nil {
 			return fmt.Errorf("compile pinned candidate launcher: %w: %s", err, logs.b.String())
 		}
 	}
@@ -116,6 +116,9 @@ os.execv(r+'/usr/bin/gcc',['gcc','--sysroot='+r,'-O2','-static','/input/candidat
 	}
 	args := []string{"run", "--rm", "--network=none", "--read-only", "--cap-drop=ALL", "--security-opt=no-new-privileges", "--pids-limit=128", "--memory=3g", "--cpus=2", "--platform=linux/amd64", "--tmpfs", "/work:rw,nosuid,nodev,size=2g", "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m", "--mount", "type=bind,src=" + work + ",dst=/input,readonly", "--mount", "type=bind,src=" + output + ",dst=/output", "--entrypoint", "/bin/sh", toolsImage, "/input/build.sh"}
 	if profile == "native-evaluator-v2" {
+		// Root must read caller-owned private build inputs on Linux. These
+		// mounts contain only public first-party/platform bytes, never candidates.
+		args = append(args[:1], append([]string{"--cap-add=DAC_OVERRIDE"}, args[1:]...)...)
 		// This step handles only platform-owned image bytes. Use a disposable
 		// Linux volume: macOS shared-directory inode behavior breaks GNU tar's
 		// directory integrity checks, and a full native tree need not live in RAM.

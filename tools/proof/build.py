@@ -34,6 +34,7 @@ def main():
   target=work/name;run(['git','init',str(target)]);run(['git','-C',str(target),'fetch','--depth=1','https://github.com/'+repo,commit]);run(['git','-C',str(target),'checkout','--detach','FETCH_HEAD'])
  shutil.copy2(HERE/'lean/SLCheck.lean',work/'comparator/SLCheck.lean')
  (work/'comparator/lakefile.toml').write_text('name = "Comparator"\nversion = "0.1.0"\n[[lean_lib]]\nname = "Comparator"\n[[require]]\nname = "lean4export"\npath = "../lean4export"\n[[lean_exe]]\nname = "sl-lean-check"\nroot = "SLCheck"\n')
+ (work/'comparator/lake-manifest.json').unlink(missing_ok=True)
  lean=f'/workspace/lean-{LEAN}-linux/bin'
  docker(NATIVE,lean+'/lake',['build','sl-lean-check'],env=(f'PATH={lean}:/usr/bin:/bin',),cwd='/workspace/comparator')
  docker(NATIVE,lean+'/lake',['build','lean4export'],env=(f'PATH={lean}:/usr/bin:/bin',),cwd='/workspace/lean4export')
