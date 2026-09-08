@@ -43,6 +43,10 @@ type Builder struct {
 }
 
 func ReadSourceSnapshot(data []byte) (SourceSnapshot, error) {
+	return readSourceSnapshotForProfile(data, "artifact-checker-v1")
+}
+
+func readSourceSnapshotForProfile(data []byte, profile string) (SourceSnapshot, error) {
 	var snapshot SourceSnapshot
 	if err := protocol.DecodeStrictBounded(data, &snapshot, 96<<20); err != nil {
 		return snapshot, err
@@ -50,13 +54,20 @@ func ReadSourceSnapshot(data []byte) (SourceSnapshot, error) {
 	if snapshot.RepositoryID < 1 || !regexp.MustCompile(`^[0-9a-f]{40}$`).MatchString(snapshot.SourceCommit) {
 		return snapshot, errors.New("exact independently fetched GitHub source identity required")
 	}
-	if err := validateSourceFiles(snapshot.Files); err != nil {
+	if err := validateSourceFilesForProfile(snapshot.Files, profile); err != nil {
 		return snapshot, err
 	}
 	return snapshot, nil
 }
 
 func validateSourceFiles(files map[string][]byte) error {
+	return validateSourceFilesForProfile(files, "artifact-checker-v1")
+}
+
+func validateSourceFilesForProfile(files map[string][]byte, profile string) error {
+	if profile != "artifact-checker-v1" && profile != "native-evaluator-v2" {
+		return errors.New("unreviewed source preparation profile")
+	}
 	if len(files) == 0 || len(files) > 4096 {
 		return errors.New("source file count exceeds bounds")
 	}
@@ -80,10 +91,10 @@ func validateSourceFiles(files map[string][]byte) error {
 		if strings.HasPrefix(base, ".env") && base != ".env.example" {
 			return errors.New("private environment files forbidden")
 		}
-		if base == "dockerfile" || strings.HasSuffix(base, ".sh") {
+		if profile == "artifact-checker-v1" && (base == "dockerfile" || strings.HasSuffix(base, ".sh")) {
 			return errors.New("creator Dockerfiles and shell build scripts are outside this profile")
 		}
-		if nativeSourcePayload(name, data) {
+		if profile == "artifact-checker-v1" && nativeSourcePayload(name, data) {
 			return errors.New("native binaries require a separately reviewed execution profile")
 		}
 		if secretPattern.Match(data) {
@@ -308,7 +319,7 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 	if err := protocol.ValidateManifest(m); err != nil {
 		return report, err
 	}
-	if err := validateSourceFiles(snapshot.Files); err != nil {
+	if err := validateSourceFilesForProfile(snapshot.Files, m.Validator.Profile); err != nil {
 		return report, err
 	}
 	sourceManifest, err := protocol.ParseManifest(snapshot.Files["science-ladder.yaml"])

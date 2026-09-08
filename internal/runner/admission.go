@@ -42,6 +42,9 @@ func LoadAdmissionWindow(config Config, keys map[string]crypto.PublicKey) (Admis
 	if err != nil || binding != host.ConfigDigest || host.HostID != config.HostID || host.HostGroup != config.HostGroup || host.PhysicalHostID == "" || !host.ExclusivePhysicalHost || !host.EgressPolicyVerified || host.ExecutionProfileDigest != config.ExecutionProfileDigest || host.RunnerEpoch != config.RunnerEpoch {
 		return window, errors.New("admission trust does not bind the configured host")
 	}
+	if err := validateCapabilitiesBinding(config, host); err != nil {
+		return window, err
+	}
 	for _, file := range []PinnedFile{config.AdvisoryKeys, config.AdvisorySnapshot} {
 		if err := verifyPinned(file); err != nil {
 			return window, err
@@ -140,7 +143,9 @@ func RenewAuthorization(config Config, keys map[string]crypto.PublicKey, envelop
 		return config, AdmissionWindow{}, errors.New("renewed host authorization has an invalid lease duration")
 	}
 	old.ExpiresAt = fresh.ExpiresAt
-	if old != fresh {
+	oldDigest, oldErr := protocol.Digest(old)
+	freshDigest, freshErr := protocol.Digest(fresh)
+	if oldErr != nil || freshErr != nil || oldDigest != freshDigest {
 		return config, AdmissionWindow{}, errors.New("renewal changes the approved host enrollment")
 	}
 	proposed := config

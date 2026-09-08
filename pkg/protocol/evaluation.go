@@ -97,6 +97,7 @@ type CandidateProgram struct {
 	BuildBudget StageBudget `json:"buildBudget"`
 	RunBudget   StageBudget `json:"runBudget"`
 	MaxRuns     int         `json:"maxRuns"`
+	MinRuns     int         `json:"minRuns"`
 	ScratchMB   int         `json:"scratchMb"`
 }
 
@@ -294,11 +295,11 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 		if err := validateStageArgv(p.Run); err != nil {
 			return err
 		}
-		if p.MaxRuns < 1 || p.MaxRuns > 10000 || p.ScratchMB < 16 || p.ScratchMB > resources.MemoryMB {
+		if p.MaxRuns < 1 || p.MaxRuns > 10000 || p.MinRuns < 1 || p.MinRuns > p.MaxRuns || p.ScratchMB < 16 || p.ScratchMB > resources.MemoryMB {
 			return errors.New("invalid candidate run count or scratch budget")
 		}
 		for _, b := range []StageBudget{p.BuildBudget, p.RunBudget} {
-			if b.TimeoutSeconds < 1 || b.TimeoutSeconds > resources.TimeoutSeconds || b.MemoryMB < 32 || b.MemoryMB > resources.MemoryMB-128 || b.MaxOutputBytes < 1 || b.MaxOutputBytes > 1<<30 || b.MaxProcesses < 1 || b.MaxProcesses > 256 {
+			if b.TimeoutSeconds < 1 || b.TimeoutSeconds > resources.TimeoutSeconds || b.MemoryMB < 32 || b.MemoryMB > resources.MemoryMB-256 || b.MaxOutputBytes < 1 || b.MaxOutputBytes > 1<<30 || b.MaxProcesses < 1 || b.MaxProcesses > 256 {
 				return errors.New("stage budget exceeds session envelope")
 			}
 		}

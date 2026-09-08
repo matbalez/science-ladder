@@ -93,8 +93,9 @@ func (s *Server) renewRunnerAuthorization(w http.ResponseWriter, r *http.Request
 	// Lock enrollment through signing/commit so a concurrent revocation cannot
 	// interleave with issuance. Existing issued leases do not override host revocation
 	// at the authenticated claim endpoint.
-	err = tx.QueryRow(ctx, `SELECT e.template,h.host_group,h.execution_profile_digest
+	err = tx.QueryRow(ctx, `SELECT e.template,h.host_group,CASE WHEN p.enabled THEN p.execution_profile_digest ELSE h.execution_profile_digest END
 		FROM runner_authorization_enrollments e JOIN runner_hosts h ON h.id=e.host_id
+ LEFT JOIN runner_profiles p ON p.host_id=e.host_id AND p.config_digest=e.config_digest
 		WHERE e.host_id=$1 AND e.config_digest=$2 AND e.enabled AND h.enabled
 		FOR SHARE OF e,h`, identity.ID, in.ConfigDigest).Scan(&templateJSON, &group, &profile)
 	if errors.Is(err, pgx.ErrNoRows) {

@@ -82,6 +82,7 @@ func (s *Server) recoverRunnerLeases(ctx context.Context) error {
 type runnerIdentity struct {
 	ID, Group, PublicKey, ExecutionProfile, EncryptionKey, AdvisorySnapshotDigest, RuntimeInventoryDigest string
 	Purposes                                                                                              []string
+	Capabilities                                                                                          *protocol.ExecutorCapabilities
 }
 
 func (s *Server) runnerIdentity(r *http.Request) (runnerIdentity, error) {
@@ -110,7 +111,10 @@ func (s *Server) RunnerHandler() http.Handler {
 	m.HandleFunc("POST /internal/v1/runner/jobs/claim", func(w http.ResponseWriter, r *http.Request) {
 		host, err := s.runnerIdentity(r)
 		if err == nil {
-			err = s.claimRunnerJob(w, r, host)
+			host, err = s.selectRunnerProfile(r.Context(), host, r.URL.Query().Get("profile"))
+			if err == nil {
+				err = s.claimRunnerJob(w, r, host)
+			}
 		}
 		if err != nil {
 			writeError(w, err)
@@ -181,7 +185,7 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 	var id string
 	var payload []byte
 	var fence int64
-	err = tx.QueryRow(ctx, `SELECT id,payload,fence FROM runner_jobs WHERE status='queued' AND purpose=ANY($2) AND (purpose IN ('preflight','artifact_prepare') OR payload->>'executionProfileDigest'=$4) AND NOT COALESCE(payload->'excludedHostIds','[]'::jsonb) ? $3 AND (excluded_group IS NULL OR excluded_group<>$1) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, host.Group, purposes, host.ID, host.ExecutionProfile).Scan(&id, &payload, &fence)
+	err = tx.QueryRow(ctx, `SELECT id,payload,fence FROM runner_jobs WHERE status='queued' AND purpose=ANY($2) AND (purpose IN ('preflight','artifact_prepare') OR payload->>'executionProfileDigest'=$4) AND (($5::jsonb IS NULL AND NOT (payload->'manifest' ? 'evaluation')) OR ($5::jsonb IS NOT NULL AND payload->'manifest'->'validator'->>'runtimeImageDigest'=$5::jsonb->>'runtimeImageDigest')) AND NOT COALESCE(payload->'excludedHostIds','[]'::jsonb) ? $3 AND (excluded_group IS NULL OR excluded_group<>$1) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, host.Group, purposes, host.ID, host.ExecutionProfile, nullableCapabilities(host.Capabilities)).Scan(&id, &payload, &fence)
 	if errors.Is(err, pgx.ErrNoRows) {
 		respond(w, 200, map[string]any{"job": nil})
 		return nil
@@ -192,6 +196,11 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 	var job protocol.RunnerJob
 	if err = json.Unmarshal(payload, &job); err != nil {
 		return err
+	}
+	if job.Manifest.Evaluation != nil {
+		if host.Capabilities == nil || protocol.MatchExecutor(*job.Manifest.Evaluation, job.Manifest.Resources, job.Manifest.Validator.RuntimeImageDigest, *host.Capabilities) != nil {
+			return fail(503, "executor_mismatch", "The enrolled executor cannot run this evaluation")
+		}
 	}
 	if job.Purpose == "preflight" {
 		if !protocol.ValidDigest(host.AdvisorySnapshotDigest) || !protocol.ValidDigest(host.RuntimeInventoryDigest) {

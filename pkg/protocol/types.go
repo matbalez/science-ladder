@@ -55,6 +55,7 @@ type Milestone struct {
 }
 
 type SubmissionContract struct {
+	Format            string   `json:"format,omitempty"`
 	AllowedPaths      []string `json:"allowedPaths"`
 	AllowedExtensions []string `json:"allowedExtensions"`
 	MaxBytes          int64    `json:"maxBytes"`

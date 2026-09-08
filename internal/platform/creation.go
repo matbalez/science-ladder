@@ -202,8 +202,11 @@ func (s *Server) startPreflight(w http.ResponseWriter, r *http.Request, u *User)
 		if err := s.reservePreparation(r.Context(), tx, u); err != nil {
 			return 0, nil, err
 		}
-		_, status, err := ownedVersion(r, tx, u, version)
+		m, status, err := ownedVersion(r, tx, u, version)
 		if err != nil {
+			return 0, nil, err
+		}
+		if err := s.requireExecutor(r.Context(), tx, m, ""); err != nil {
 			return 0, nil, err
 		}
 		if status != "draft" && status != "changes_required" {

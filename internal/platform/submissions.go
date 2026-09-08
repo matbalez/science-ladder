@@ -40,6 +40,9 @@ func (s *Server) createIntent(w http.ResponseWriter, r *http.Request, u *User) e
 		if err := json.Unmarshal(manifest, &m); err != nil {
 			return 0, nil, err
 		}
+		if err := s.requireExecutor(r.Context(), tx, m, ""); err != nil {
+			return 0, nil, err
+		}
 		if in.License != m.Submission.License {
 			return 0, nil, fail(422, "license_mismatch", "Submission must use the locked challenge artifact license")
 		}
@@ -140,7 +143,10 @@ func (s *Server) acceptIntent(w http.ResponseWriter, r *http.Request, u *User) e
 		if err = tx.QueryRow(ctx, `SELECT document->>'executionProfileDigest',COALESCE(NULLIF(document->>'verificationPolicy',''),'independent') FROM locks WHERE digest=$1`, lockDigest).Scan(&executionProfile, &policy); err != nil {
 			return 0, nil, fail(503, "execution_profile_unavailable", "The immutable execution profile is unavailable")
 		}
-		rows, err := tx.Query(ctx, `SELECT id,host_group,public_key FROM runner_hosts WHERE enabled AND execution_profile_digest=$1 AND 'submission'=ANY(purposes) AND 'confirmation'=ANY(purposes) AND ($2 OR encryption_public_key<>'')`, executionProfile, m.Suite.Visibility != "hidden")
+		if err := s.requireExecutor(ctx, tx, m, executionProfile); err != nil {
+			return 0, nil, err
+		}
+		rows, err := tx.Query(ctx, `SELECT id,host_group,public_key FROM runner_hosts h WHERE enabled AND (execution_profile_digest=$1 OR EXISTS(SELECT 1 FROM runner_profiles p JOIN runner_authorization_enrollments e ON e.host_id=p.host_id AND e.config_digest=p.config_digest WHERE p.host_id=h.id AND p.execution_profile_digest=$1 AND p.enabled AND e.enabled)) AND 'submission'=ANY(purposes) AND 'confirmation'=ANY(purposes) AND ($2 OR encryption_public_key<>'')`, executionProfile, m.Suite.Visibility != "hidden")
 		if err != nil {
 			return 0, nil, err
 		}

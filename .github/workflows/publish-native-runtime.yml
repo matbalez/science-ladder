@@ -1,0 +1,32 @@
+name: Publish native evaluator runtime
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: publish-native-evaluator-runtime
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Authenticate container registry
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Build the pinned native runtime
+        run: >-
+          docker build --platform linux/amd64
+          --build-arg BASE_IMAGE=debian@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+          --label org.opencontainers.image.revision="$GITHUB_SHA"
+          -f internal/runner/assets/native-runtime.Dockerfile
+          -t ghcr.io/matbalez/science-ladder-native:2026-09-08 internal/runner/assets
+      - name: Publish immutable image digest
+        run: docker push ghcr.io/matbalez/science-ladder-native:2026-09-08
+      - name: Remove temporary registry credential
+        if: always()
+        run: docker logout ghcr.io

@@ -66,7 +66,7 @@ func schemaVersion(name string, v2 bool) (map[string]any, error) {
 						continue
 					}
 					key := parts[0]
-					if !v2 && (t.Name() == "Manifest" && key == "evaluation" || t.Name() == "Milestone" && key == "requires" || t.Name() == "RunReceipt" && key == "validatorResult" || t.Name() == "ValidatorResult" && (key == "comparisonId" || key == "measurements")) {
+					if !v2 && (t.Name() == "SubmissionContract" && key == "format" || t.Name() == "Manifest" && key == "evaluation" || t.Name() == "Milestone" && key == "requires" || t.Name() == "RunReceipt" && key == "validatorResult" || t.Name() == "ValidatorResult" && (key == "comparisonId" || key == "measurements")) {
 						continue
 					}
 					property := describe(field.Type)
@@ -133,6 +133,10 @@ func schemaVersion(name string, v2 bool) (map[string]any, error) {
 	set("Metric", "direction", map[string]any{"enum": []string{"maximize", "minimize"}})
 	set("Metric", "quantum", map[string]any{"type": "string", "pattern": `^[+]?(0|[1-9][0-9]*)(\.[0-9]+)?$`, "maxLength": 152})
 	set("Validator", "profile", map[string]any{"const": "artifact-checker-v1"})
+	if v2 {
+		set("Validator", "profile", map[string]any{"enum": []string{"artifact-checker-v1", "native-evaluator-v2"}})
+		set("SubmissionContract", "format", map[string]any{"const": "source-v2"})
+	}
 	set("Suite", "visibility", map[string]any{"enum": []string{"public", "hidden"}})
 	set("Source", "url", map[string]any{"type": "string", "format": "uri", "pattern": "^https://"})
 	set("Manifest", "slug", map[string]any{"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "maxLength": 100})

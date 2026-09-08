@@ -2,7 +2,7 @@
 
 7 September 2026. Companion to the [Yukon compatibility audit](../research/yukon-validation-audit-2026-09-07.md) and [scientific metric policy](../scientific-metric-policy.md).
 
-**Status:** implementation in progress. The source now includes explicitly versioned v2 measurement contracts, exact achievement predicates, scientific-metric review gates and paired-timing arithmetic, with regression tests. Native execution and trusted-timing integration are still being built; the deployed API remains unchanged, with `artifact-checker-v1` as its only execution profile. The profile families below remain acceptance targets until their hosted conformance tests pass. Do not weaken the existing profile or change published locks to simulate broader support.
+**Status:** implementation in progress. The source now includes explicitly versioned v2 measurement contracts, exact achievement predicates, scientific-metric review gates and paired-timing arithmetic, with regression tests. The native candidate broker has passed fixed hostile C and C++/Rust toolchain probes on Scaleway; capability enrollment/routing and streamed input verification have regression tests. Trusted-timing integration, proof adapters and release commissioning are still being built; the deployed API remains unchanged, with `artifact-checker-v1` as its only execution profile. The profile families below remain acceptance targets until their hosted conformance tests pass. Do not weaken the existing profile or change published locks to simulate broader support.
 
 ## Objective
 

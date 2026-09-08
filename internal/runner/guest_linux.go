@@ -60,7 +60,11 @@ func GuestInit() error {
 	if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &syscall.Rlimit{Cur: 128, Max: 128}); err != nil {
 		return fmt.Errorf("set descriptor limit: %w", err)
 	}
-	if err := syscall.Setrlimit(syscall.RLIMIT_FSIZE, &syscall.Rlimit{Cur: 65536, Max: 65536}); err != nil {
+	fileLimit := uint64(65536)
+	if manifest.APIVersion == protocol.ManifestV2 {
+		fileLimit = 1 << 30
+	}
+	if err := syscall.Setrlimit(syscall.RLIMIT_FSIZE, &syscall.Rlimit{Cur: fileLimit, Max: fileLimit}); err != nil {
 		return fmt.Errorf("set output file size limit: %w", err)
 	}
 	if _, _, errno := syscall.Syscall6(syscall.SYS_PRCTL, 38, 1, 0, 0, 0, 0); errno != 0 {
@@ -81,7 +85,15 @@ func GuestInit() error {
 	if err := os.WriteFile("/sys/fs/cgroup/validator/pids.max", []byte("64"), 0600); err != nil {
 		return fmt.Errorf("set validator process limit: %w", err)
 	}
-	if err := os.WriteFile("/sys/fs/cgroup/validator/memory.max", []byte(fmt.Sprint(int64(manifest.Resources.MemoryMB-64)*1024*1024)), 0600); err != nil {
+	checkerMemory := manifest.Resources.MemoryMB - 64
+	if manifest.Evaluation != nil && manifest.Evaluation.Program != nil {
+		p := manifest.Evaluation.Program
+		checkerMemory = manifest.Resources.MemoryMB - max(p.BuildBudget.MemoryMB, p.RunBudget.MemoryMB) - 128
+		if checkerMemory < 128 {
+			return errors.New("program and checker memory budgets do not fit the guest")
+		}
+	}
+	if err := os.WriteFile("/sys/fs/cgroup/validator/memory.max", []byte(fmt.Sprint(int64(checkerMemory)*1024*1024)), 0600); err != nil {
 		return fmt.Errorf("set validator memory limit: %w", err)
 	}
 	cgroup, err := os.Open("/sys/fs/cgroup/validator")
@@ -91,6 +103,13 @@ func GuestInit() error {
 	defer cgroup.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(manifest.Resources.TimeoutSeconds)*time.Second)
 	defer cancel()
+	var broker *candidateBroker
+	if manifest.Evaluation != nil && manifest.Evaluation.Program != nil {
+		broker, err = startCandidateBroker(ctx, manifest)
+		if err != nil {
+			return fmt.Errorf("start candidate boundary: %w", err)
+		}
+	}
 	command := exec.CommandContext(ctx, manifest.Validator.Entrypoint[0], manifest.Validator.Entrypoint[1:]...)
 	command.Dir = "/sl/challenge"
 	command.Env = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/sl/work", "PYTHONPATH=/sl/validator/site-packages", "PYTHONHASHSEED=0", "PYTHONDONTWRITEBYTECODE=1", "TZ=UTC", "LC_ALL=C.UTF-8", "OPENBLAS_NUM_THREADS=1", "OMP_NUM_THREADS=1", "SOURCE_DATE_EPOCH=0"}
@@ -104,8 +123,19 @@ func GuestInit() error {
 	command.Stdout = log
 	command.Stderr = log
 	err = command.Run()
+	// Encoded diagnostics cannot inject a score frame. Only the fixed first-party
+	// hardware probe enables host-side display; ordinary runs never publish logs.
+	if manifest.Evaluation != nil && manifest.Evaluation.ComparisonID == "internal-native-conformance-v1" {
+		fmt.Println("SL_PROBE_LOG " + base64.StdEncoding.EncodeToString(log.b.Bytes()))
+	}
 	timedOut := ctx.Err() != nil
 	cancel()
+	if broker != nil {
+		<-broker.done
+		if broker.fault != nil {
+			return fmt.Errorf("candidate boundary failed: %w", broker.fault)
+		}
+	}
 	if cleanupErr := killGuestValidatorCgroup("/sys/fs/cgroup/validator"); cleanupErr != nil {
 		return fmt.Errorf("stop all validator descendants: %w", cleanupErr)
 	}
@@ -121,6 +151,9 @@ func GuestInit() error {
 			return guestFailure("resource_limit")
 		}
 		return guestFailure("challenge_fault")
+	}
+	if broker != nil && (!broker.ready || broker.runs < broker.program.MinRuns) {
+		return guestFailure("invalid_output")
 	}
 	entries, err := os.ReadDir("/sl/output")
 	if err != nil || len(entries) != 1 || entries[0].Name() != "result.json" {

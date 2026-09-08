@@ -40,6 +40,9 @@ func (r *Runtime) Prepare(ctx context.Context, envelope protocol.Envelope, uploa
 	if job.Manifest.Validator.RuntimeImageDigest != r.Config.RuntimeImageDigest {
 		return protocol.Envelope{}, errors.New("quarantine runtime image differs from job")
 	}
+	if err := matchConfiguredEvaluation(job.Manifest, r.Config); err != nil {
+		return protocol.Envelope{}, err
+	}
 	if job.Purpose == "preflight" && (job.AdvisorySnapshotDigest != r.Config.AdvisorySnapshot.Digest || job.RuntimeInventoryDigest != r.Config.RuntimeInventory.Digest || !protocol.ValidDigest(job.AdvisorySnapshotDigest) || !protocol.ValidDigest(job.RuntimeInventoryDigest)) {
 		return protocol.Envelope{}, errors.New("quarantine advisory policy differs from signed job")
 	}
@@ -65,7 +68,7 @@ func (r *Runtime) Prepare(ctx context.Context, envelope protocol.Envelope, uploa
 	start := time.Now()
 	var report protocol.BuildReport
 	if job.Purpose == "preflight" {
-		snapshot, parseErr := ReadSourceSnapshot(sourceData)
+		snapshot, parseErr := readSourceSnapshotForProfile(sourceData, job.Manifest.Validator.Profile)
 		if parseErr != nil {
 			return protocol.Envelope{}, parseErr
 		}

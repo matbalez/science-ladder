@@ -61,6 +61,9 @@ func ValidateManifest(m Manifest) error {
 		return errors.New("invalid manifest identity/version")
 	}
 	if m.APIVersion == APIVersion {
+		if m.Submission.Format != "" {
+			return errors.New("versioned source submissions require a v2 manifest")
+		}
 		if m.Evaluation != nil {
 			return errors.New("evaluation extensions require an explicit v2 manifest")
 		}
@@ -178,8 +181,18 @@ func ValidateManifest(m Manifest) error {
 	if err := ValidateSubmissionContract(m.Submission); err != nil {
 		return err
 	}
-	if m.Validator.Profile != "artifact-checker-v1" || m.Validator.DependencyLock == "" || !ValidDigest(m.Validator.RuntimeImageDigest) {
-		return errors.New("locked artifact-checker-v1 runtime and dependency lock required")
+	native := m.APIVersion == ManifestV2 && m.Validator.Profile == "native-evaluator-v2"
+	if (!native && m.Validator.Profile != "artifact-checker-v1") || m.Validator.DependencyLock == "" || !ValidDigest(m.Validator.RuntimeImageDigest) {
+		return errors.New("locked, supported runtime profile and dependency lock required")
+	}
+	if m.Submission.Format == "source-v2" && !native {
+		return errors.New("executable source requires the native evaluation profile")
+	}
+	if native && m.Evaluation.Executor.OS != "linux" {
+		return errors.New("native-evaluator-v2 currently requires Linux; Apple execution is deferred")
+	}
+	if native && (m.Evaluation.Mode == "program" || m.Evaluation.Mode == "performance") && m.Submission.Format != "source-v2" {
+		return errors.New("submitted programs require source-v2 artifact semantics")
 	}
 	if m.Evaluation != nil && m.Evaluation.Mode != "artifact" && m.Validator.Profile == "artifact-checker-v1" {
 		return errors.New("proof, program and performance evaluation require a separately enrolled native execution profile")
@@ -264,6 +277,9 @@ func ValidateManifest(m Manifest) error {
 }
 
 func ValidateSubmissionContract(c SubmissionContract) error {
+	if c.Format != "" && c.Format != "source-v2" {
+		return errors.New("unknown artifact content format")
+	}
 	if c.MaxBytes < 1 || c.MaxBytes > 64<<20 || c.MaxFiles < 1 || c.MaxFiles > 4096 || c.License == "" || len(c.AllowedPaths) == 0 || len(c.AllowedPaths) > 32 || len(c.AllowedExtensions) == 0 {
 		return errors.New("invalid submission limits/license/paths")
 	}
@@ -273,6 +289,12 @@ func ValidateSubmissionContract(c SubmissionContract) error {
 		}
 	}
 	for _, extension := range c.AllowedExtensions {
+		if c.Format == "source-v2" {
+			if len(extension) > 17 || extension != "" && !regexp.MustCompile(`^\.[a-z0-9]{1,16}$`).MatchString(extension) {
+				return errors.New("invalid source extension")
+			}
+			continue
+		}
 		switch extension {
 		case ".json", ".csv", ".tsv", ".txt", ".dat", ".npy", ".bin":
 		default:

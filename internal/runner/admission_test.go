@@ -168,3 +168,29 @@ func TestAdmissionRejectsTamperedTrust(t *testing.T) {
 		t.Fatal("mutated signed policy was admitted")
 	}
 }
+
+func TestRenewalComparesCapabilityValuesNotPointerAddresses(t *testing.T) {
+	now := time.Now().UTC()
+	c, keys := admissionFixture(t, now, time.Hour, time.Hour)
+	k, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	keys["v2"] = &k.PublicKey
+	payload, _ := protocol.Verify(c.Attestation, keys)
+	var a HostAttestation
+	if err := protocol.DecodeStrict(payload, &a); err != nil {
+		t.Fatal(err)
+	}
+	c.Capabilities = &protocol.ExecutorCapabilities{OS: "linux", Architecture: "amd64", Accelerator: "none", RuntimeImageDigest: c.RuntimeImageDigest}
+	a.Capabilities = c.Capabilities
+	a.ConfigDigest, _ = ConfigBindingDigest(c)
+	c.Attestation, _ = protocol.Sign("v2", k, a)
+	a.ExpiresAt = now.Add(24 * time.Hour)
+	fresh, _ := protocol.Sign("v2", k, a)
+	if _, _, err := RenewAuthorization(c, keys, fresh, now); err != nil {
+		t.Fatal(err)
+	}
+	a.Capabilities = &protocol.ExecutorCapabilities{OS: "linux", Architecture: "amd64", Accelerator: "none", RuntimeImageDigest: c.RuntimeImageDigest, Features: []string{"injected"}}
+	forged, _ := protocol.Sign("v2", k, a)
+	if _, _, err := RenewAuthorization(c, keys, forged, now); err == nil {
+		t.Fatal("renewal upgraded capabilities")
+	}
+}

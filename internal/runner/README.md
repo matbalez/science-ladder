@@ -98,3 +98,29 @@ one enrolled host establish `platform_verified`. Explicit `independent` policies
 add physical-host anti-affinity and cross-host determinism before establishing
 `independently_replicated`. Locks predating this field retain independent-policy
 semantics. Same-host repetitions never establish independent replication.
+
+## Native profile development
+
+`native-evaluator-v2` is an explicit v2 boundary. Its immutable runtime includes
+C/C++, Rust and numerical Python tools. The root guest broker compiles and runs
+submitted source as UID 65533 in a separate chroot, PID/network/mount/IPC/UTS
+namespaces, seccomp filter and per-stage cgroups. The reviewed checker uses UID
+65534 and a bounded authenticated Unix socket. Candidate source, compiler hooks
+and executables never run on the physical host or inside the checker process.
+
+One daemon can serve multiple commissioned profiles using `--additional-configs`.
+They share the same host identity, private work root and result spool and are
+polled sequentially. Enrollment binds capabilities to the exact signed config;
+requesting a different profile cannot expand the host's authority. This is still
+one physical verifier. Frozen legacy profile digests remain unchanged.
+
+`runnerd native-hardware-probe` accepts only a fixed first-party corpus. It tests
+C/C++/Rust compilation, access to checker and suite files, restricted system
+calls, resource limits, output limits and descendant cleanup in real Firecracker
+guests. Its signed receipt is a development conformance result, not vulnerability
+clearance, independent replication, external review or a competitive score.
+
+The native profile is not yet deployed for public submissions. Trusted paired
+performance measurement, proof adapters, extended resource/asset handling and
+final release commissioning are still under development. Publishing the runtime
+image alone does not commission it.

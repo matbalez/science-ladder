@@ -114,7 +114,11 @@ func treeFor(files map[string][]byte, c SubmissionContract) (ArtifactTree, strin
 		if total > c.MaxBytes {
 			return tree, "", errors.New("artifact exceeds expanded limit")
 		}
-		if err := rejectActive(data); err != nil {
+		if c.Format == "source-v2" {
+			if bytes.HasPrefix(data, []byte("version https://git-lfs.github.com/spec/v1")) {
+				return tree, "", errors.New("unresolved Git LFS pointer")
+			}
+		} else if err := rejectActive(data); err != nil {
 			return tree, "", err
 		}
 		names = append(names, name)

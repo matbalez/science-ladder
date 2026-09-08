@@ -1,0 +1,186 @@
+package runner
+
+import (
+	"context"
+	"crypto"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/matbalez/science-ladder/pkg/protocol"
+)
+
+// NativeHardwareProbe accepts no user-supplied source. It exercises fixed hostile
+// candidate programs inside the new boundary without claiming advisory approval,
+// external security review, scientific progress or competitive acceptance.
+func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer) (protocol.Envelope, error) {
+	if err := r.Config.CheckHost(r.Keys); err != nil {
+		return protocol.Envelope{}, err
+	}
+	if r.Signer == nil || r.Config.Capabilities == nil {
+		return protocol.Envelope{}, errors.New("native probe requires enrolled capabilities and host signer")
+	}
+	workspace, err := os.MkdirTemp(r.Config.WorkRoot, "native-hardware-probe-")
+	if err != nil {
+		return protocol.Envelope{}, err
+	}
+	defer os.RemoveAll(workspace)
+	start := time.Now().UTC()
+	runtime := *r
+	runtime.probeDiagnostics = diagnostics
+	checks := []map[string]any{}
+	var probeErr error
+	for _, test := range []struct {
+		name, filename, source string
+		build                  []string
+		cases                  string
+	}{
+		{"candidate-isolation", "probe.c", nativeIsolationC, []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, `[(b"isolation", "valid", b"isolated\n"), (b"memory", "resource_limit", None), (b"timeout", "resource_limit", None), (b"output", "output_limit", None), (b"descendant", "valid", b"done\n")]`},
+		{"cpp-toolchain", "probe.cpp", "#include <iostream>\n#include <Eigen/Dense>\nint main(){Eigen::Matrix2d a; a<<2,1,1,2; std::cout<<a.determinant()<<'\\n';}\n", []string{"/usr/bin/g++", "-O2", "-I/usr/include/eigen3", "probe.cpp", "-o", "/work/probe"}, `[(b"", "valid", b"3\n")]`},
+		{"rust-toolchain", "probe.rs", "fn main(){let h=std::thread::spawn(|| 6*7); println!(\"{}\",h.join().unwrap());}\n", []string{"/usr/bin/rustc", "-O", "probe.rs", "-o", "/work/probe"}, `[(b"", "valid", b"42\n")]`},
+	} {
+		root := filepath.Join(workspace, test.name)
+		if err := os.Mkdir(root, 0700); err != nil {
+			return protocol.Envelope{}, err
+		}
+		m := nativeProbeManifest(r.Config.RuntimeImageDigest, test.filename, test.build)
+		if err := protocol.ValidateManifest(m); err != nil {
+			return protocol.Envelope{}, err
+		}
+		if err := matchConfiguredEvaluation(m, r.Config); err != nil {
+			return protocol.Envelope{}, err
+		}
+		mBytes, _ := json.Marshal(m)
+		files := map[string]map[string][]byte{
+			"submission": {test.filename: []byte(test.source)},
+			"suite":      {"canary.txt": []byte("HIDDEN_NATIVE_BOUNDARY_CANARY")},
+			"validator":  {"empty.txt": []byte("No third-party checker dependencies")},
+			"challenge":  {"check.py": []byte(fmt.Sprintf(nativeProbeChecker, test.cases)), "science-ladder.yaml": mBytes, "requirements.lock": []byte("# pinned platform tools only\n")},
+		}
+		b := Builder{MakeSquashFS: r.Config.MakeSquashFS}
+		refs := map[string]protocol.ObjectRef{}
+		runtime.localObjects = map[string]string{}
+		for name, tree := range files {
+			dir := filepath.Join(root, name)
+			if err := os.Mkdir(dir, 0755); err != nil {
+				return protocol.Envelope{}, err
+			}
+			if err := writeTree(dir, tree); err != nil {
+				return protocol.Envelope{}, err
+			}
+			out := filepath.Join(root, name+".squashfs")
+			ref, err := b.disk(ctx, dir, out)
+			if err != nil {
+				return protocol.Envelope{}, err
+			}
+			refs[name] = ref
+			runtime.localObjects[ref.Digest] = out
+		}
+		_, artifactDigest, err := protocol.ArtifactFromFiles(files["submission"], m.Submission)
+		if err != nil {
+			return protocol.Envelope{}, err
+		}
+		job := protocol.RunnerJob{APIVersion: protocol.APIVersion, Kind: "ValidationJob", ID: fmt.Sprintf("native-probe-%d", time.Now().UnixNano()), CreatedAt: time.Now().UTC(), ExpiresAt: time.Now().UTC().Add(5 * time.Minute), Producer: r.Config.HostID, Purpose: "preflight", DeploymentMode: "controlled-demo", OfficialAcceptance: false, VerificationPolicy: protocol.VerificationPlatform, Manifest: m, RunnerEpoch: r.Config.RunnerEpoch, ExecutionProfileDigest: r.Config.ExecutionProfileDigest, FencingToken: 1, ArtifactDigest: artifactDigest, ValidatorDisk: refs["validator"], ChallengeDisk: refs["challenge"], SuiteDisk: refs["suite"], SubmissionDisk: refs["submission"], SuiteDigest: refs["suite"].Digest}
+		envelope, runErr := runtime.runJob(ctx, job)
+		var run protocol.RunReceipt
+		if runErr == nil {
+			payload, e := protocol.Verify(envelope, map[string]crypto.PublicKey{r.KeyID: r.Signer.Public()})
+			if e != nil {
+				runErr = e
+			} else {
+				runErr = protocol.DecodeStrict(payload, &run)
+			}
+		}
+		passed := runErr == nil && run.Outcome == "valid" && run.Gates["isolation"] && run.CleanupAttested
+		checks = append(checks, map[string]any{"name": test.name, "passed": passed, "outcome": run.Outcome, "receipt": envelope})
+		if !passed {
+			probeErr = fmt.Errorf("native conformance %s failed: %s (%v)", test.name, run.Outcome, runErr)
+			break
+		}
+	}
+	if err := os.RemoveAll(workspace); err != nil {
+		return protocol.Envelope{}, errors.New("native probe cleanup failed")
+	}
+	data := map[string]any{"hostId": r.Config.HostID, "hostGroup": r.Config.HostGroup, "passed": probeErr == nil, "checks": checks, "crossHostVerified": false, "advisoryGateSatisfied": false, "cleanupAttested": true, "durationMillis": time.Since(start).Milliseconds(), "scope": "fixed first-party native candidate/judge isolation, resource and C++/Rust toolchain corpus"}
+	if probeErr != nil {
+		data["failure"] = probeErr.Error()
+	}
+	receipt := protocol.Receipt{APIVersion: protocol.APIVersion, Kind: "NativeHostConformanceReceipt", ID: fmt.Sprintf("native-host-conformance-%d", start.UnixNano()), CreatedAt: time.Now().UTC(), Producer: r.Config.HostID, SubjectDigest: r.Config.ExecutionProfileDigest, EconomicMode: "none", DeploymentMode: "controlled-demo", OfficialAcceptance: false, VerificationPolicy: protocol.VerificationPlatform, Data: data}
+	envelope, err := protocol.Sign(r.KeyID, r.Signer, receipt)
+	if err != nil {
+		return envelope, err
+	}
+	return envelope, probeErr
+}
+
+func nativeProbeManifest(digest, filename string, build []string) protocol.Manifest {
+	m := hostProbeManifest(digest)
+	m.APIVersion = protocol.ManifestV2
+	m.Validator.Profile = "native-evaluator-v2"
+	m.Validator.Entrypoint = []string{"/usr/local/bin/python3", "/sl/challenge/check.py"}
+	m.Metric.Name = "checks"
+	m.Metric.Unit = "passed checks"
+	m.Resources.MemoryMB = 2048
+	m.Resources.TimeoutSeconds = 120
+	m.Submission = protocol.SubmissionContract{Format: "source-v2", AllowedPaths: []string{filename}, AllowedExtensions: []string{filepath.Ext(filename)}, MaxBytes: 65536, MaxFiles: 1, License: "MIT"}
+	m.Evaluation = &protocol.EvaluationContract{Version: protocol.EvaluationVersion, Mode: "program", ComparisonID: "internal-native-conformance-v1", Executor: protocol.ExecutorRequirements{OS: "linux", Architecture: "amd64", Accelerator: "none", Features: []string{"isolated-checker", "isolated-candidate"}}, Measurements: []protocol.MeasurementDefinition{{Name: "checks", Type: "integer", Unit: m.Metric.Unit, Role: "primary", Interpretation: "direct", Definition: "Fixed first-party execution-boundary checks, never scientific progress.", Minimum: "0", Maximum: "1"}}, Rationale: protocol.MetricRationale{Objective: "Exercise a first-party platform security test, with no scientific claim.", ImprovementMeaning: "Passing means only that the fixed probes returned the expected results.", EvidenceURLs: []string{m.Evidence[0].URL}, PreservedConditions: []string{"Candidate source must not access checker state or hidden answer files."}, BaselineReason: "This is a conformance test with deliberately hostile program behavior.", MeaningfulDelta: "One passed fixed test is not a quantified security assurance level.", ProxyAttacks: []string{"Forged candidate stdout must never become an authoritative score frame."}, PermittedClaim: "These first-party conformance cases passed on the stated runtime.", ExcludedClaims: []string{"No external security review or scientific result is implied by this probe."}}, Program: &protocol.CandidateProgram{Build: build, Run: []string{"/work/probe"}, BuildBudget: protocol.StageBudget{TimeoutSeconds: 60, MemoryMB: 1024, MaxOutputBytes: 64 << 20, MaxProcesses: 64}, RunBudget: protocol.StageBudget{TimeoutSeconds: 2, MemoryMB: 64, MaxOutputBytes: 4096, MaxProcesses: 16}, MinRuns: 1, MaxRuns: 8, ScratchMB: 128}}
+	return m
+}
+
+const nativeProbeChecker = `import base64, json, socket
+from pathlib import Path
+def call(action, data=b''):
+    s=socket.socket(socket.AF_UNIX); s.connect('/sl/broker/control.sock')
+    s.sendall(json.dumps({'action':action,'input':base64.b64encode(data).decode()}).encode()); s.shutdown(socket.SHUT_WR)
+    chunks=[]
+    while True:
+        chunk=s.recv(65536)
+        if not chunk: break
+        chunks.append(chunk)
+    s.close(); return json.loads(b''.join(chunks))
+build=call('build'); print('build',build,flush=True)
+passed=build['outcome']=='valid'
+if passed:
+    for payload,outcome,stdout in %s:
+        response=call('run',payload); print('case',payload,response,flush=True)
+        passed=passed and response['outcome']==outcome
+        if stdout is not None: passed=passed and base64.b64decode(response.get('stdout',''))==stdout
+Path('/sl/output/result.json').write_text(json.dumps({'apiVersion':'science-ladder/v2','kind':'ValidatorResult','comparisonId':'internal-native-conformance-v1','score':'1' if passed else '0','measurements':{'checks':'1' if passed else '0'},'gates':{'isolation':passed}}))
+`
+
+const nativeIsolationC = `#define _GNU_SOURCE
+#if __has_include("/sl/suite/canary.txt")
+#error Candidate compiler can read suite
+#endif
+#if __has_include("/sl/challenge/check.py")
+#error Candidate compiler can read checker
+#endif
+#include <errno.h>
+#include <fcntl.h>
+#include <sched.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ptrace.h>
+#include <sys/socket.h>
+#include <unistd.h>
+int main(void){
+ char b[32]={0};if(read(0,b,31)<0)return 2;
+ if(!strcmp(b,"memory")){while(1){volatile char *p=malloc(8*1024*1024);if(!p)return 3;for(int i=0;i<8*1024*1024;i++)p[i]=1;}}
+ if(!strcmp(b,"timeout")){for(;;)asm volatile("":::"memory");}
+ if(!strcmp(b,"output")){for(int i=0;i<20000;i++)puts("overflow");return 0;}
+ if(!strcmp(b,"descendant")){if(fork()==0){close(0);close(1);close(2);setsid();for(;;)pause();}puts("done");return 0;}
+ if(getuid()!=65533 || geteuid()!=65533 || getgroups(0,NULL)!=0)return 10;
+ const char *forbidden[]={"/proc","/sl/suite/canary.txt","/sl/challenge/check.py","/sl/broker/control.sock","/sl/output/result.json"};
+ for(unsigned i=0;i<sizeof(forbidden)/sizeof(*forbidden);i++){if(access(forbidden[i],F_OK)==0)return 11;}
+ if(socket(AF_INET,SOCK_STREAM,0)>=0 || errno!=EPERM)return 12;
+ if(unshare(CLONE_NEWUSER)==0 || errno!=EPERM)return 13;
+ if(ptrace(PTRACE_TRACEME,0,0,0)==0 || errno!=EPERM)return 14;
+ if(open("/sl/output/result.json",O_WRONLY|O_CREAT,0644)>=0)return 15;
+ puts("isolated");return 0;
+}
+`

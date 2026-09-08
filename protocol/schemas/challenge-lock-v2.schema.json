@@ -19,6 +19,11 @@
           "minimum": 0,
           "type": "integer"
         },
+        "minRuns": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
         "run": {
           "items": {
             "maxLength": 131072,
@@ -42,6 +47,7 @@
         "buildBudget",
         "runBudget",
         "maxRuns",
+        "minRuns",
         "scratchMb"
       ],
       "type": "object"
@@ -867,6 +873,9 @@
           "maxItems": 4096,
           "type": "array"
         },
+        "format": {
+          "const": "source-v2"
+        },
         "license": {
           "maxLength": 131072,
           "type": "string"
@@ -935,7 +944,10 @@
           "type": "array"
         },
         "profile": {
-          "const": "artifact-checker-v1"
+          "enum": [
+            "artifact-checker-v1",
+            "native-evaluator-v2"
+          ]
         },
         "runtimeImageDigest": {
           "pattern": "^sha256:[0-9a-f]{64}$",

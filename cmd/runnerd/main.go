@@ -64,6 +64,7 @@ func run(args []string) error {
 		return advisoryCheck(args[1:])
 	}
 	f := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	additionalConfigs := f.String("additional-configs", "", "comma-separated additional enrolled profiles on this same host; served sequentially")
 	configPath := f.String("config", "", "host configuration JSON")
 	keysPath := f.String("keys", "", "trusted control-plane keys JSON")
 	hostKeysPath := f.String("host-keys", "", "certified host public keys JSON")
@@ -136,11 +137,17 @@ func run(args []string) error {
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
-	if args[0] == "hardware-probe" {
+	if args[0] == "hardware-probe" || args[0] == "native-hardware-probe" {
 		if *out == "" {
 			return errors.New("--out required")
 		}
-		receipt, probeErr := runtime.HardwareProbe(ctx, os.Stderr)
+		var receipt protocol.Envelope
+		var probeErr error
+		if args[0] == "native-hardware-probe" {
+			receipt, probeErr = runtime.NativeHardwareProbe(ctx, os.Stderr)
+		} else {
+			receipt, probeErr = runtime.HardwareProbe(ctx, os.Stderr)
+		}
 		if receipt.Payload == "" {
 			return probeErr
 		}
@@ -190,9 +197,43 @@ func run(args []string) error {
 	if err := replayResults(ctx, client, base, config.ResultSpool); err != nil {
 		return err
 	}
-	authorization := hostAuthorization{config: config, window: admission, keys: keys}
-	controlsChecked, waitingForAuthorization, preflightUnavailable := false, false, false
+	type profileService struct {
+		authorization                                                  hostAuthorization
+		runtime                                                        *runner.Runtime
+		controlsChecked, waitingForAuthorization, preflightUnavailable bool
+	}
+	profiles := []*profileService{{authorization: hostAuthorization{config: config, window: admission, keys: keys}, runtime: runtime}}
+	seenProfiles := map[string]bool{config.ExecutionProfileDigest: true}
+	if *additionalConfigs != "" {
+		for _, path := range strings.Split(*additionalConfigs, ",") {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			var c runner.Config
+			if err := protocol.DecodeStrict(data, &c); err != nil {
+				return err
+			}
+			if c.HostID != config.HostID || c.HostGroup != config.HostGroup || c.WorkRoot != config.WorkRoot || c.ResultSpool != config.ResultSpool || seenProfiles[c.ExecutionProfileDigest] {
+				return errors.New("additional profiles must share the same host, private work root and result spool and have distinct profile digests")
+			}
+			window, err := runner.LoadAdmissionWindow(c, keys)
+			if err != nil {
+				return err
+			}
+			rt := *runtime
+			rt.Config = c
+			profiles = append(profiles, &profileService{authorization: hostAuthorization{config: c, window: window, keys: keys}, runtime: &rt})
+			seenProfiles[c.ExecutionProfileDigest] = true
+		}
+	}
+	nextProfile := 0
 	for ctx.Err() == nil {
+		profile := profiles[nextProfile]
+		nextProfile = (nextProfile + 1) % len(profiles)
+		authorization := &profile.authorization
+		config := authorization.config
+		runtime := profile.runtime
 		renewed, renewalErr := authorization.refresh(ctx, client, base, time.Now())
 		if renewalErr != nil {
 			fmt.Fprintln(os.Stderr, "host authorization renewal unavailable; retaining only the existing valid lease:", renewalErr)
@@ -200,34 +241,34 @@ func run(args []string) error {
 		if renewed {
 			config = authorization.config
 			runtime.Config = config
-			controlsChecked = false
+			profile.controlsChecked = false
 			fmt.Fprintln(os.Stderr, "approved host authorization renewed through", authorization.window.HostExpiresAt().UTC().Format(time.RFC3339))
 		}
 		if err := authorization.window.Check(time.Now()); err != nil {
-			if !waitingForAuthorization {
+			if !profile.waitingForAuthorization {
 				fmt.Fprintln(os.Stderr, err, "; waiting for automatic renewal without claiming work")
 			}
-			waitingForAuthorization = true
+			profile.waitingForAuthorization = true
 			if !pause(ctx, 10*time.Second) {
 				break
 			}
 			continue
 		}
-		waitingForAuthorization = false
+		profile.waitingForAuthorization = false
 		// Actual pins and host controls are checked on startup and renewal, and
 		// Run/Prepare independently enforce them before executing every job.
-		if !controlsChecked {
+		if !profile.controlsChecked {
 			if err := config.CheckHost(keys); err != nil {
 				return err
 			}
-			controlsChecked = true
+			profile.controlsChecked = true
 		}
 		purposes, _ := authorization.window.Purposes(time.Now())
-		if len(purposes) == 3 && !preflightUnavailable {
+		if len(purposes) == 3 && !profile.preflightUnavailable {
 			fmt.Fprintln(os.Stderr, "advisory refresh needed for new checker preflights; existing challenge verification remains available")
-			preflightUnavailable = true
+			profile.preflightUnavailable = true
 		}
-		claim, err := claimIfAdmitted(ctx, client, base, func() ([]string, error) { return authorization.window.Purposes(time.Now()) })
+		claim, err := claimIfAdmitted(ctx, client, base, func() ([]string, error) { return authorization.window.Purposes(time.Now()) }, config.ExecutionProfileDigest)
 		if errors.Is(err, runner.ErrAdmissionMaintenance) {
 			continue // Recheck/renew before issuing any further claim.
 		}
@@ -465,12 +506,13 @@ func buildRootfs(args []string) error {
 	tools := f.String("tools-image", "", "pinned filesystem-tools OCI reference")
 	guest := f.String("guest-init", "", "compiled Linux amd64 runnerd")
 	out := f.String("out", "", "new output directory")
+	profile := f.String("profile", "artifact-checker-v1", "fixed platform rootfs recipe")
 	if err := f.Parse(args); err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
-	return runner.BuildRootFS(ctx, *python, *tools, *guest, *out)
+	return runner.BuildRootFSForProfile(ctx, *python, *tools, *guest, *out, *profile)
 }
 
 func generateHostEncryptionKey(args []string) error {

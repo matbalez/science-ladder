@@ -6,8 +6,10 @@ import (
 	"context"
 	"crypto"
 	"crypto/ecdh"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -31,40 +33,42 @@ type PinnedFile struct {
 	Digest string `json:"digest"`
 }
 type HostAttestation struct {
-	HostID                 string    `json:"hostId"`
-	PhysicalHostID         string    `json:"physicalHostId"`
-	HostGroup              string    `json:"hostGroup"`
-	ExpiresAt              time.Time `json:"expiresAt"`
-	ExclusivePhysicalHost  bool      `json:"exclusivePhysicalHost"`
-	EgressPolicyVerified   bool      `json:"egressPolicyVerified"`
-	ExecutionProfileDigest string    `json:"executionProfileDigest"`
-	RunnerEpoch            string    `json:"runnerEpoch"`
-	ConfigDigest           string    `json:"configDigest"`
+	Capabilities           *protocol.ExecutorCapabilities `json:"capabilities,omitempty"`
+	HostID                 string                         `json:"hostId"`
+	PhysicalHostID         string                         `json:"physicalHostId"`
+	HostGroup              string                         `json:"hostGroup"`
+	ExpiresAt              time.Time                      `json:"expiresAt"`
+	ExclusivePhysicalHost  bool                           `json:"exclusivePhysicalHost"`
+	EgressPolicyVerified   bool                           `json:"egressPolicyVerified"`
+	ExecutionProfileDigest string                         `json:"executionProfileDigest"`
+	RunnerEpoch            string                         `json:"runnerEpoch"`
+	ConfigDigest           string                         `json:"configDigest"`
 }
 
 type Config struct {
-	HostID                 string            `json:"hostId"`
-	HostGroup              string            `json:"hostGroup"`
-	RunnerEpoch            string            `json:"runnerEpoch"`
-	ExecutionProfileDigest string            `json:"executionProfileDigest"`
-	Kernel                 PinnedFile        `json:"kernel"`
-	RootFS                 PinnedFile        `json:"rootFs"`
-	Firecracker            PinnedFile        `json:"firecracker"`
-	Jailer                 PinnedFile        `json:"jailer"`
-	MakeSquashFS           PinnedFile        `json:"makeSquashFs"`
-	CPUConfig              PinnedFile        `json:"cpuConfig"`
-	RuntimeInventory       PinnedFile        `json:"runtimeInventory"`
-	AdvisorySnapshot       PinnedFile        `json:"advisorySnapshot"`
-	AdvisoryKeys           PinnedFile        `json:"advisoryKeys"`
-	RuntimeImageDigest     string            `json:"runtimeImageDigest"`
-	EncryptionPublicKey    []byte            `json:"encryptionPublicKey"`
-	WorkRoot               string            `json:"workRoot"`
-	ResultSpool            string            `json:"resultSpool"`
-	NetworkNamespace       string            `json:"networkNamespace"`
-	CPUSet                 string            `json:"cpuSet"`
-	UID                    int               `json:"uid"`
-	GID                    int               `json:"gid"`
-	Attestation            protocol.Envelope `json:"attestation"`
+	Capabilities           *protocol.ExecutorCapabilities `json:"capabilities,omitempty"`
+	HostID                 string                         `json:"hostId"`
+	HostGroup              string                         `json:"hostGroup"`
+	RunnerEpoch            string                         `json:"runnerEpoch"`
+	ExecutionProfileDigest string                         `json:"executionProfileDigest"`
+	Kernel                 PinnedFile                     `json:"kernel"`
+	RootFS                 PinnedFile                     `json:"rootFs"`
+	Firecracker            PinnedFile                     `json:"firecracker"`
+	Jailer                 PinnedFile                     `json:"jailer"`
+	MakeSquashFS           PinnedFile                     `json:"makeSquashFs"`
+	CPUConfig              PinnedFile                     `json:"cpuConfig"`
+	RuntimeInventory       PinnedFile                     `json:"runtimeInventory"`
+	AdvisorySnapshot       PinnedFile                     `json:"advisorySnapshot"`
+	AdvisoryKeys           PinnedFile                     `json:"advisoryKeys"`
+	RuntimeImageDigest     string                         `json:"runtimeImageDigest"`
+	EncryptionPublicKey    []byte                         `json:"encryptionPublicKey"`
+	WorkRoot               string                         `json:"workRoot"`
+	ResultSpool            string                         `json:"resultSpool"`
+	NetworkNamespace       string                         `json:"networkNamespace"`
+	CPUSet                 string                         `json:"cpuSet"`
+	UID                    int                            `json:"uid"`
+	GID                    int                            `json:"gid"`
+	Attestation            protocol.Envelope              `json:"attestation"`
 }
 
 // ConfigBindingDigest binds the enrolled host to exact pinned runtime components,
@@ -188,6 +192,9 @@ func (c Config) CheckHost(keys map[string]crypto.PublicKey) error {
 	if attestation.HostID != c.HostID || attestation.HostGroup != c.HostGroup || attestation.PhysicalHostID == "" || !attestation.ExclusivePhysicalHost || !attestation.EgressPolicyVerified || !attestation.ExpiresAt.After(time.Now()) || attestation.ExecutionProfileDigest != c.ExecutionProfileDigest || attestation.RunnerEpoch != c.RunnerEpoch {
 		return errors.New("host inventory attestation does not authorize this profile")
 	}
+	if err := validateCapabilitiesBinding(c, attestation); err != nil {
+		return err
+	}
 	binding, err := ConfigBindingDigest(c)
 	if err != nil || binding != attestation.ConfigDigest || !protocol.ValidDigest(c.RuntimeImageDigest) {
 		return errors.New("host attestation does not bind the exact configured runtime")
@@ -289,11 +296,16 @@ func verifyPinned(file PinnedFile) error {
 	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0022 != 0 {
 		return fmt.Errorf("unsafe runtime file %s", file.Path)
 	}
-	data, err := os.ReadFile(file.Path)
+	f, err := os.Open(file.Path)
 	if err != nil {
 		return err
 	}
-	if protocol.DigestBytes(data) != file.Digest {
+	defer f.Close()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return err
+	}
+	if fmt.Sprintf("sha256:%x", h.Sum(nil)) != file.Digest {
 		return fmt.Errorf("runtime digest mismatch: %s", file.Path)
 	}
 	return nil
@@ -495,6 +507,9 @@ func ValidateJob(job protocol.RunnerJob, c Config) error {
 	if job.Manifest.Validator.RuntimeImageDigest != c.RuntimeImageDigest {
 		return errors.New("job runtime image does not match enrolled rootfs profile")
 	}
+	if err := matchConfiguredEvaluation(job.Manifest, c); err != nil {
+		return err
+	}
 	for _, host := range job.ExcludedHostIDs {
 		if host == c.HostID {
 			return errors.New("confirmation anti-affinity violation")
@@ -510,11 +525,12 @@ func ValidateJob(job protocol.RunnerJob, c Config) error {
 
 func (r *Runtime) fetch(ctx context.Context, ref protocol.ObjectRef, destination string) error {
 	if filename, ok := r.localObjects[ref.Digest]; ok {
-		data, err := os.ReadFile(filename)
-		if err != nil || int64(len(data)) != ref.Size || protocol.DigestBytes(data) != ref.Digest {
-			return errors.New("cached object binding mismatch")
+		file, err := os.Open(filename)
+		if err != nil {
+			return err
 		}
-		return os.WriteFile(destination, data, 0400)
+		defer file.Close()
+		return writeVerifiedObject(file, ref, destination)
 	}
 	if !protocol.ValidDigest(ref.Digest) || ref.Size < 1 || ref.Size > 1<<30 {
 		return errors.New("invalid exact-object grant")
@@ -539,11 +555,7 @@ func (r *Runtime) fetch(ctx context.Context, ref protocol.ObjectRef, destination
 	if response.StatusCode != 200 {
 		return errors.New("object read rejected")
 	}
-	data, err := io.ReadAll(io.LimitReader(response.Body, ref.Size+1))
-	if err != nil || int64(len(data)) != ref.Size || protocol.DigestBytes(data) != ref.Digest {
-		return errors.New("object size/digest mismatch")
-	}
-	return os.WriteFile(destination, data, 0400)
+	return writeVerifiedObject(response.Body, ref, destination)
 }
 
 func copyFile(source, destination string, mode os.FileMode) error {
@@ -598,4 +610,31 @@ func parseGuestOutput(output []byte) ([]byte, string, error) {
 		return nil, "", errors.New("missing, multiple or oversized guest frames")
 	}
 	return result, outcome, nil
+}
+
+// Stream to a private new file with exact byte count and digest. A failed or
+// truncated download is removed before callers can mount it.
+func writeVerifiedObject(input io.Reader, ref protocol.ObjectRef, destination string) (err error) {
+	if !protocol.ValidDigest(ref.Digest) || ref.Size < 1 || ref.Size > 1<<40 {
+		return errors.New("invalid immutable object bounds")
+	}
+	f, err := os.OpenFile(destination, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0400)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = f.Close()
+		if err != nil {
+			_ = os.Remove(destination)
+		}
+	}()
+	h := sha256.New()
+	n, err := io.Copy(io.MultiWriter(f, h), io.LimitReader(input, ref.Size+1))
+	if err != nil {
+		return err
+	}
+	if n != ref.Size || "sha256:"+hex.EncodeToString(h.Sum(nil)) != ref.Digest {
+		return errors.New("object size/digest mismatch")
+	}
+	return f.Close()
 }
