@@ -24,7 +24,7 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-X github.com/matbalez/science-ladder/internal/buildinfo.Commit=$GITHUB_SHA" -o "$RUNNER_TEMP/release/runnerd" ./cmd/runnerd
           go build -o "$RUNNER_TEMP/rootfs-builder" ./cmd/runnerd
           docker build --platform linux/amd64 --build-arg BASE_IMAGE=python@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e --build-arg DEBIAN_SNAPSHOT=20260801T000000Z -f internal/runner/assets/platform-tools.Dockerfile -t science-ladder-proof-builder-local internal/runner/assets
-                - name: Compose pinned guest
+      - name: Compose pinned guest
         run: |
           # BuildRootFS requires an OCI manifest pin. Publish only to a local
           # temporary registry so the build does not depend on an unpinned tag.
