@@ -15,7 +15,7 @@ bin/sl-witness \
   --kms-key YOUR_WITNESS_KMS_KEY_ARN \
   --kms-region YOUR_AWS_REGION \
   --journal /var/lib/science-ladder-witness/journal.ndjson \
-  --platform https://science-ladder.fly.dev \
+  --platform https://scienceladder.org \
   --listen 127.0.0.1:8090
 ```
 

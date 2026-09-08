@@ -104,7 +104,7 @@ func resolveSources(ctx context.Context, sources []protocol.Source) (string, []F
 		if err != nil {
 			return "", nil, err
 		}
-		req.Header.Set("User-Agent", "ScienceLadder/0.1 (+https://science-ladder.fly.dev)")
+		req.Header.Set("User-Agent", "ScienceLadder/0.1 (+https://scienceladder.org)")
 		res, err := client.Do(req)
 		if err != nil {
 			findings = append(findings, Finding{"source_unresolved", "The source could not be independently retrieved", "error", source.URL})

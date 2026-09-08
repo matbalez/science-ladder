@@ -1,7 +1,7 @@
 # Deployment status
 
 Status recorded **8 September 2026**.
-Public site: [science-ladder.fly.dev](https://science-ladder.fly.dev).
+Public site: [scienceladder.org](https://scienceladder.org).
 Public MIT source: [matbalez/science-ladder](https://github.com/matbalez/science-ladder).
 
 | Component or evidence | Current state |

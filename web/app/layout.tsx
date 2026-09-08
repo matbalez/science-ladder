@@ -5,6 +5,7 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 export const metadata: Metadata = {
+  metadataBase: new URL("https://scienceladder.org"),
   title: {
     default: "Science Ladder",
     template: "%s · Science Ladder",

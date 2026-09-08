@@ -125,9 +125,7 @@ test("solver bootstrap binds exact metadata and preserves generic artifact paths
     prompt.indexOf("sl challenge test") >
       prompt.indexOf("OPTIONAL EXACT-RUNTIME CONTAINER CHECK"),
   );
-  assert.ok(
-    prompt.includes("sl auth login --api 'https://science-ladder.fly.dev'"),
-  );
+  assert.ok(prompt.includes("sl auth login --api 'https://scienceladder.org'"));
   const untrusted = solverInstructions({
     ...challenge,
     sourceCommit: "$(touch /tmp/no)",

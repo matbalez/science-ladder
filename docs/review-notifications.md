@@ -26,3 +26,5 @@ Explicit throttling/server failures retry with exponential backoff, up to eight 
 Recipient addresses come only from private configuration. Creator-controlled text is bounded plain text and cannot change the destination. Only editors/operators with browser sessions can queue tests or retries. Review notification delivery does not use the verification VPS.
 
 References: [SendGrid Mail Send API](https://www.twilio.com/docs/sendgrid/api-reference/mail-send/mail-send), [API keys](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys), [sender identity](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/sender-identity).
+
+The production website origin is `https://scienceladder.org`. Changing the website origin changes links in newly generated review emails. The sender identity is configured separately; website DNS does not itself authenticate a SendGrid sender.

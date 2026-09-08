@@ -700,7 +700,7 @@ test("standalone explorer consumes optional public researcher context without ha
   const response = await request.get("/showcase/quiet-echoes/index.html");
   expect(response.ok()).toBeTruthy();
   const html = await response.text();
-  const origin = "https://science-ladder.fly.dev";
+  const origin = "https://scienceladder.org";
   let populated = false;
   await page.route(`${origin}/showcase/quiet-echoes/index.html`, (r) =>
     r.fulfill({ status: 200, contentType: "text/html", body: html }),

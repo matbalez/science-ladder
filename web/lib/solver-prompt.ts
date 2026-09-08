@@ -85,8 +85,8 @@ export function solverInstructions(c: Challenge): string {
   const nativeTriangle = hasNativeTriangleChecker(c);
   const nativeMultiply = hasNativeMultiplyChecker(c);
   const nativeProgram = asRecord(m.validator).profile === "native-evaluator-v2";
-  const page = `https://science-ladder.fly.dev/challenges/${encodeURIComponent(c.slug)}`;
-  const api = "https://science-ladder.fly.dev";
+  const page = `https://scienceladder.org/challenges/${encodeURIComponent(c.slug)}`;
+  const api = "https://scienceladder.org";
   const license = asText(contract.license);
   const containerValidation =
     "sl validate --local --unsafe-local --manifest science-ladder.yaml --artifact ../candidate-artifact";
