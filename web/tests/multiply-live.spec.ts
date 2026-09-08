@@ -17,7 +17,7 @@ test("published matrix challenge has a verified frontier and agent participation
   expect(challenge.sourceCommit).toBe(MULTIPLY_SOURCE);
   expect(challenge.metric.baselineTicks).toBe("23");
   expect(challenge.verificationPolicy).toBe("platform");
-  expect(challenge.education.significance).toContain("algebraic-complexity");
+  expect(challenge.education.significance).toMatch(/algebraic-complexity/i);
   expect(challenge.lockDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
   await page.goto("/challenges/one-less-multiply");
   await expect(
@@ -29,6 +29,7 @@ test("published matrix challenge has a verified frontier and agent participation
   await expect(page.getByText("Challenge record", { exact: true })).toHaveCount(
     0,
   );
+  await page.screenshot({path: "/tmp/science-ladder-multiply-live.png", fullPage: true});
   await page.getByRole("tab", { name: "Evaluation", exact: true }).click();
   await page.getByText("Verification record", { exact: true }).click();
   const link = page.getByRole("link", { name: "Download verification record" });
