@@ -5,6 +5,7 @@ package runner
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -56,6 +57,24 @@ func GuestInit() error {
 	manifest, err := protocol.ParseManifest(data)
 	if err != nil {
 		return fmt.Errorf("parse immutable manifest: %w", err)
+	}
+	if manifest.Evaluation != nil && len(manifest.Evaluation.Assets) > 0 {
+		if err := syscall.Mount("tmpfs", "/sl/assets", "tmpfs", syscall.MS_NOSUID|syscall.MS_NODEV, "size=1m,mode=0755"); err != nil {
+			return err
+		}
+		for i, a := range manifest.Evaluation.Assets {
+			target := filepath.Join("/sl/assets", a.Name)
+			if err := os.Mkdir(target, 0755); err != nil {
+				return err
+			}
+			flags := uintptr(syscall.MS_RDONLY | syscall.MS_NOSUID | syscall.MS_NODEV)
+			if a.Purpose != "toolchain" {
+				flags |= syscall.MS_NOEXEC
+			}
+			if err := syscall.Mount(fmt.Sprintf("/dev/vd%c", 'g'+i), target, "squashfs", flags, ""); err != nil {
+				return fmt.Errorf("mount frozen asset: %w", err)
+			}
+		}
 	}
 	if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &syscall.Rlimit{Cur: 128, Max: 128}); err != nil {
 		return fmt.Errorf("set descriptor limit: %w", err)
@@ -172,6 +191,26 @@ func GuestInit() error {
 	_ = file.Close()
 	if err != nil {
 		return guestFailure("invalid_output")
+	}
+	if broker != nil && broker.measurement != nil {
+		var parsed protocol.ValidatorResult
+		if protocol.DecodeStrict(result, &parsed) != nil || parsed.Timing != nil {
+			return guestFailure("invalid_output")
+		}
+		evidence, err := broker.timingEvidence()
+		if err != nil {
+			return guestFailure("invalid_output")
+		}
+		parsed.Timing = evidence
+		parsed.Score = evidence.Summary.LowerRatio
+		if parsed.Measurements == nil {
+			return guestFailure("invalid_output")
+		}
+		parsed.Measurements[manifest.Metric.Name] = parsed.Score
+		result, err = json.Marshal(parsed)
+		if err != nil {
+			return guestFailure("invalid_output")
+		}
 	}
 	if _, _, err := protocol.ValidateResult(result, manifest); err != nil {
 		return guestFailure("invalid_output")

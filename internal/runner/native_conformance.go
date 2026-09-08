@@ -42,12 +42,16 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 		{"candidate-isolation", "probe.c", nativeIsolationC, []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, `[(b"isolation", "valid", b"isolated\n"), (b"memory", "resource_limit", None), (b"timeout", "resource_limit", None), (b"output", "output_limit", None), (b"descendant", "valid", b"done\n")]`},
 		{"cpp-toolchain", "probe.cpp", "#include <iostream>\n#include <Eigen/Dense>\nint main(){Eigen::Matrix2d a; a<<2,1,1,2; std::cout<<a.determinant()<<'\\n';}\n", []string{"/usr/bin/g++", "-O2", "-I/usr/include/eigen3", "probe.cpp", "-o", "/work/probe"}, `[(b"", "valid", b"3\n")]`},
 		{"rust-toolchain", "probe.rs", "fn main(){let h=std::thread::spawn(|| 6*7); println!(\"{}\",h.join().unwrap());}\n", []string{"/usr/bin/rustc", "-O", "probe.rs", "-o", "/work/probe"}, `[(b"", "valid", b"42\n")]`},
+		{"paired-timing", "probe.c", nativeTimingCandidate, []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, ""},
 	} {
 		root := filepath.Join(workspace, test.name)
 		if err := os.Mkdir(root, 0700); err != nil {
 			return protocol.Envelope{}, err
 		}
 		m := nativeProbeManifest(r.Config.RuntimeImageDigest, test.filename, test.build)
+		if test.name == "paired-timing" {
+			m = nativeTimingManifest(m, r.Config.Capabilities.HardwareClass)
+		}
 		if err := protocol.ValidateManifest(m); err != nil {
 			return protocol.Envelope{}, err
 		}
@@ -60,6 +64,10 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 			"suite":      {"canary.txt": []byte("HIDDEN_NATIVE_BOUNDARY_CANARY")},
 			"validator":  {"empty.txt": []byte("No third-party checker dependencies")},
 			"challenge":  {"check.py": []byte(fmt.Sprintf(nativeProbeChecker, test.cases)), "science-ladder.yaml": mBytes, "requirements.lock": []byte("# pinned platform tools only\n")},
+		}
+		if test.name == "paired-timing" {
+			files["challenge"]["check.py"] = []byte(nativeTimingChecker)
+			files["challenge"]["baseline/source/probe.c"] = []byte(nativeTimingBaseline)
 		}
 		b := Builder{MakeSquashFS: r.Config.MakeSquashFS}
 		refs := map[string]protocol.ObjectRef{}
@@ -96,6 +104,9 @@ func (r *Runtime) NativeHardwareProbe(ctx context.Context, diagnostics io.Writer
 			}
 		}
 		passed := runErr == nil && run.Outcome == "valid" && run.Gates["isolation"] && run.CleanupAttested
+		if test.name == "paired-timing" {
+			passed = passed && run.ValidatorResult != nil && run.ValidatorResult.Timing != nil && protocol.ValidateRunMeasurementEvidence(run, m) == nil
+		}
 		checks = append(checks, map[string]any{"name": test.name, "passed": passed, "outcome": run.Outcome, "receipt": envelope})
 		if !passed {
 			probeErr = fmt.Errorf("native conformance %s failed: %s (%v)", test.name, run.Outcome, runErr)
@@ -127,11 +138,11 @@ func nativeProbeManifest(digest, filename string, build []string) protocol.Manif
 	m.Resources.MemoryMB = 2048
 	m.Resources.TimeoutSeconds = 120
 	m.Submission = protocol.SubmissionContract{Format: "source-v2", AllowedPaths: []string{filename}, AllowedExtensions: []string{filepath.Ext(filename)}, MaxBytes: 65536, MaxFiles: 1, License: "MIT"}
-	m.Evaluation = &protocol.EvaluationContract{Version: protocol.EvaluationVersion, Mode: "program", ComparisonID: "internal-native-conformance-v1", Executor: protocol.ExecutorRequirements{OS: "linux", Architecture: "amd64", Accelerator: "none", Features: []string{"isolated-checker", "isolated-candidate"}}, Measurements: []protocol.MeasurementDefinition{{Name: "checks", Type: "integer", Unit: m.Metric.Unit, Role: "primary", Interpretation: "direct", Definition: "Fixed first-party execution-boundary checks, never scientific progress.", Minimum: "0", Maximum: "1"}}, Rationale: protocol.MetricRationale{Objective: "Exercise a first-party platform security test, with no scientific claim.", ImprovementMeaning: "Passing means only that the fixed probes returned the expected results.", EvidenceURLs: []string{m.Evidence[0].URL}, PreservedConditions: []string{"Candidate source must not access checker state or hidden answer files."}, BaselineReason: "This is a conformance test with deliberately hostile program behavior.", MeaningfulDelta: "One passed fixed test is not a quantified security assurance level.", ProxyAttacks: []string{"Forged candidate stdout must never become an authoritative score frame."}, PermittedClaim: "These first-party conformance cases passed on the stated runtime.", ExcludedClaims: []string{"No external security review or scientific result is implied by this probe."}}, Program: &protocol.CandidateProgram{Build: build, Run: []string{"/work/probe"}, BuildBudget: protocol.StageBudget{TimeoutSeconds: 60, MemoryMB: 1024, MaxOutputBytes: 64 << 20, MaxProcesses: 64}, RunBudget: protocol.StageBudget{TimeoutSeconds: 2, MemoryMB: 64, MaxOutputBytes: 4096, MaxProcesses: 16}, MinRuns: 1, MaxRuns: 8, ScratchMB: 128}}
+	m.Evaluation = &protocol.EvaluationContract{Version: protocol.EvaluationVersion, Mode: "program", ComparisonID: "internal-native-conformance-v1", Executor: protocol.ExecutorRequirements{OS: "linux", Architecture: "amd64", Accelerator: "none", Features: []string{"isolated-checker", "isolated-candidate", "separated-toolchain"}}, Measurements: []protocol.MeasurementDefinition{{Name: "checks", Type: "integer", Unit: m.Metric.Unit, Role: "primary", Interpretation: "direct", Definition: "Fixed first-party execution-boundary checks, never scientific progress.", Minimum: "0", Maximum: "1"}}, Rationale: protocol.MetricRationale{Objective: "Exercise a first-party platform security test, with no scientific claim.", ImprovementMeaning: "Passing means only that the fixed probes returned the expected results.", EvidenceURLs: []string{m.Evidence[0].URL}, PreservedConditions: []string{"Candidate source must not access checker state or hidden answer files."}, BaselineReason: "This is a conformance test with deliberately hostile program behavior.", MeaningfulDelta: "One passed fixed test is not a quantified security assurance level.", ProxyAttacks: []string{"Forged candidate stdout must never become an authoritative score frame."}, PermittedClaim: "These first-party conformance cases passed on the stated runtime.", ExcludedClaims: []string{"No external security review or scientific result is implied by this probe."}}, Program: &protocol.CandidateProgram{Build: build, Run: []string{"/work/probe"}, BuildBudget: protocol.StageBudget{TimeoutSeconds: 60, MemoryMB: 1024, MaxOutputBytes: 64 << 20, MaxProcesses: 64}, RunBudget: protocol.StageBudget{TimeoutSeconds: 2, MemoryMB: 64, MaxOutputBytes: 4096, MaxProcesses: 16}, MinRuns: 1, MaxRuns: 8, ScratchMB: 128}}
 	return m
 }
 
-const nativeProbeChecker = `import base64, json, socket
+const nativeProbeChecker = `import base64, json, socket, os
 from pathlib import Path
 def call(action, data=b''):
     s=socket.socket(socket.AF_UNIX); s.connect('/sl/broker/control.sock')
@@ -143,7 +154,7 @@ def call(action, data=b''):
         chunks.append(chunk)
     s.close(); return json.loads(b''.join(chunks))
 build=call('build'); print('build',build,flush=True)
-passed=build['outcome']=='valid'
+passed=build['outcome']=='valid' and not os.access('/opt/sl-private/toolchain/usr',os.R_OK) and not Path('/usr/bin/gcc').exists() and not Path('/usr/bin/rustc').exists()
 if passed:
     for payload,outcome,stdout in %s:
         response=call('run',payload); print('case',payload,response,flush=True)
@@ -183,4 +194,48 @@ int main(void){
  if(open("/sl/output/result.json",O_WRONLY|O_CREAT,0644)>=0)return 15;
  puts("isolated");return 0;
 }
+`
+
+func nativeTimingManifest(m protocol.Manifest, hardware string) protocol.Manifest {
+	m.Evaluation.Mode = "performance"
+	m.Evaluation.Executor.HardwareClass = hardware
+	m.Evaluation.Executor.Features = append(m.Evaluation.Executor.Features, "trusted-timing")
+	m.Evaluation.Program.MinRuns = 22
+	m.Evaluation.Program.MaxRuns = 22
+	m.Metric.Name = "speedup"
+	m.Metric.Unit = "baseline / candidate"
+	m.Metric.Quantum = "0.000001"
+	m.Metric.BaselineTicks = "1000000"
+	for i := range m.Milestones {
+		m.Milestones[i].ThresholdTicks = "2000000"
+	}
+	for i := range m.Fixtures {
+		m.Fixtures[i].ExpectedTicks = ""
+	}
+	m.Evaluation.Measurements = []protocol.MeasurementDefinition{{Name: m.Metric.Name, Type: "rational", Role: "primary", Unit: m.Metric.Unit, Interpretation: "direct", Definition: "Conservative paired timing bound for a fixed first-party execution test."}}
+	_, digest, _ := protocol.ArtifactFromFiles(map[string][]byte{"probe.c": []byte(nativeTimingBaseline)}, m.Submission)
+	m.Evaluation.Measurement = &protocol.MeasurementPolicy{Estimator: "paired-median-ratio", Warmups: 2, Repetitions: 9, Order: "alternating", ConfidencePPM: 950000, MaxRelativeWidth: "1", MinimumSpeedup: "1.01", BaselineDigest: digest, BaselinePath: "baseline/source", BaselineBuild: []string{"/usr/bin/gcc", "-O2", "probe.c", "-o", "/work/probe"}, BaselineRun: []string{"/work/probe"}, TimerBoundary: "Root broker process start through complete output and descendant cleanup.", Population: "Fixed first-party CPU loop conformance only, with no scientific speedup claim."}
+	return m
+}
+
+const nativeTimingBaseline = "#include <stdio.h>\nint main(){volatile unsigned long x=0;for(unsigned i=0;i<100000000;i++)x+=i;puts(\"42\");}\n"
+const nativeTimingCandidate = "#include <stdio.h>\nint main(){volatile unsigned long x=0;for(unsigned i=0;i<50000000;i++)x+=i;puts(\"42\");}\n"
+const nativeTimingChecker = `import base64,json,socket
+from pathlib import Path
+def call(request):
+ s=socket.socket(socket.AF_UNIX);s.connect('/sl/broker/control.sock');s.sendall(json.dumps(request).encode());s.shutdown(socket.SHUT_WR);parts=[]
+ while True:
+  data=s.recv(65536)
+  if not data:break
+  parts.append(data)
+ s.close();return json.loads(b''.join(parts))
+build=call({'action':'build'});passed=build['outcome']=='valid' and not os.access('/opt/sl-private/toolchain/usr',os.R_OK) and not Path('/usr/bin/gcc').exists() and not Path('/usr/bin/rustc').exists();print('build',build,flush=True)
+if passed:
+ for i in range(11):
+  response=call({'action':'pair','input':base64.b64encode(b'fixed input').decode()})
+  if response['outcome']!='valid':passed=False;break
+  pair=response['pair'];quality=all(pair[side]['outcome']=='valid' and base64.b64decode(pair[side].get('stdout',''))==b'42\n' for side in ('baseline','candidate'))
+  print('pair',i,pair,flush=True)
+  passed=passed and quality and call({'action':'assess','qualityPassed':quality})['outcome']=='valid'
+Path('/sl/output/result.json').write_text(json.dumps({'apiVersion':'science-ladder/v2','kind':'ValidatorResult','comparisonId':'internal-native-conformance-v1','score':'0/1','measurements':{'speedup':'0/1'},'gates':{'isolation':passed}}))
 `

@@ -70,15 +70,17 @@ type ExecutorRequirements struct {
 // ExecutorCapabilities must come from authenticated platform enrollment, not an
 // unauthenticated runner advertisement. The runtime digest pins toolchain bytes.
 type ExecutorCapabilities struct {
-	OS                 string   `json:"os"`
-	Architecture       string   `json:"architecture"`
-	Accelerator        string   `json:"accelerator"`
-	HardwareClass      string   `json:"hardwareClass"`
-	RuntimeImageDigest string   `json:"runtimeImageDigest"`
-	Features           []string `json:"features"`
-	MaxVCPU            int      `json:"maxVCpu"`
-	MaxMemoryMB        int      `json:"maxMemoryMb"`
-	MaxSessionSeconds  int      `json:"maxSessionSeconds"`
+	OS                 string            `json:"os"`
+	Architecture       string            `json:"architecture"`
+	Accelerator        string            `json:"accelerator"`
+	HardwareClass      string            `json:"hardwareClass"`
+	RuntimeImageDigest string            `json:"runtimeImageDigest"`
+	Features           []string          `json:"features"`
+	MaxVCPU            int               `json:"maxVCpu"`
+	MaxMemoryMB        int               `json:"maxMemoryMb"`
+	MaxSessionSeconds  int               `json:"maxSessionSeconds"`
+	MaxJobSeconds      int               `json:"maxJobSeconds,omitempty"`
+	Assets             []EvaluationAsset `json:"assets,omitempty"`
 }
 
 type StageBudget struct {
@@ -113,16 +115,19 @@ type EvaluationAsset struct {
 // The interval is the distribution-free order-statistic interval for the median
 // paired speedup; its coverage is computed exactly from the binomial law.
 type MeasurementPolicy struct {
-	Estimator        string `json:"estimator"` // paired-median-ratio
-	Warmups          int    `json:"warmups"`
-	Repetitions      int    `json:"repetitions"`
-	Order            string `json:"order"` // alternating
-	ConfidencePPM    int    `json:"confidencePpm"`
-	MaxRelativeWidth string `json:"maxRelativeWidth"`
-	MinimumSpeedup   string `json:"minimumSpeedup"`
-	BaselineDigest   string `json:"baselineDigest"`
-	TimerBoundary    string `json:"timerBoundary"`
-	Population       string `json:"population"`
+	Estimator        string   `json:"estimator"` // paired-median-ratio
+	Warmups          int      `json:"warmups"`
+	Repetitions      int      `json:"repetitions"`
+	Order            string   `json:"order"` // alternating
+	ConfidencePPM    int      `json:"confidencePpm"`
+	MaxRelativeWidth string   `json:"maxRelativeWidth"`
+	MinimumSpeedup   string   `json:"minimumSpeedup"`
+	BaselineDigest   string   `json:"baselineDigest"`
+	BaselinePath     string   `json:"baselinePath"`
+	BaselineBuild    []string `json:"baselineBuild"`
+	BaselineRun      []string `json:"baselineRun"`
+	TimerBoundary    string   `json:"timerBoundary"`
+	Population       string   `json:"population"`
 }
 
 func boundedText(s string) bool { return len(strings.TrimSpace(s)) >= 12 && len(s) <= 8192 }
@@ -308,6 +313,14 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 		if e.Measurement == nil || !features["trusted-timing"] || r.HardwareClass == "" {
 			return errors.New("performance evaluation requires locked hardware and trusted measurement policy")
 		}
+		if m.Direction != "maximize" {
+			return errors.New("paired speedup must be maximized")
+		}
+		for _, d := range e.Measurements {
+			if d.Role == "primary" && d.Type != "rational" {
+				return errors.New("paired timing primary is the exact rational lower confidence bound")
+			}
+		}
 		if err := ValidateMeasurementPolicy(*e.Measurement); err != nil {
 			return err
 		}
@@ -320,7 +333,7 @@ func ValidateEvaluation(e EvaluationContract, m Metric, sources []Source, resour
 	if e.Mode == "proof" && !features["native-proof-checker"] {
 		return errors.New("proof evaluation requires a proof-checker capability")
 	}
-	if len(e.Assets) > 32 {
+	if len(e.Assets) > 16 {
 		return errors.New("too many immutable assets")
 	}
 	assetNames := map[string]bool{}
@@ -363,6 +376,17 @@ func MatchExecutor(e EvaluationContract, resources Resources, runtimeDigest stri
 	}
 	if resources.VCPU > c.MaxVCPU || resources.MemoryMB > c.MaxMemoryMB || resources.TimeoutSeconds > c.MaxSessionSeconds {
 		return errors.New("executor has insufficient resources")
+	}
+	for _, asset := range e.Assets {
+		found := false
+		for _, available := range c.Assets {
+			if asset == available {
+				found = true
+			}
+		}
+		if !found {
+			return fmt.Errorf("executor lacks immutable asset %s", asset.Name)
+		}
 	}
 	for _, required := range r.Features {
 		found := false
@@ -470,7 +494,7 @@ func ValidateRunMeasurementEvidence(run RunReceipt, m Manifest) error {
 		}
 		return nil
 	}
-	if run.Outcome != "valid" && run.Outcome != "hard_gate_failed" {
+	if run.Outcome != "valid" && run.Outcome != "hard_gate_failed" && run.Outcome != "measurement_inconclusive" {
 		return nil
 	}
 	if run.ValidatorResult == nil {
@@ -495,7 +519,7 @@ func ValidateRunMeasurementEvidence(run RunReceipt, m Manifest) error {
 		}
 		failed = failed || !value
 	}
-	if failed != (run.Outcome == "hard_gate_failed") {
+	if failed != (run.Outcome == "hard_gate_failed") || ValidatorOutcome(result) != run.Outcome {
 		return errors.New("run outcome differs from measurement gates")
 	}
 	return nil

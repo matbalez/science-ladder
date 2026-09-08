@@ -22,12 +22,13 @@ import (
 const AdvisoryPolicyVersion = "offline-advisory-v1"
 
 type PackageCoordinate struct {
-	Ecosystem     string `json:"ecosystem"`
-	Name          string `json:"name"`
-	Version       string `json:"version"`
-	Digest        string `json:"digest,omitempty"`
-	SourceName    string `json:"sourceName,omitempty"`
-	SourceVersion string `json:"sourceVersion,omitempty"`
+	ExecutionDomain string `json:"executionDomain,omitempty"`
+	Ecosystem       string `json:"ecosystem"`
+	Name            string `json:"name"`
+	Version         string `json:"version"`
+	Digest          string `json:"digest,omitempty"`
+	SourceName      string `json:"sourceName,omitempty"`
+	SourceVersion   string `json:"sourceVersion,omitempty"`
 }
 type RuntimeInventory struct {
 	APIVersion               string              `json:"apiVersion"`
@@ -96,6 +97,9 @@ func normalizePythonVersion(version string) (string, error) {
 	return out, nil
 }
 func normalizePackage(p PackageCoordinate) (PackageCoordinate, error) {
+	if p.ExecutionDomain != "" && p.ExecutionDomain != "checker" && p.ExecutionDomain != "candidate-only" {
+		return p, errors.New("invalid package execution domain")
+	}
 	if len(p.Name) > 256 || len(p.Version) > 256 || p.Name == "" || p.Version == "" {
 		return p, errors.New("invalid package coordinate")
 	}
@@ -253,6 +257,9 @@ func BuildSBOM(runtimeDigest string, packages []PackageCoordinate) ([]byte, erro
 		if p.Digest != "" {
 			component["hashes"] = []any{map[string]any{"alg": "SHA-256", "content": strings.TrimPrefix(p.Digest, "sha256:")}}
 		}
+		if p.ExecutionDomain != "" {
+			component["properties"] = []any{map[string]string{"name": "science-ladder:execution-domain", "value": p.ExecutionDomain}}
+		}
 		components = append(components, component)
 	}
 	raw, err := json.Marshal(map[string]any{"bomFormat": "CycloneDX", "specVersion": "1.6", "version": 1, "components": components})
@@ -278,6 +285,13 @@ func ReadRuntimeInventory(file PinnedFile) (RuntimeInventory, error) {
 }
 
 func ScanAdvisories(packages []PackageCoordinate, snapshot AdvisorySnapshot, now time.Time) ([]protocol.VulnerabilityFinding, string) {
+	return ScanAdvisoriesForDomains(packages, snapshot, now, false)
+}
+
+// Candidate-only tooling is already permitted arbitrary code in its isolated
+// domain. Findings remain public with unchanged severity; this policy must never
+// apply to components accessible to the checker or to incomplete coverage.
+func ScanAdvisoriesForDomains(packages []PackageCoordinate, snapshot AdvisorySnapshot, now time.Time, separated bool) ([]protocol.VulnerabilityFinding, string) {
 	findings := []protocol.VulnerabilityFinding{}
 	unknown := func(id string) {
 		findings = append(findings, protocol.VulnerabilityFinding{Component: "platform advisory policy", ID: id, Severity: "unknown"})
@@ -294,7 +308,7 @@ func ScanAdvisories(packages []PackageCoordinate, snapshot AdvisorySnapshot, now
 			return findings, "unknown"
 		}
 		switch u.Hostname() {
-		case "api.osv.dev", "osv.dev", "osv-vulnerabilities.storage.googleapis.com", "security-tracker.debian.org", "security-team.debian.org", "bugs.debian.org", "bugzilla.redhat.com", "api.github.com", "github.com", "raw.githubusercontent.com", "www.python.org", "pypi.org":
+		case "cveawg.mitre.org", "api.osv.dev", "osv.dev", "osv-vulnerabilities.storage.googleapis.com", "security-tracker.debian.org", "security-team.debian.org", "bugs.debian.org", "bugzilla.redhat.com", "api.github.com", "github.com", "raw.githubusercontent.com", "www.python.org", "pypi.org":
 		default:
 			unknown("unapproved_primary_advisory_source")
 			return findings, "unknown"
@@ -330,21 +344,28 @@ func ScanAdvisories(packages []PackageCoordinate, snapshot AdvisorySnapshot, now
 		}
 		for _, advisory := range entry.Advisories {
 			severity := strings.ToLower(advisory.Severity)
+			candidateOnly := separated && p.ExecutionDomain == "candidate-only"
 			switch severity {
 			case "none", "low", "moderate", "medium":
 			case "high", "critical":
-				if status != "unknown" {
+				if !candidateOnly && status != "unknown" {
 					status = "fail"
 				}
 			default:
-				status = "unknown"
+				if !candidateOnly {
+					status = "unknown"
+				}
 				severity = "unknown"
 			}
 			if advisory.ID == "" || !sources[advisory.SourceURL] {
 				status = "unknown"
 				severity = "unknown"
 			}
-			findings = append(findings, protocol.VulnerabilityFinding{Component: packageKey(p), ID: advisory.ID, Severity: severity, SourceURL: advisory.SourceURL})
+			disposition := ""
+			if candidateOnly {
+				disposition = "isolated-candidate-only"
+			}
+			findings = append(findings, protocol.VulnerabilityFinding{Component: packageKey(p), ID: advisory.ID, Severity: severity, SourceURL: advisory.SourceURL, Disposition: disposition})
 		}
 	}
 	return findings, status
@@ -405,7 +426,19 @@ func (b *Builder) Scan(files map[string][]byte, m protocol.Manifest, sbomPath st
 		return scan, ref, err
 	}
 	scan.AdvisorySnapshotDigest = config.AdvisorySnapshot.Digest
-	scan.Findings, scan.Status = ScanAdvisories(packages, snapshot, scan.ScannedAt)
+	requestedSeparation := false
+	if m.Evaluation != nil {
+		for _, f := range m.Evaluation.Executor.Features {
+			if f == "separated-toolchain" {
+				requestedSeparation = true
+			}
+		}
+	}
+	separated := separatedToolchain(config, inventory) && requestedSeparation
+	if separated {
+		scan.PolicyVersion = "offline-advisory-domains-v2"
+	}
+	scan.Findings, scan.Status = ScanAdvisoriesForDomains(packages, snapshot, scan.ScannedAt, separated)
 	if scan.Status != "pass" {
 		return scan, ref, errors.New("vulnerability review has high/critical findings, stale data or incomplete coverage")
 	}

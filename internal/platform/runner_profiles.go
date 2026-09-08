@@ -73,7 +73,11 @@ func (s *Server) requireExecutor(ctx context.Context, tx pgx.Tx, m protocol.Mani
 		}
 		cd, _ := protocol.Digest(c)
 		ad, _ := protocol.Digest(a.Capabilities)
-		if cd == ad && protocol.MatchExecutor(*m.Evaluation, m.Resources, m.Validator.RuntimeImageDigest, c) == nil && s.verifyHostDelegation(h, time.Now()) == nil {
+		purpose := "submission"
+		if lockedProfile == "" {
+			purpose = "preflight"
+		}
+		if cd == ad && protocol.MatchJobLease(m, purpose, c) && protocol.MatchExecutor(*m.Evaluation, m.Resources, m.Validator.RuntimeImageDigest, c) == nil && s.verifyHostDelegation(h, time.Now()) == nil {
 			return nil
 		}
 	}

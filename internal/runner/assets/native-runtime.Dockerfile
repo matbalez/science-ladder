@@ -18,14 +18,22 @@ RUN test "$DEBIAN_SNAPSHOT" = 20260907T000000Z && \
 COPY --from=certificates /etc/ssl/certs/ca-certificates.crt /tmp/platform-bootstrap-ca.crt
 RUN apt-get -o Acquire::https::CaInfo=/tmp/platform-bootstrap-ca.crt -o Acquire::Check-Valid-Until=false update && \
     DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::https::CaInfo=/tmp/platform-bootstrap-ca.crt dist-upgrade --no-install-recommends -y && \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/platform-bootstrap-ca.crt
+    printf 'deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20260907T000000Z/ bookworm main\n' > /etc/apt/sources.list.d/compat.list && \
+    apt-get -o Acquire::https::CaInfo=/tmp/platform-bootstrap-ca.crt -o Acquire::Check-Valid-Until=false update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::https::CaInfo=/tmp/platform-bootstrap-ca.crt install --allow-downgrades -y zlib1g=1:1.2.13.dfsg-1 && \
+    DEBIAN_FRONTEND=noninteractive apt-get remove -y libgnutls30 && \
+    DEBIAN_FRONTEND=noninteractive apt-get autoremove --purge -y && \
+    rm -f /usr/lib/x86_64-linux-gnu/security/pam_namespace.so /usr/sbin/pam_namespace_helper && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/platform-bootstrap-ca.crt /etc/apt/sources.list.d/compat.list
 COPY candidate-sandbox.c /tmp/candidate-sandbox.c
-RUN mkdir -p /usr/local/bin /sl/candidate /sl/broker && \
+RUN mkdir -p /usr/local/bin /sl/candidate /sl/broker /sl/baseline && \
     gcc -O2 -Wall -Wextra -Werror -static /tmp/candidate-sandbox.c -o /usr/local/bin/sl-candidate-sandbox && \
     rm /tmp/candidate-sandbox.c && \
     ln -s /usr/bin/python3 /usr/local/bin/python3 && \
     find /usr -xdev -type f -perm /6000 -exec chmod a-s '{}' + && \
     dpkg-query -W -f='${binary:Package}\t${Version}\t${source:Package}\t${source:Version}\n' > /usr/local/share/science-ladder-native-packages.tsv
+COPY split-native-runtime.py /tmp/split-native-runtime.py
+RUN /usr/bin/python3 /tmp/split-native-runtime.py
 LABEL org.opencontainers.image.source="https://github.com/matbalez/science-ladder"
 LABEL org.opencontainers.image.description="Science Ladder isolated native evaluation toolchain; requires enrolled Linux v2 guest controls"
 ENV PATH=/usr/local/bin:/usr/bin:/bin LC_ALL=C.UTF-8 PYTHONDONTWRITEBYTECODE=1

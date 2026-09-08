@@ -142,6 +142,7 @@ type Lock struct {
 }
 
 type ValidatorResult struct {
+	Timing       *TimingEvidence   `json:"timing,omitempty"`
 	ComparisonID string            `json:"comparisonId,omitempty"`
 	Measurements map[string]string `json:"measurements,omitempty"`
 	APIVersion   string            `json:"apiVersion"`
@@ -249,10 +250,11 @@ type BuildReport struct {
 }
 
 type VulnerabilityFinding struct {
-	Component string `json:"component"`
-	ID        string `json:"id"`
-	Severity  string `json:"severity"`
-	SourceURL string `json:"sourceUrl"`
+	Disposition string `json:"disposition,omitempty"`
+	Component   string `json:"component"`
+	ID          string `json:"id"`
+	Severity    string `json:"severity"`
+	SourceURL   string `json:"sourceUrl"`
 }
 
 type VulnerabilityScan struct {

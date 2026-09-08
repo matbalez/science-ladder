@@ -119,11 +119,25 @@ func validateBuild(job protocol.RunnerJob, run protocol.RunReceipt) error {
 		return fail(422, "runtime_image_mismatch", "Preflight runtime differs from the locked validator runtime")
 	}
 	scan := b.VulnerabilityScan
-	if b.SBOM == nil || scan == nil || scan.Status != "pass" || scan.PolicyVersion != "offline-advisory-v1" || scan.PackagesChecked < 1 || scan.AdvisorySnapshotDigest != job.AdvisorySnapshotDigest || scan.RuntimeInventoryDigest != job.RuntimeInventoryDigest || scan.SBOMDigest != b.SBOM.Digest || !protocol.ValidDigest(scan.AdvisorySnapshotDigest) || !protocol.ValidDigest(scan.RuntimeInventoryDigest) || scan.ScannedAt.After(time.Now().Add(5*time.Minute)) || scan.ScannedAt.Before(time.Now().Add(-7*24*time.Hour)) {
+	if b.SBOM == nil || scan == nil || scan.Status != "pass" || (scan.PolicyVersion != "offline-advisory-v1" && !(job.Manifest.APIVersion == protocol.ManifestV2 && job.Manifest.Validator.Profile == "native-evaluator-v2" && scan.PolicyVersion == "offline-advisory-domains-v2")) || scan.PackagesChecked < 1 || scan.AdvisorySnapshotDigest != job.AdvisorySnapshotDigest || scan.RuntimeInventoryDigest != job.RuntimeInventoryDigest || scan.SBOMDigest != b.SBOM.Digest || !protocol.ValidDigest(scan.AdvisorySnapshotDigest) || !protocol.ValidDigest(scan.RuntimeInventoryDigest) || scan.ScannedAt.After(time.Now().Add(5*time.Minute)) || scan.ScannedAt.Before(time.Now().Add(-7*24*time.Hour)) {
 		return fail(422, "vulnerability_scan_required", "Preflight requires a current passing signed vulnerability report over the complete runtime inventory and uploaded SBOM")
 	}
+	separated := false
+	if job.Manifest.Evaluation != nil {
+		for _, f := range job.Manifest.Evaluation.Executor.Features {
+			if f == "separated-toolchain" {
+				separated = true
+			}
+		}
+	}
 	for _, finding := range scan.Findings {
-		if finding.Severity == "high" || finding.Severity == "critical" {
+		if finding.Disposition != "" {
+			if finding.Disposition != "isolated-candidate-only" || scan.PolicyVersion != "offline-advisory-domains-v2" || !separated {
+				return fail(422, "vulnerability_domain_unbound", "Advisory domain is not bound to an isolated toolchain contract")
+			}
+			continue
+		}
+		if finding.Severity == "high" || finding.Severity == "critical" || finding.Severity == "unknown" {
 			return fail(422, "vulnerability_policy_failed", "Unresolved high or critical vulnerabilities block publication")
 		}
 	}

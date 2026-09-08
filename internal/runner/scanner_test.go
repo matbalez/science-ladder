@@ -176,3 +176,29 @@ func TestScanRequiresPlatformSignedPinnedPolicy(t *testing.T) {
 		t.Fatal("wrong file digest accepted")
 	}
 }
+
+func TestCandidateDomainKeepsFindingsWithoutWeakeningCheckerGate(t *testing.T) {
+	now := time.Now().UTC()
+	inv, s := scannerFixture(now)
+	inv.Packages[0].ExecutionDomain = "candidate-only"
+	s.Coverage[0].Package = inv.Packages[0]
+	s.Coverage[0].Advisories = []Advisory{{ID: "TEST-HIGH", Severity: "high", SourceURL: s.Sources[0].URL}}
+	if _, status := ScanAdvisories(inv.Packages, s, now); status != "fail" {
+		t.Fatal("legacy policy silently trusts a declared execution domain")
+	}
+	f, status := ScanAdvisoriesForDomains(inv.Packages, s, now, true)
+	if status != "pass" || len(f) != 1 || f[0].Severity != "high" || f[0].Disposition != "isolated-candidate-only" {
+		t.Fatal("candidate finding was erased or severity changed", status, f)
+	}
+	inv.Packages[0].ExecutionDomain = "checker"
+	s.Coverage[0].Package = inv.Packages[0]
+	if _, status := ScanAdvisoriesForDomains(inv.Packages, s, now, true); status != "fail" {
+		t.Fatal("trusted checker high finding accepted")
+	}
+	inv.Packages[0].ExecutionDomain = "candidate-only"
+	s.Coverage[0].Package = inv.Packages[0]
+	s.Coverage[0].Status = "unknown"
+	if _, status := ScanAdvisoriesForDomains(inv.Packages, s, now, true); status != "unknown" {
+		t.Fatal("incomplete coverage hidden by candidate scope")
+	}
+}

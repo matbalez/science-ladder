@@ -124,3 +124,39 @@ The native profile is not yet deployed for public submissions. Trusted paired
 performance measurement, proof adapters, extended resource/asset handling and
 final release commissioning are still under development. Publishing the runtime
 image alone does not commission it.
+
+### Native execution domains and review
+
+The native image now builds two filesystem views. The candidate sees the full
+pinned compiler toolchain through a read-only bind. The checker sees the explicit
+Python and numerical-library closure; compiler tools live under a root-only
+parent outside its access. The component inventory records both views and every
+package, including packages available only to the candidate.
+
+`offline-advisory-domains-v2` retains candidate-toolchain findings with their
+published severity and the disposition `isolated-candidate-only`. Such tools
+already run as arbitrary candidate code with no checker or host authority. This
+is not a claim that their defects are fixed or that their severity is lower.
+High, critical and unresolved findings in checker-accessible components still
+block preflight. Incomplete package coverage and unverified sources block every
+domain. The older policy is unchanged. The new policy requires a signed
+`separated-toolchain` capability, a pinned component inventory, a matching
+challenge requirement, and the split filesystem's hardware conformance before
+commissioning. A package name supplied by a challenge cannot opt into it.
+
+Named evaluation assets are operator-provisioned immutable SquashFS disks. The
+signed profile pins their bytes, size, name, purpose and disclosure policy. They
+are mounted read-only without duplicating multi-gigabyte files in private tmpfs.
+Only public assets enter the candidate namespace. Toolchain assets require
+component/advisory inventory review as part of commissioning; arbitrary creator
+URLs never become host mounts.
+
+V2 session envelopes support larger CPU/memory requests and up to two hours.
+Admission still requires a matching commissioned machine. Job leases include
+all twice-run preflight fixtures, with an eighteen-hour maximum. Profiles declare
+the maximum job duration they can authorize. Renewal happens early enough to
+finish that whole job; increasing a manifest timeout alone cannot bypass the
+lease, signed-object grant, physical resource or capability checks.
+
+These changes are under release verification. A checked-in recipe is not an
+assertion that the production profile has been commissioned.

@@ -46,6 +46,7 @@ type HostAttestation struct {
 }
 
 type Config struct {
+	Assets                 []AssetDisk                    `json:"assets,omitempty"`
 	Capabilities           *protocol.ExecutorCapabilities `json:"capabilities,omitempty"`
 	HostID                 string                         `json:"hostId"`
 	HostGroup              string                         `json:"hostGroup"`
@@ -403,9 +404,16 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 	if err := build.Run(); err != nil {
 		return protocol.Envelope{}, errors.New("trusted job configuration disk failed")
 	}
+	assetDisks, err := selectedAssetDisks(job.Manifest, r.Config)
+	if err != nil {
+		return protocol.Envelope{}, err
+	}
 	drives := []map[string]any{{"drive_id": "rootfs", "path_on_host": "/rootfs.ext4", "is_root_device": true, "is_read_only": true}}
 	for _, name := range []string{"validator", "submission", "suite", "challenge", "config"} {
 		drives = append(drives, map[string]any{"drive_id": name, "path_on_host": "/" + name + ".squashfs", "is_root_device": false, "is_read_only": true})
+	}
+	for i := range assetDisks {
+		drives = append(drives, map[string]any{"drive_id": fmt.Sprintf("asset-%02d", i), "path_on_host": "/" + assetDiskFilename(i), "is_root_device": false, "is_read_only": true})
 	}
 	configuration := map[string]any{"boot-source": map[string]any{"kernel_image_path": "/vmlinux", "boot_args": "console=ttyS0 reboot=k panic=1 pci=off root=/dev/vda ro init=/sbin/sl-init"}, "drives": drives, "machine-config": map[string]any{"vcpu_count": job.Manifest.Resources.VCPU, "mem_size_mib": job.Manifest.Resources.MemoryMB, "smt": false}, "network-interfaces": []any{}}
 	cpuBytes, err := os.ReadFile(r.Config.CPUConfig.Path)
@@ -432,6 +440,11 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 	}); err != nil {
 		return protocol.Envelope{}, err
 	}
+	unmountAssets, err := mountAssetDisks(root, assetDisks)
+	if err != nil {
+		return protocol.Envelope{}, err
+	}
+	defer unmountAssets()
 	args := []string{"--id", job.ID, "--exec-file", r.Config.Firecracker.Path, "--uid", fmt.Sprint(r.Config.UID), "--gid", fmt.Sprint(r.Config.GID), "--chroot-base-dir", lease, "--netns", r.Config.NetworkNamespace, "--cgroup-version", "2", "--cgroup", "cpuset.cpus=" + r.Config.CPUSet, "--cgroup", "memory.max=" + fmt.Sprint(int64(job.Manifest.Resources.MemoryMB+256)*1024*1024), "--cgroup", "pids.max=64", "--", "--no-api", "--config-file", "/firecracker.json"}
 	command := exec.CommandContext(ctx, r.Config.Jailer.Path, args...)
 	if err := isolateJailerProcess(command); err != nil {
@@ -460,7 +473,7 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 		} else if err == nil {
 			result, ticks, err := protocol.ValidateResult(resultBytes, job.Manifest)
 			if err == nil {
-				receipt.Outcome = "valid"
+				receipt.Outcome = protocol.ValidatorOutcome(result)
 				receipt.ScoreTicks = ticks
 				receipt.Gates = result.Gates
 				if job.Manifest.APIVersion == protocol.ManifestV2 {
@@ -481,6 +494,9 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 	if r.probeDiagnostics != nil && receipt.Outcome != "valid" {
 		fmt.Fprintf(r.probeDiagnostics, "Fixed platform probe %s (%v), duration %d ms:\n%s\n", receipt.Outcome, runErr, duration, output.b.String())
 	}
+	if err := unmountAssets(); err != nil {
+		return protocol.Envelope{}, errors.New("immutable asset teardown failed")
+	}
 	if err := os.RemoveAll(lease); err != nil {
 		return protocol.Envelope{}, errors.New("ephemeral teardown failed; host must be quarantined")
 	}
@@ -495,7 +511,7 @@ func ValidateJob(job protocol.RunnerJob, c Config) error {
 	if job.Manifest.VerificationPolicy != "" && job.Manifest.VerificationPolicy != protocol.JobVerificationPolicy(job) {
 		return errors.New("job policy differs from immutable manifest")
 	}
-	if job.APIVersion != protocol.APIVersion || job.Kind != "ValidationJob" || len(job.ID) > 80 || job.ID == "" || strings.ContainsAny(job.ID, "./\\\n\r ") || !job.ExpiresAt.After(time.Now()) || job.CreatedAt.After(time.Now().Add(time.Minute)) || job.ExpiresAt.Sub(job.CreatedAt) > time.Hour {
+	if job.APIVersion != protocol.APIVersion || job.Kind != "ValidationJob" || len(job.ID) > 80 || job.ID == "" || strings.ContainsAny(job.ID, "./\\\n\r ") || !job.ExpiresAt.After(time.Now()) || job.CreatedAt.After(time.Now().Add(time.Minute)) || job.ExpiresAt.Sub(time.Now()) > protocol.JobLeaseDuration(job.Manifest, job.Purpose)+time.Minute {
 		return errors.New("invalid or expired job")
 	}
 	if job.Purpose != "submission" && job.Purpose != "confirmation" {
@@ -506,6 +522,9 @@ func ValidateJob(job protocol.RunnerJob, c Config) error {
 	}
 	if job.Manifest.Validator.RuntimeImageDigest != c.RuntimeImageDigest {
 		return errors.New("job runtime image does not match enrolled rootfs profile")
+	}
+	if c.Capabilities != nil && !protocol.MatchJobLease(job.Manifest, job.Purpose, *c.Capabilities) {
+		return errors.New("job exceeds enrolled authorization envelope")
 	}
 	if err := matchConfiguredEvaluation(job.Manifest, c); err != nil {
 		return err

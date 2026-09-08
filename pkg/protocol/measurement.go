@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 	"sort"
+	"strings"
 )
 
 type TimingTrial struct {
@@ -26,6 +27,9 @@ type TimingSummary struct {
 func ValidateMeasurementPolicy(p MeasurementPolicy) error {
 	if p.Estimator != "paired-median-ratio" || p.Order != "alternating" || p.Warmups < 1 || p.Warmups > 100 || p.Repetitions < 9 || p.Repetitions > 255 || p.ConfidencePPM < 900000 || p.ConfidencePPM > 999999 {
 		return errors.New("unsupported or insufficient paired measurement schedule")
+	}
+	if ValidatePath(strings.TrimSuffix(p.BaselinePath, "/")) != nil || !strings.HasPrefix(p.BaselinePath, "baseline/") || validateStageArgv(p.BaselineBuild) != nil || validateStageArgv(p.BaselineRun) != nil {
+		return errors.New("frozen baseline source path and commands required")
 	}
 	if !ValidDigest(p.BaselineDigest) || !boundedText(p.TimerBoundary) || !boundedText(p.Population) {
 		return errors.New("baseline bytes, timer boundary and target population must be frozen")
@@ -109,4 +113,85 @@ func SummarizeTimings(trials []TimingTrial, p MeasurementPolicy) (TimingSummary,
 		result.PracticalGain = false
 	}
 	return result, nil
+}
+
+// TimingEvidence is populated by the root guest broker after the reviewed
+// checker acknowledges quality. Candidate output never supplies these times.
+type TimingEvidence struct {
+	BaselineDigest string        `json:"baselineDigest"`
+	Warmups        []TimingTrial `json:"warmups"`
+	Trials         []TimingTrial `json:"trials"`
+	Summary        TimingSummary `json:"summary"`
+}
+
+func ValidateTimingEvidence(e TimingEvidence, p MeasurementPolicy) (TimingSummary, error) {
+	if e.BaselineDigest != p.BaselineDigest || len(e.Warmups) != p.Warmups {
+		return TimingSummary{}, errors.New("baseline or warmup schedule mismatch")
+	}
+	for i, t := range e.Warmups {
+		if !t.QualityPassed || t.BaselineNanos <= 0 || t.CandidateNanos <= 0 || t.BaselineNanos > 86400e9 || t.CandidateNanos > 86400e9 || t.BaselineFirst != (i%2 == 0) {
+			return TimingSummary{}, errors.New("warmup failed or order changed")
+		}
+	}
+	summary, err := SummarizeTimings(e.Trials, p)
+	if err != nil {
+		return summary, err
+	}
+	if summary != e.Summary {
+		return summary, errors.New("reported timing summary differs from raw paired evidence")
+	}
+	return summary, nil
+}
+
+// ConfirmMeasuredRuns uses independent timing intervals, not scalar equality or
+// a widened deterministic tolerance. A disagreement is inconclusive and does
+// not pause unrelated challenge submissions.
+func ConfirmMeasuredRuns(a, b RunReceipt, m Manifest) (string, error) {
+	if m.APIVersion != ManifestV2 || m.Evaluation == nil || m.Evaluation.Measurement == nil || m.Evaluation.Mode != "performance" || a.Outcome != "valid" || b.Outcome != "valid" {
+		return "", errors.New("valid measured repeats required")
+	}
+	for _, r := range []RunReceipt{a, b} {
+		if err := ValidateRunMeasurementEvidence(r, m); err != nil {
+			return "", err
+		}
+	}
+	x, y := a.ValidatorResult.Timing.Summary, b.ValidatorResult.Timing.Summary
+	xl, _ := MeasurementNumber(x.LowerRatio, "rational")
+	xu, _ := MeasurementNumber(x.UpperRatio, "rational")
+	yl, _ := MeasurementNumber(y.LowerRatio, "rational")
+	yu, _ := MeasurementNumber(y.UpperRatio, "rational")
+	if xl.Cmp(yu) > 0 || yl.Cmp(xu) > 0 {
+		return "", errors.New("fresh timing intervals do not overlap")
+	}
+	if c, _ := CompareTicks(a.ScoreTicks, b.ScoreTicks); c < 0 {
+		return a.ScoreTicks, nil
+	}
+	return b.ScoreTicks, nil
+}
+
+func ValidateMeasuredFixture(a, b RunReceipt, m Manifest, f Fixture) (string, error) {
+	if a.Outcome != f.ExpectedOutcome || b.Outcome != a.Outcome || a.ArtifactDigest != b.ArtifactDigest {
+		return "", errors.New("fixture outcome or artifact changed")
+	}
+	if a.Outcome != "valid" {
+		return "", nil
+	}
+	score, err := ConfirmMeasuredRuns(a, b, m)
+	if err != nil {
+		return "", err
+	}
+	if f.Name == "baseline" {
+		if a.ArtifactDigest != m.Evaluation.Measurement.BaselineDigest {
+			return "", errors.New("baseline fixture is not the frozen reference program")
+		}
+		for _, r := range []RunReceipt{a, b} {
+			s := r.ValidatorResult.Timing.Summary
+			lo, _ := MeasurementNumber(s.LowerRatio, "rational")
+			hi, _ := MeasurementNumber(s.UpperRatio, "rational")
+			if lo.Cmp(big.NewRat(1, 1)) > 0 || hi.Cmp(big.NewRat(1, 1)) < 0 {
+				return "", errors.New("baseline self-comparison shows measurement bias")
+			}
+		}
+	}
+	return score, nil
 }

@@ -74,7 +74,7 @@ func TestAppleExecutionIsAnExplicitCapabilityMatch(t *testing.T) {
 }
 
 func timingPolicy() MeasurementPolicy {
-	return MeasurementPolicy{Estimator: "paired-median-ratio", Warmups: 2, Repetitions: nineTrials, Order: "alternating", ConfidencePPM: 950000, MaxRelativeWidth: "0.1", MinimumSpeedup: "1.02", BaselineDigest: DigestBytes([]byte("baseline")), TimerBoundary: "Process start through complete output and synchronization.", Population: "The locked workload cases on this exact enrolled hardware."}
+	return MeasurementPolicy{BaselinePath: "baseline/source", BaselineBuild: []string{"/usr/bin/gcc", "main.c", "-o", "main"}, BaselineRun: []string{"/work/main"}, Estimator: "paired-median-ratio", Warmups: 2, Repetitions: nineTrials, Order: "alternating", ConfidencePPM: 950000, MaxRelativeWidth: "0.1", MinimumSpeedup: "1.02", BaselineDigest: DigestBytes([]byte("baseline")), TimerBoundary: "Process start through complete output and synchronization.", Population: "The locked workload cases on this exact enrolled hardware."}
 }
 
 const nineTrials = 9
@@ -220,5 +220,64 @@ func TestLegacySchemaAndManifestStayFrozen(t *testing.T) {
 	m.Evaluation = &EvaluationContract{}
 	if ValidateManifest(m) == nil {
 		t.Fatal("v1 manifest accepted v2 fields")
+	}
+}
+
+func timingRun(t *testing.T, offset int64) (Manifest, RunReceipt) {
+	t.Helper()
+	p := timingPolicy()
+	e := &EvaluationContract{Mode: "performance", ComparisonID: "paired-test-v2", Measurement: &p, Measurements: []MeasurementDefinition{{Name: "speedup", Type: "rational"}}}
+	m := Manifest{APIVersion: ManifestV2, Evaluation: e, Metric: Metric{Name: "speedup", Quantum: "0.001", Direction: "maximize"}, HardGates: []string{"quality"}}
+	evidence := &TimingEvidence{BaselineDigest: p.BaselineDigest}
+	for i := 0; i < p.Warmups; i++ {
+		evidence.Warmups = append(evidence.Warmups, TimingTrial{200, 100, i%2 == 0, true})
+	}
+	for i := 0; i < p.Repetitions; i++ {
+		evidence.Trials = append(evidence.Trials, TimingTrial{200 + offset + int64(i), 100, i%2 == 0, true})
+	}
+	var err error
+	evidence.Summary, err = SummarizeTimings(evidence.Trials, p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := &ValidatorResult{APIVersion: ManifestV2, Kind: "ValidatorResult", ComparisonID: e.ComparisonID, Score: evidence.Summary.LowerRatio, Measurements: map[string]string{"speedup": evidence.Summary.LowerRatio}, Gates: map[string]bool{"quality": true}, Timing: evidence}
+	data, _ := json.Marshal(result)
+	_, ticks, err := ValidateResult(data, m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return m, RunReceipt{Outcome: "valid", ScoreTicks: ticks, Gates: result.Gates, ValidatorResult: result}
+}
+
+func TestMeasuredConfirmationRecomputesEvidenceAndDoesNotUseScalarTolerance(t *testing.T) {
+	m, a := timingRun(t, 0)
+	_, b := timingRun(t, 1)
+	if _, err := ConfirmScores(a.ScoreTicks, b.ScoreTicks, Metric{Direction: "maximize", ToleranceTicks: "0"}); err == nil {
+		t.Fatal("test requires distinct scalars")
+	}
+	if ticks, err := ConfirmMeasuredRuns(a, b, m); err != nil || ticks != a.ScoreTicks {
+		t.Fatalf("overlapping fresh intervals rejected: %s %v", ticks, err)
+	}
+	_, b = timingRun(t, 100)
+	if _, err := ConfirmMeasuredRuns(a, b, m); err == nil {
+		t.Fatal("non-overlapping measurement series accepted")
+	}
+	for _, mutate := range []func(*RunReceipt){
+		func(r *RunReceipt) { r.ScoreTicks = "999999" },
+		func(r *RunReceipt) { r.ValidatorResult.Timing.Trials[0].QualityPassed = false },
+		func(r *RunReceipt) { r.ValidatorResult.Timing.Trials = r.ValidatorResult.Timing.Trials[:8] },
+		func(r *RunReceipt) { r.ValidatorResult.Timing.Summary.LowerRatio = "99/1" },
+		func(r *RunReceipt) { r.ValidatorResult.Timing.BaselineDigest = DigestBytes([]byte("other")) },
+		func(r *RunReceipt) { r.ValidatorResult.Timing.Warmups[0].BaselineNanos = 86401e9 },
+	} {
+		_, b = timingRun(t, 0)
+		mutate(&b)
+		if ValidateRunMeasurementEvidence(b, m) == nil {
+			t.Fatal("forged timing evidence accepted")
+		}
+	}
+	m.APIVersion = APIVersion
+	if _, err := ConfirmMeasuredRuns(a, a, m); err == nil {
+		t.Fatal("legacy lock accepted measured confirmation")
 	}
 }

@@ -497,9 +497,29 @@
     "MeasurementPolicy": {
       "additionalProperties": false,
       "properties": {
+        "baselineBuild": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
         "baselineDigest": {
           "pattern": "^sha256:[0-9a-f]{64}$",
           "type": "string"
+        },
+        "baselinePath": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "baselineRun": {
+          "items": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "type": "array"
         },
         "confidencePpm": {
           "maximum": 9007199254740991,
@@ -550,6 +570,9 @@
         "maxRelativeWidth",
         "minimumSpeedup",
         "baselineDigest",
+        "baselinePath",
+        "baselineBuild",
+        "baselineRun",
         "timerBoundary",
         "population"
       ],
@@ -748,7 +771,9 @@
         "class": {
           "enum": [
             "cpu-small",
-            "cpu-medium"
+            "cpu-medium",
+            "cpu-large",
+            "accelerator"
           ]
         },
         "maxOutputBytes": {
@@ -757,17 +782,17 @@
           "type": "integer"
         },
         "memoryMb": {
-          "maximum": 8192,
+          "maximum": 524288,
           "minimum": 128,
           "type": "integer"
         },
         "timeoutSeconds": {
-          "maximum": 600,
+          "maximum": 7200,
           "minimum": 1,
           "type": "integer"
         },
         "vCpu": {
-          "maximum": 4,
+          "maximum": 64,
           "minimum": 1,
           "type": "integer"
         }

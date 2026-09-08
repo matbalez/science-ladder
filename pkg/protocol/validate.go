@@ -188,9 +188,7 @@ func ValidateManifest(m Manifest) error {
 	if m.Submission.Format == "source-v2" && !native {
 		return errors.New("executable source requires the native evaluation profile")
 	}
-	if native && m.Evaluation.Executor.OS != "linux" {
-		return errors.New("native-evaluator-v2 currently requires Linux; Apple execution is deferred")
-	}
+
 	if native && (m.Evaluation.Mode == "program" || m.Evaluation.Mode == "performance") && m.Submission.Format != "source-v2" {
 		return errors.New("submitted programs require source-v2 artifact semantics")
 	}
@@ -221,14 +219,21 @@ func ValidateManifest(m Manifest) error {
 		return errors.New("hidden suite requires precommitment")
 	}
 	r := m.Resources
-	if r.Class != "cpu-small" && r.Class != "cpu-medium" {
+	if r.Class != "cpu-small" && r.Class != "cpu-medium" && !(m.APIVersion == ManifestV2 && (r.Class == "cpu-large" || r.Class == "accelerator")) {
 		return errors.New("unsupported resource class")
 	}
-	if r.VCPU < 1 || r.VCPU > 4 || r.MemoryMB < 128 || r.MemoryMB > 8192 || r.TimeoutSeconds < 1 || r.TimeoutSeconds > 600 || r.MaxOutputBytes < 1024 || r.MaxOutputBytes > 65536 {
+	maxCPU, maxMemory, maxSeconds := 4, 8192, 600
+	if m.APIVersion == ManifestV2 {
+		maxCPU, maxMemory, maxSeconds = 64, 524288, 7200
+	}
+	if r.VCPU < 1 || r.VCPU > maxCPU || r.MemoryMB < 128 || r.MemoryMB > maxMemory || r.TimeoutSeconds < 1 || r.TimeoutSeconds > maxSeconds || r.MaxOutputBytes < 1024 || r.MaxOutputBytes > 65536 {
 		return errors.New("resource class bounds exceeded")
 	}
 	if len(m.Fixtures) < 4 || len(m.Fixtures) > 100 {
 		return errors.New("at least baseline, valid, invalid and malformed fixtures required")
+	}
+	if m.APIVersion == ManifestV2 && int64(2*len(m.Fixtures))*int64(r.TimeoutSeconds+60)+600 > 18*3600 {
+		return errors.New("declared preflight schedule exceeds the 18-hour authorization envelope")
 	}
 	names := map[string]bool{}
 	for _, fixture := range m.Fixtures {
@@ -244,6 +249,9 @@ func ValidateManifest(m Manifest) error {
 		default:
 			return errors.New("unsupported fixture outcome")
 		}
+		if m.Evaluation != nil && m.Evaluation.Mode == "performance" && fixture.ExpectedTicks != "" {
+			return errors.New("measured fixtures use timing evidence, not predeclared exact ticks")
+		}
 		if fixture.ExpectedTicks != "" {
 			if _, err := ParseTicks(fixture.ExpectedTicks); err != nil {
 				return err
@@ -251,7 +259,7 @@ func ValidateManifest(m Manifest) error {
 		}
 		switch fixture.Name {
 		case "baseline":
-			if fixture.ExpectedOutcome != "valid" || fixture.ExpectedTicks != m.Metric.BaselineTicks {
+			if fixture.ExpectedOutcome != "valid" || (m.Evaluation == nil || m.Evaluation.Mode != "performance") && fixture.ExpectedTicks != m.Metric.BaselineTicks {
 				return errors.New("baseline fixture must declare the valid baseline ticks")
 			}
 		case "valid":

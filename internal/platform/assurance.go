@@ -26,6 +26,7 @@ func validateFixtureEvidence(job protocol.RunnerJob, parent protocol.RunReceipt,
 			return fail(422, "fixture_repeat_evidence_required", "Every executable fixture requires two signed fresh-VM attempts")
 		}
 		artifact := ""
+		var measuredRuns []protocol.RunReceipt
 		for _, envelope := range fixture.RunReceipts {
 			payload, err := protocol.Verify(envelope, map[string]crypto.PublicKey{host.ID: key})
 			if err != nil {
@@ -41,7 +42,7 @@ func validateFixtureEvidence(job protocol.RunnerJob, parent protocol.RunReceipt,
 			if run.ParentJobDigest != parentDigest || run.HostID != host.ID || run.HostGroup != host.Group || run.VerificationPolicy != job.VerificationPolicy || run.DeploymentMode != job.DeploymentMode || run.OfficialAcceptance != job.OfficialAcceptance || run.ExecutionProfileDigest != job.ExecutionProfileDigest || run.RunnerEpoch != job.RunnerEpoch || run.FencingToken != job.FencingToken || run.ChallengeLockDigest != job.ChallengeLockDigest || run.SuiteDigest != parent.BuildReport.SuiteDigest || run.CreatedAt.Before(job.CreatedAt) || run.CreatedAt.After(parent.CreatedAt) || !protocol.ValidDigest(run.JobDigest) || !protocol.ValidDigest(run.ArtifactDigest) {
 				return fail(422, "fixture_bindings_invalid", "Fixture attempt does not bind this preflight, host, suite, and execution policy")
 			}
-			if run.Outcome != fixture.Outcome || run.ScoreTicks != fixture.ScoreTicks || (artifact != "" && artifact != run.ArtifactDigest) {
+			if run.Outcome != fixture.Outcome || (job.Manifest.Evaluation == nil || job.Manifest.Evaluation.Mode != "performance") && run.ScoreTicks != fixture.ScoreTicks || (artifact != "" && artifact != run.ArtifactDigest) {
 				return fail(422, "fixture_repeat_disagreement", "Repeated fixture attempts must agree on artifact, outcome, and exact ticks")
 			}
 			if run.Outcome == "valid" {
@@ -54,9 +55,28 @@ func validateFixtureEvidence(job protocol.RunnerJob, parent protocol.RunReceipt,
 					}
 				}
 			}
+			measuredRuns = append(measuredRuns, run)
+			if err := protocol.ValidateRunMeasurementEvidence(run, job.Manifest); err != nil {
+				return err
+			}
 			artifact = run.ArtifactDigest
 			seenJobs[run.JobID], seenReceipts[run.ID] = true, true
 			total++
+		}
+		if job.Manifest.Evaluation != nil && job.Manifest.Evaluation.Mode == "performance" {
+			var declared *protocol.Fixture
+			for i := range job.Manifest.Fixtures {
+				if job.Manifest.Fixtures[i].Name == fixture.Name {
+					declared = &job.Manifest.Fixtures[i]
+				}
+			}
+			if declared == nil || len(measuredRuns) != 2 {
+				return fail(422, "measured_fixture_missing", "Paired fixture evidence is missing")
+			}
+			score, err := protocol.ValidateMeasuredFixture(measuredRuns[0], measuredRuns[1], job.Manifest, *declared)
+			if err != nil || score != fixture.ScoreTicks {
+				return fail(422, "measured_fixture_invalid", "Measured fixture does not meet the frozen statistical policy")
+			}
 		}
 	}
 	if total < 4 || parent.BuildReport.FreshVMRuns != total {

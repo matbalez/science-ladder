@@ -106,3 +106,28 @@ A row in the audit becomes supported only when its actual validation design has 
 Required conformance cases include: forged proof and added axioms; proof/byte mismatch; missing certificate and truncated large proof; wrong circuit/output; hidden-case precomputation; evaluator/timer/score-file writes; solver build hooks; invalid per-case output and non-finite measurements; unacceptable quality regression; wrong hardware or series; baseline drift and unstable timing; changed weights or aggregation; stale versions; and a higher-scoring but scientifically useless shortcut. Check exact raw-to-ranked arithmetic and actual milestone predicates.
 
 Until these implementation and execution checks exist, describe the capability as planned. This document broadens the architecture requirements; it does not certify universal compatibility or Yukon's infrastructure.
+
+## Implemented native extension (September 8)
+
+V2 manifests now bind typed measurements, hard conditions, achievement
+predicates and a scientific metric rationale. Performance mode freezes a
+reference program and a complete paired timing schedule. The root broker times
+both programs; the checker acknowledges correctness for every pair. Receipts
+carry the raw schedule and a recomputable median interval. Ranking uses the
+lower confidence bound. Inconsistent fresh intervals are inconclusive, rather
+than a fabricated deterministic match or a reason to pause other submissions.
+
+Execution requirements admit Linux, macOS/Metal and accelerator identities at the
+protocol level. The commissioned backend must match them exactly. There is no
+Apple executor commissioned in this release and no Linux fallback for MLX.
+Larger session requests require an enrolled hardware limit and a job lease long
+enough to finish all preflight repetitions. Named immutable assets are separately
+pinned, operator-provisioned read-only disks; hidden assets are never exposed in
+the candidate namespace.
+
+The native filesystem separates compiler tools from checker authority. Both
+views remain inventoried. Candidate-only compiler findings retain their upstream
+severity and an explicit execution-domain disposition. Unknown coverage or
+high/critical findings in checker-accessible components still fail admission.
+The domain policy requires the exact split recipe, signed capabilities and
+hardware conformance; the legacy runtime's policy and frozen bytes are unchanged.

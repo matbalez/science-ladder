@@ -66,7 +66,7 @@ func schemaVersion(name string, v2 bool) (map[string]any, error) {
 						continue
 					}
 					key := parts[0]
-					if !v2 && (t.Name() == "SubmissionContract" && key == "format" || t.Name() == "Manifest" && key == "evaluation" || t.Name() == "Milestone" && key == "requires" || t.Name() == "RunReceipt" && key == "validatorResult" || t.Name() == "ValidatorResult" && (key == "comparisonId" || key == "measurements")) {
+					if !v2 && (t.Name() == "VulnerabilityFinding" && key == "disposition" || t.Name() == "SubmissionContract" && key == "format" || t.Name() == "Manifest" && key == "evaluation" || t.Name() == "Milestone" && key == "requires" || t.Name() == "RunReceipt" && key == "validatorResult" || t.Name() == "ValidatorResult" && (key == "comparisonId" || key == "measurements" || key == "timing")) {
 						continue
 					}
 					property := describe(field.Type)
@@ -148,6 +148,12 @@ func schemaVersion(name string, v2 bool) (map[string]any, error) {
 	set("Resources", "vCpu", map[string]any{"type": "integer", "minimum": 1, "maximum": 4})
 	set("Resources", "memoryMb", map[string]any{"type": "integer", "minimum": 128, "maximum": 8192})
 	set("Resources", "timeoutSeconds", map[string]any{"type": "integer", "minimum": 1, "maximum": 600})
+	if v2 {
+		set("Resources", "vCpu", map[string]any{"type": "integer", "minimum": 1, "maximum": 64})
+		set("Resources", "memoryMb", map[string]any{"type": "integer", "minimum": 128, "maximum": 524288})
+		set("Resources", "timeoutSeconds", map[string]any{"type": "integer", "minimum": 1, "maximum": 7200})
+		set("Resources", "class", map[string]any{"enum": []string{"cpu-small", "cpu-medium", "cpu-large", "accelerator"}})
+	}
 	set("Resources", "maxOutputBytes", map[string]any{"type": "integer", "minimum": 1024, "maximum": 65536})
 	set("RunnerJob", "purpose", map[string]any{"enum": []string{"preflight", "artifact_prepare", "submission", "confirmation"}})
 	set("Envelope", "payloadType", map[string]any{"const": PayloadType})

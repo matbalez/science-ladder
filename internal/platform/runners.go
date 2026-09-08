@@ -185,7 +185,17 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 	var id string
 	var payload []byte
 	var fence int64
-	err = tx.QueryRow(ctx, `SELECT id,payload,fence FROM runner_jobs WHERE status='queued' AND purpose=ANY($2) AND (purpose IN ('preflight','artifact_prepare') OR payload->>'executionProfileDigest'=$4) AND (($5::jsonb IS NULL AND NOT (payload->'manifest' ? 'evaluation')) OR ($5::jsonb IS NOT NULL AND payload->'manifest'->'validator'->>'runtimeImageDigest'=$5::jsonb->>'runtimeImageDigest')) AND NOT COALESCE(payload->'excludedHostIds','[]'::jsonb) ? $3 AND (excluded_group IS NULL OR excluded_group<>$1) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, host.Group, purposes, host.ID, host.ExecutionProfile, nullableCapabilities(host.Capabilities)).Scan(&id, &payload, &fence)
+	err = tx.QueryRow(ctx, `SELECT id,payload,fence FROM runner_jobs WHERE status='queued' AND purpose=ANY($2) AND (purpose IN ('preflight','artifact_prepare') OR payload->>'executionProfileDigest'=$4) AND (($5::jsonb IS NULL AND NOT (payload->'manifest' ? 'evaluation')) OR ($5::jsonb IS NOT NULL AND payload->'manifest'->'validator'->>'runtimeImageDigest'=$5::jsonb->>'runtimeImageDigest'
+ AND payload->'manifest'->'evaluation'->'executor'->>'os'=$5::jsonb->>'os'
+ AND payload->'manifest'->'evaluation'->'executor'->>'architecture'=$5::jsonb->>'architecture'
+ AND payload->'manifest'->'evaluation'->'executor'->>'accelerator'=$5::jsonb->>'accelerator'
+ AND (COALESCE(payload->'manifest'->'evaluation'->'executor'->>'hardwareClass','')='' OR payload->'manifest'->'evaluation'->'executor'->>'hardwareClass'=$5::jsonb->>'hardwareClass')
+ AND (payload->'manifest'->'evaluation'->'executor'->'features') <@ ($5::jsonb->'features')
+ AND COALESCE(payload->'manifest'->'evaluation'->'assets','[]'::jsonb) <@ COALESCE($5::jsonb->'assets','[]'::jsonb)
+ AND (payload->'manifest'->'resources'->>'vCpu')::int <= ($5::jsonb->>'maxVCpu')::int
+ AND (payload->'manifest'->'resources'->>'memoryMb')::int <= ($5::jsonb->>'maxMemoryMb')::int
+ AND (payload->'manifest'->'resources'->>'timeoutSeconds')::int <= ($5::jsonb->>'maxSessionSeconds')::int
+ AND GREATEST(900, CASE WHEN purpose='artifact_prepare' THEN 900 WHEN purpose='preflight' THEN 600+2*jsonb_array_length(payload->'manifest'->'fixtures')*((payload->'manifest'->'resources'->>'timeoutSeconds')::int+60) ELSE 660+(payload->'manifest'->'resources'->>'timeoutSeconds')::int END) <= COALESCE(NULLIF(($5::jsonb->>'maxJobSeconds')::int,0),900))) AND NOT COALESCE(payload->'excludedHostIds','[]'::jsonb) ? $3 AND (excluded_group IS NULL OR excluded_group<>$1) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, host.Group, purposes, host.ID, host.ExecutionProfile, nullableCapabilities(host.Capabilities)).Scan(&id, &payload, &fence)
 	if errors.Is(err, pgx.ErrNoRows) {
 		respond(w, 200, map[string]any{"job": nil})
 		return nil
@@ -217,7 +227,11 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 	}
 	job.RequiredHostGroup = host.Group
 	job.FencingToken = fence
-	job.ExpiresAt = time.Now().UTC().Add(15 * time.Minute)
+	leaseDuration := protocol.JobLeaseDuration(job.Manifest, job.Purpose)
+	if host.Capabilities != nil && !protocol.MatchJobLease(job.Manifest, job.Purpose, *host.Capabilities) {
+		return fail(503, "executor_lease_mismatch", "Executor authorization cannot cover the declared job schedule")
+	}
+	job.ExpiresAt = time.Now().UTC().Add(leaseDuration)
 	refs := []*protocol.ObjectRef{&job.ValidatorDisk, &job.SubmissionDisk, &job.SuiteDisk, &job.ChallengeDisk}
 	if job.Purpose == "preflight" || job.Purpose == "artifact_prepare" {
 		if job.SourceSnapshot == nil {
@@ -243,7 +257,7 @@ func (s *Server) claimRunnerJob(w http.ResponseWriter, r *http.Request, host run
 		return err
 	}
 	for _, ref := range refs {
-		ref.URL, err = s.Store.SignedRead(ctx, ref.Digest, 15*time.Minute)
+		ref.URL, err = s.Store.SignedRead(ctx, ref.Digest, leaseDuration)
 		if err != nil {
 			return err
 		}
@@ -376,7 +390,7 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 			}
 		}
 	}
-	terminal := map[string]bool{"valid": true, "hard_gate_failed": true, "invalid_output": true, "resource_limit": true, "declared_timeout": true, "nondeterministic": true, "malicious": true, "challenge_fault": true}
+	terminal := map[string]bool{"valid": true, "hard_gate_failed": true, "invalid_output": true, "resource_limit": true, "declared_timeout": true, "nondeterministic": true, "malicious": true, "challenge_fault": true, "measurement_inconclusive": true}
 	if !terminal[run.Outcome] {
 		return fail(422, "run_outcome_invalid", "Unknown competitive outcome requires operator resolution")
 	}
@@ -497,11 +511,21 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 		}
 		if run.Outcome != first.Outcome {
 			outcome = "nondeterministic"
+			if job.Manifest.Evaluation != nil && job.Manifest.Evaluation.Mode == "performance" {
+				outcome = "measurement_inconclusive"
+			}
 			score = ""
 		} else if run.Outcome == "valid" {
-			score, err = ConfirmedScore(first.ScoreTicks, run.ScoreTicks, job.Manifest.Metric)
+			if job.Manifest.Evaluation != nil && job.Manifest.Evaluation.Mode == "performance" {
+				score, err = protocol.ConfirmMeasuredRuns(first, run, job.Manifest)
+			} else {
+				score, err = ConfirmedScore(first.ScoreTicks, run.ScoreTicks, job.Manifest.Metric)
+			}
 			if err != nil {
 				outcome = "nondeterministic"
+				if job.Manifest.Evaluation != nil && job.Manifest.Evaluation.Mode == "performance" {
+					outcome = "measurement_inconclusive"
+				}
 				score = ""
 			}
 		}

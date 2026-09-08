@@ -156,7 +156,7 @@ func ValidateResult(data []byte, manifest Manifest) (ValidatorResult, string, er
 		return result, "", errors.New("unsupported result version/kind")
 	}
 	if manifest.APIVersion == APIVersion {
-		if result.ComparisonID != "" || len(result.Measurements) != 0 || manifest.Evaluation != nil {
+		if result.Timing != nil || result.ComparisonID != "" || len(result.Measurements) != 0 || manifest.Evaluation != nil {
 			return result, "", errors.New("v1 results cannot contain v2 measurement semantics")
 		}
 	} else if manifest.APIVersion == ManifestV2 {
@@ -168,6 +168,20 @@ func ValidateResult(data []byte, manifest Manifest) (ValidatorResult, string, er
 		}
 	} else {
 		return result, "", errors.New("unsupported manifest version")
+	}
+	if manifest.Evaluation != nil && manifest.Evaluation.Mode == "performance" {
+		if result.Timing == nil || manifest.Evaluation.Measurement == nil {
+			return result, "", errors.New("trusted paired timing evidence required")
+		}
+		summary, err := ValidateTimingEvidence(*result.Timing, *manifest.Evaluation.Measurement)
+		if err != nil {
+			return result, "", err
+		}
+		if result.Score != summary.LowerRatio {
+			return result, "", errors.New("timing score must equal the conservative confidence bound")
+		}
+	} else if result.Timing != nil {
+		return result, "", errors.New("timing evidence is outside this evaluation contract")
 	}
 	if len(result.Gates) != len(manifest.HardGates) {
 		return result, "", errors.New("missing or unknown hard gate")
@@ -198,4 +212,17 @@ func ValidateResult(data []byte, manifest Manifest) (ValidatorResult, string, er
 	}
 	ticks, err := NormalizeScore(result.Score, manifest.Metric)
 	return result, ticks, err
+}
+
+// Outcome is derived from validated evidence, including statistical stability.
+func ValidatorOutcome(result ValidatorResult) string {
+	for _, pass := range result.Gates {
+		if !pass {
+			return "hard_gate_failed"
+		}
+	}
+	if result.Timing != nil && result.Timing.Summary.Outcome == "inconclusive" {
+		return "measurement_inconclusive"
+	}
+	return "valid"
 }

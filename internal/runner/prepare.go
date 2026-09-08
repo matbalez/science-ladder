@@ -40,6 +40,12 @@ func (r *Runtime) Prepare(ctx context.Context, envelope protocol.Envelope, uploa
 	if job.Manifest.Validator.RuntimeImageDigest != r.Config.RuntimeImageDigest {
 		return protocol.Envelope{}, errors.New("quarantine runtime image differs from job")
 	}
+	if r.Config.Capabilities != nil && !protocol.MatchJobLease(job.Manifest, job.Purpose, *r.Config.Capabilities) {
+		return protocol.Envelope{}, errors.New("preflight schedule exceeds enrolled authorization envelope")
+	}
+	if job.ExpiresAt.Sub(time.Now()) > protocol.JobLeaseDuration(job.Manifest, job.Purpose)+time.Minute {
+		return protocol.Envelope{}, errors.New("preflight lease exceeds declared schedule")
+	}
 	if err := matchConfiguredEvaluation(job.Manifest, r.Config); err != nil {
 		return protocol.Envelope{}, err
 	}

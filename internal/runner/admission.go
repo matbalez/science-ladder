@@ -20,6 +20,7 @@ var ErrAdmissionMaintenance = errors.New("runner trust renewal required before n
 // It authorizes no execution; Run/Prepare still check the full host controls.
 type AdmissionWindow struct {
 	verified        bool
+	safetyWindow    time.Duration
 	validFrom       time.Time
 	hostExpires     time.Time
 	advisoryExpires time.Time
@@ -79,11 +80,25 @@ func LoadAdmissionWindow(config Config, keys map[string]crypto.PublicKey) (Admis
 	}
 	// Check signed structure, provenance and exact coverage at generation time;
 	// Check/Purposes below apply the distinct authorization and preflight deadlines.
-	if _, status := ScanAdvisories(inventory.Packages, advisory, advisory.GeneratedAt); status != "pass" {
+	if _, status := ScanAdvisoriesForDomains(inventory.Packages, advisory, advisory.GeneratedAt, separatedToolchain(config, inventory)); status != "pass" {
 		return window, errors.New("admission advisory coverage is not approved")
 	}
-	window = AdmissionWindow{verified: true, validFrom: advisory.GeneratedAt.Add(-time.Minute), hostExpires: host.ExpiresAt, advisoryExpires: advisory.ExpiresAt}
+	safety := AdmissionSafetyWindow
+	if config.Capabilities != nil && config.Capabilities.MaxJobSeconds > 0 {
+		if config.Capabilities.MaxJobSeconds < 900 || config.Capabilities.MaxJobSeconds > int(protocol.MaximumJobLease/time.Second) {
+			return window, errors.New("invalid enrolled maximum job lease")
+		}
+		safety = time.Duration(config.Capabilities.MaxJobSeconds)*time.Second + 5*time.Minute
+	}
+	window = AdmissionWindow{verified: true, safetyWindow: safety, validFrom: advisory.GeneratedAt.Add(-time.Minute), hostExpires: host.ExpiresAt, advisoryExpires: advisory.ExpiresAt}
 	return window, nil
+}
+
+func (w AdmissionWindow) margin() time.Duration {
+	if w.safetyWindow > AdmissionSafetyWindow {
+		return w.safetyWindow
+	}
+	return AdmissionSafetyWindow
 }
 
 func (w AdmissionWindow) Check(now time.Time) error {
@@ -93,8 +108,8 @@ func (w AdmissionWindow) Check(now time.Time) error {
 	if now.Before(w.validFrom) {
 		return fmt.Errorf("%w: signed advisory is not yet valid", ErrAdmissionMaintenance)
 	}
-	if !w.hostExpires.After(now.Add(AdmissionSafetyWindow)) {
-		return fmt.Errorf("%w: host authorization expires at %s; requires more than %s remaining", ErrAdmissionMaintenance, w.hostExpires.UTC().Format(time.RFC3339), AdmissionSafetyWindow)
+	if !w.hostExpires.After(now.Add(w.margin())) {
+		return fmt.Errorf("%w: host authorization expires at %s; requires more than %s remaining", ErrAdmissionMaintenance, w.hostExpires.UTC().Format(time.RFC3339), w.margin())
 	}
 	return nil
 }
@@ -107,14 +122,18 @@ func (w AdmissionWindow) Purposes(now time.Time) ([]string, error) {
 		return nil, err
 	}
 	purposes := []string{"artifact_prepare", "submission", "confirmation"}
-	if w.advisoryExpires.After(now.Add(AdmissionSafetyWindow)) {
+	if w.advisoryExpires.After(now.Add(w.margin())) {
 		purposes = append(purposes, "preflight")
 	}
 	return purposes, nil
 }
 
 func (w AdmissionWindow) NeedsRenewal(now time.Time) bool {
-	return !w.verified || !w.hostExpires.After(now.Add(6*time.Hour))
+	renewBefore := 6 * time.Hour
+	if w.margin()+time.Hour > renewBefore {
+		renewBefore = w.margin() + time.Hour
+	}
+	return !w.verified || !w.hostExpires.After(now.Add(renewBefore))
 }
 
 func (w AdmissionWindow) HostExpiresAt() time.Time { return w.hostExpires }

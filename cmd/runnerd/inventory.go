@@ -96,6 +96,7 @@ func advisoryCheck(args []string) error {
 	f := flag.NewFlagSet("advisory-check", flag.ContinueOnError)
 	inventoryPath := f.String("runtime-inventory", "", "complete runtime/dependency inventory JSON")
 	snapshotPath := f.String("snapshot", "", "unsigned advisory snapshot draft")
+	separated := f.Bool("separated-toolchain-preview", false, "unsigned preview of domain policy; does not authorize or commission a runtime")
 	output := f.String("out", "", "new review result JSON")
 	if err := f.Parse(args); err != nil {
 		return err
@@ -116,7 +117,10 @@ func advisoryCheck(args []string) error {
 	if err := protocol.DecodeStrict(data, &snapshot); err != nil {
 		return err
 	}
-	findings, status := runner.ScanAdvisories(inventory.Packages, snapshot, time.Now().UTC())
+	if *separated && !protocol.ValidDigest(inventory.ComponentInventoryDigest) {
+		return errors.New("domain preview requires a pinned component inventory")
+	}
+	findings, status := runner.ScanAdvisoriesForDomains(inventory.Packages, snapshot, time.Now().UTC(), *separated)
 	result := map[string]any{"signatureVerified": false, "officialAcceptance": false, "status": status, "findings": findings, "packagesChecked": len(inventory.Packages)}
 	if *output != "" {
 		return writeNewJSON(*output, result)

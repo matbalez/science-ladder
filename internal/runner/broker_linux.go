@@ -27,22 +27,30 @@ const checkerUID = 65534
 // Candidate source never runs with the checker UID or sees checker/suite mounts.
 // The outer VMM still isolates both domains from the physical host and app.
 type candidateBroker struct {
-	program  protocol.CandidateProgram
-	root     string
-	listener *net.UnixListener
-	built    bool
-	ready    bool
-	runs     int
-	fault    error
-	done     chan struct{}
+	assets                    []protocol.EvaluationAsset
+	program                   protocol.CandidateProgram
+	baseline                  *candidateBroker
+	measurement               *protocol.MeasurementPolicy
+	pairs                     []protocol.TimingTrial
+	pending, pairOutputsValid bool
+	root                      string
+	listener                  *net.UnixListener
+	built                     bool
+	ready                     bool
+	runs                      int
+	fault                     error
+	done                      chan struct{}
 }
 
 func startCandidateBroker(ctx context.Context, m protocol.Manifest) (*candidateBroker, error) {
 	if os.Getpid() != 1 || os.Geteuid() != 0 || m.Evaluation == nil || m.Evaluation.Program == nil {
 		return nil, errors.New("candidate broker requires guest PID 1 and a frozen program contract")
 	}
-	b := &candidateBroker{program: *m.Evaluation.Program, root: "/sl/candidate", done: make(chan struct{})}
-	if err := b.prepareRoot(m.Submission); err != nil {
+	b := &candidateBroker{assets: m.Evaluation.Assets, program: *m.Evaluation.Program, root: "/sl/candidate", done: make(chan struct{})}
+	if err := b.prepareRootFrom(m.Submission, "/sl/submission"); err != nil {
+		return nil, err
+	}
+	if err := b.prepareBaseline(m); err != nil {
 		return nil, err
 	}
 	if err := os.MkdirAll("/sl/broker", 0711); err != nil {
@@ -76,20 +84,32 @@ func bindReadOnly(source, target string) error {
 	return syscall.Mount("", target, "", syscall.MS_BIND|syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_NOSUID|syscall.MS_NODEV, "")
 }
 
-func (b *candidateBroker) prepareRoot(contract protocol.SubmissionContract) error {
+func (b *candidateBroker) prepareRootFrom(contract protocol.SubmissionContract, source string) error {
 	if err := os.MkdirAll(b.root, 0700); err != nil {
 		return err
 	}
 	if err := syscall.Mount("tmpfs", b.root, "tmpfs", syscall.MS_NOSUID|syscall.MS_NODEV, "size="+strconv.Itoa(b.program.ScratchMB)+"m,mode=0755"); err != nil {
 		return err
 	}
-	for _, dir := range []string{"usr", "work", "tmp", "etc", "dev"} {
+	for _, dir := range []string{"usr", "work", "tmp", "etc", "dev", "assets"} {
 		if err := os.Mkdir(filepath.Join(b.root, dir), 0755); err != nil {
 			return err
 		}
 	}
+	for _, asset := range b.assets {
+		if asset.Visibility != "public" {
+			continue
+		}
+		target := filepath.Join(b.root, "assets", asset.Name)
+		if err := os.Mkdir(target, 0755); err != nil {
+			return err
+		}
+		if err := bindReadOnly(filepath.Join("/sl/assets", asset.Name), target); err != nil {
+			return err
+		}
+	}
 	// No /proc, /sys, /sl, broker socket, answer keys or checker descriptors.
-	if err := bindReadOnly("/usr", filepath.Join(b.root, "usr")); err != nil {
+	if err := bindReadOnly("/opt/sl-private/toolchain/usr", filepath.Join(b.root, "usr")); err != nil {
 		return err
 	}
 	for _, link := range []string{"bin", "lib", "lib64", "sbin"} {
@@ -135,11 +155,11 @@ func (b *candidateBroker) prepareRoot(contract protocol.SubmissionContract) erro
 	}
 	var total int64
 	files := 0
-	if err := filepath.WalkDir("/sl/submission", func(name string, d os.DirEntry, walkErr error) error {
+	if err := filepath.WalkDir(source, func(name string, d os.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}
-		relative, err := filepath.Rel("/sl/submission", name)
+		relative, err := filepath.Rel(source, name)
 		if err != nil {
 			return err
 		}
@@ -189,6 +209,8 @@ func (b *candidateBroker) serve(ctx context.Context) {
 		}
 		func() {
 			defer conn.Close()
+			stopClose := context.AfterFunc(ctx, func() { _ = conn.Close() })
+			defer stopClose()
 			if deadline, ok := ctx.Deadline(); ok {
 				_ = conn.SetDeadline(deadline)
 			}
@@ -198,6 +220,11 @@ func (b *candidateBroker) serve(ctx context.Context) {
 			data, err := io.ReadAll(io.LimitReader(conn, (maxBrokerInput*4/3)+4097))
 			var request BrokerRequest
 			if err != nil || protocol.DecodeStrictBounded(data, &request, (maxBrokerInput*4/3)+4096) != nil {
+				return
+			}
+			if b.measurement != nil && request.Action != "build" {
+				response := b.timingRequest(ctx, request)
+				_ = json.NewEncoder(conn).Encode(response)
 				return
 			}
 			response := BrokerResponse{Outcome: "invalid_request", ExitCode: -1}
@@ -214,9 +241,27 @@ func (b *candidateBroker) serve(ctx context.Context) {
 					b.fault = err
 					response = BrokerResponse{Outcome: "infrastructure_fault", ExitCode: -1}
 				}
+				if request.Action == "build" && response.Outcome == "valid" && b.baseline != nil {
+					base := b.baseline
+					var e error
+					baseResult, e := base.execute(ctx, base.program.Build, base.program.BuildBudget, nil)
+					if e != nil {
+						b.fault = e
+						response.Outcome = "infrastructure_fault"
+					} else if baseResult.Outcome != "valid" {
+						b.fault = errors.New("frozen baseline failed to build")
+						response.Outcome = "infrastructure_fault"
+					} else {
+						if e := base.sealWork(); e != nil {
+							b.fault = e
+							response.Outcome = "infrastructure_fault"
+						} else {
+							base.ready = true
+						}
+					}
+				}
 				if request.Action == "build" && response.Outcome == "valid" {
-					work := filepath.Join(b.root, "work")
-					if err := syscall.Mount("", work, "", syscall.MS_BIND|syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_NOSUID|syscall.MS_NODEV, ""); err != nil {
+					if err := b.sealWork(); err != nil {
 						b.fault = err
 						response.Outcome = "infrastructure_fault"
 					} else {
@@ -311,4 +356,8 @@ func (b *candidateBroker) execute(parent context.Context, argv []string, budget 
 		return result, err
 	}
 	return result, nil
+}
+
+func (b *candidateBroker) sealWork() error {
+	return syscall.Mount("", filepath.Join(b.root, "work"), "", syscall.MS_BIND|syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_NOSUID|syscall.MS_NODEV, "")
 }

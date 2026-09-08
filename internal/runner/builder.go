@@ -501,6 +501,7 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 			fixtureReport.Outcome = "invalid_output"
 			fixtureReport.Passed = fixture.ExpectedOutcome == "invalid_output"
 			report.Fixtures = append(report.Fixtures, fixtureReport)
+
 			allPassed = allPassed && fixtureReport.Passed
 			continue
 		}
@@ -518,6 +519,7 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 		}
 		localObjects[artifactDisk.Digest] = diskPath
 		var runs []LocalReport
+		var measuredRuns []protocol.RunReceipt
 		for repeat := 0; repeat < 2; repeat++ {
 			if b.UnsafeLocal {
 				fixtureReport.Stage = "local_execution"
@@ -559,6 +561,7 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 				if !run.Official || !run.CleanupAttested {
 					return report, errors.New("fixture run did not attest isolated execution and teardown")
 				}
+				measuredRuns = append(measuredRuns, run)
 				fixtureReport.Stage = "isolated_execution"
 				fixtureReport.FreshVMRuns++
 				fixtureReport.RunReceipts = append(fixtureReport.RunReceipts, envelope)
@@ -571,6 +574,14 @@ func (b *Builder) Preflight(ctx context.Context, job protocol.RunnerJob, snapsho
 		fixtureReport.Passed = runs[0].Outcome == fixture.ExpectedOutcome && runs[1].Outcome == runs[0].Outcome && runs[1].ScoreTicks == runs[0].ScoreTicks && (fixture.ExpectedTicks == "" || runs[0].ScoreTicks == fixture.ExpectedTicks)
 		if fixture.Name == "baseline" && runs[0].ScoreTicks != m.Metric.BaselineTicks {
 			fixtureReport.Passed = false
+		}
+		if m.Evaluation != nil && m.Evaluation.Mode == "performance" {
+			fixtureReport.Passed = false
+			if len(measuredRuns) == 2 {
+				score, err := protocol.ValidateMeasuredFixture(measuredRuns[0], measuredRuns[1], m, fixture)
+				fixtureReport.Passed = err == nil
+				fixtureReport.ScoreTicks = score
+			}
 		}
 		allPassed = allPassed && fixtureReport.Passed
 		report.Fixtures = append(report.Fixtures, fixtureReport)

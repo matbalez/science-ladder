@@ -8,7 +8,7 @@ tar --extract --file=/input/base.tar --directory=/work/root --no-same-owner
 mkdir -p /work/root/sbin /work/root/proc /work/root/sys /work/root/dev /work/root/tmp
 mkdir -p /work/root/sl/validator /work/root/sl/submission /work/root/sl/suite
 mkdir -p /work/root/sl/challenge /work/root/sl/config /work/root/sl/work /work/root/sl/output
-mkdir -p /work/root/sl/candidate /work/root/sl/broker
+mkdir -p /work/root/sl/candidate /work/root/sl/broker /work/root/sl/baseline /work/root/sl/assets
 cp /input/sl-init /work/root/sbin/sl-init
 chmod 0755 /work/root/sbin/sl-init
 test -x /work/root/usr/local/bin/sl-candidate-sandbox

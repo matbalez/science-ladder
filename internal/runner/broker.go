@@ -11,19 +11,24 @@ const maxBrokerInput = 16 << 20
 // Broker requests carry only data and a stage selector. The immutable manifest
 // supplies every command and limit; submitted code cannot select a host command.
 type BrokerRequest struct {
-	Action string `json:"action"` // build, run
-	Input  []byte `json:"input,omitempty"`
+	Action        string `json:"action"` // build, run
+	Input         []byte `json:"input,omitempty"`
+	QualityPassed *bool  `json:"qualityPassed,omitempty"`
 }
 
 type BrokerResponse struct {
-	Outcome       string `json:"outcome"`
-	Stdout        []byte `json:"stdout,omitempty"`
-	Stderr        []byte `json:"stderr,omitempty"`
-	DurationNanos int64  `json:"durationNanos"`
-	ExitCode      int    `json:"exitCode"`
+	Pair          *BrokerPair `json:"pair,omitempty"`
+	Outcome       string      `json:"outcome"`
+	Stdout        []byte      `json:"stdout,omitempty"`
+	Stderr        []byte      `json:"stderr,omitempty"`
+	DurationNanos int64       `json:"durationNanos"`
+	ExitCode      int         `json:"exitCode"`
 }
 
 func validateBrokerRequest(request BrokerRequest, built bool, runs int, program protocol.CandidateProgram) error {
+	if request.QualityPassed != nil {
+		return errors.New("quality acknowledgment requires paired mode")
+	}
 	if len(request.Input) > maxBrokerInput {
 		return errors.New("case input exceeds broker limit")
 	}
@@ -40,4 +45,11 @@ func validateBrokerRequest(request BrokerRequest, built bool, runs int, program 
 		return errors.New("broker supports only the frozen build and run stages")
 	}
 	return nil
+}
+
+type BrokerPair struct {
+	Index     int            `json:"index"`
+	Warmup    bool           `json:"warmup"`
+	Baseline  BrokerResponse `json:"baseline"`
+	Candidate BrokerResponse `json:"candidate"`
 }
