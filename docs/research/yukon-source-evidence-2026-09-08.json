@@ -1,0 +1,368 @@
+[
+  {
+    "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/eip8200-challenges/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/benchmark.json",
+    "bytes": 1257,
+    "sha256": "ad78ba8daf3c6cb31f483342bf0e528f4f2d6b1eabd4ba0d85567a7346f4d4ee"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/docs/benchmark.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/eip8200-challenges/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/docs/benchmark.md",
+    "bytes": 2415,
+    "sha256": "0b3df91ce77794fdd15ad03469cf725836775130603215bf2d4292700f7f3f8a"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/Challenge/Modexp/Scorer.lean",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/eip8200-challenges/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/Challenge/Modexp/Scorer.lean",
+    "bytes": 9488,
+    "sha256": "3c2b62b97e70b2415779752c6ad4069ce7eb1c40d633ce3afcfe9b8015b7e25d"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/Challenge/Ripemd160/Scorer.lean",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/eip8200-challenges/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/Challenge/Ripemd160/Scorer.lean",
+    "bytes": 6442,
+    "sha256": "a03917b70d646d9881a487d5ca33d039f6111eea22008925c47b54128e924c1f"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/matrices-fast/blob/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/matrices-fast/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/benchmark.json",
+    "bytes": 1155,
+    "sha256": "818ec7978d04982879a4b1ef321812afa76dcdb491518846ef13433d2645c70b"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/matrices-fast/blob/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/RULES.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/matrices-fast/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/RULES.md",
+    "bytes": 14188,
+    "sha256": "428d2ca876c8577709b804fb2e47121517c38cf380f814a6f39bb1a6b41de28d"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/matrices-fast/blob/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/README.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/matrices-fast/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/README.md",
+    "bytes": 26077,
+    "sha256": "dc9448fecf9ac487042ef864b201d70d6dfdd206e50f9244d6253c4ca31da9c4"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/heesch/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/benchmark.json",
+    "bytes": 1277,
+    "sha256": "9819b00a9d76b78fb5860f2f7ef756d5882be89da77025b4d273172b67de6812"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/docs/submitting.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/heesch/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/docs/submitting.md",
+    "bytes": 10712,
+    "sha256": "08e7dc2cfdc464d17c736889eecfaf8425c535b16969edee3361e0780e48b712"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/heesch_encoder/proofcheck/checkers.py",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/heesch/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/heesch_encoder/proofcheck/checkers.py",
+    "bytes": 11298,
+    "sha256": "152d8bfabedb5354391a85bda999c67fd97b4464ed2e6b71c60a61f20807403d"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine/blob/82b2567b8e80a96d83d45f8de9fc0de8a251b12b/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine/82b2567b8e80a96d83d45f8de9fc0de8a251b12b/benchmark.json",
+    "bytes": 11691,
+    "sha256": "4c718a52656f551f09cfae31f8de7f91147ccf4d88a0c526095a9905a51522ae"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine/blob/82b2567b8e80a96d83d45f8de9fc0de8a251b12b/docs/participant-contract.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine/82b2567b8e80a96d83d45f8de9fc0de8a251b12b/docs/participant-contract.md",
+    "bytes": 32495,
+    "sha256": "9e63956fa24b69bc3e832796039dd8ff6412ce1d690dcad10c319201265086da"
+  },
+  {
+    "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/proximity-prize/proximity-prize/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/benchmark.json",
+    "bytes": 1244,
+    "sha256": "fde3ab3de98cfdffdfe4da141317bd0f12f18e65946e67fefc01839d6e432687"
+  },
+  {
+    "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/README.md",
+    "rawUrl": "https://raw.githubusercontent.com/proximity-prize/proximity-prize/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/README.md",
+    "bytes": 3999,
+    "sha256": "dd02a77161d778c67119b87b81563ac0c3ebe0f55e301ec81b1cf1745bd5a136"
+  },
+  {
+    "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/ProximityPrize/Benchmark/TargetLower.lean",
+    "rawUrl": "https://raw.githubusercontent.com/proximity-prize/proximity-prize/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/ProximityPrize/Benchmark/TargetLower.lean",
+    "bytes": 2340,
+    "sha256": "7d11762452db502cc244e2522eb83f01d3d4b8318ec1771d0c86041181bdc474"
+  },
+  {
+    "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/ProximityPrize/Benchmark/TargetUpper.lean",
+    "rawUrl": "https://raw.githubusercontent.com/proximity-prize/proximity-prize/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/ProximityPrize/Benchmark/TargetUpper.lean",
+    "bytes": 2334,
+    "sha256": "6aebed6c075924fd9fd2db9a6e347744c1c8252c0a9b6ab3536aa4c15c7768b3"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/qwen-3.8-mtp-challenge/blob/0863b06ac16e26e48fc06e97444095b00feb66d4/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/qwen-3.8-mtp-challenge/0863b06ac16e26e48fc06e97444095b00feb66d4/benchmark.json",
+    "bytes": 21380,
+    "sha256": "3655c68d513d8f666437c8a092787dc59229b8ac3b395bdf2bf4d8f5d221efbb"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/qwen-3.8-mtp-challenge/blob/0863b06ac16e26e48fc06e97444095b00feb66d4/README.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/qwen-3.8-mtp-challenge/0863b06ac16e26e48fc06e97444095b00feb66d4/README.md",
+    "bytes": 33481,
+    "sha256": "0b1f796d775a361477f9e9b32b74ecc5ee7e7caa8fce659ea388d679b09844fa"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/flock-challenge-multi/blob/c75aeceb34f8f33ff49c06a293b05dd7e00d463b/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/flock-challenge-multi/c75aeceb34f8f33ff49c06a293b05dd7e00d463b/benchmark.json",
+    "bytes": 721,
+    "sha256": "17f0061685aec769c05f442668303c1ac0e09828ba292469cc96edcbaa2f8d57"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/flock-challenge-multi/blob/c75aeceb34f8f33ff49c06a293b05dd7e00d463b/docs/BLAKE3_X86_BENCHMARK.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/flock-challenge-multi/c75aeceb34f8f33ff49c06a293b05dd7e00d463b/docs/BLAKE3_X86_BENCHMARK.md",
+    "bytes": 7745,
+    "sha256": "9a35b4bd4fb7edb1e3cbac7771bc1f7f50ba07c366279d535233d757324018a1"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/lighter-prover-challenge/blob/ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/lighter-prover-challenge/ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0/benchmark.json",
+    "bytes": 595,
+    "sha256": "24d817864f13dae8473622f7d2dd45b3931bb7a581e8898cf480e1a7e9dbd1a5"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/lighter-prover-challenge/blob/ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0/BENCHMARK.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/lighter-prover-challenge/ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0/BENCHMARK.md",
+    "bytes": 14740,
+    "sha256": "0610e081bf320e58da0a33474fb95ca04d737175000d27f29ff1318c53c6efb0"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/flock-challenge/blob/c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/flock-challenge/c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd/benchmark.json",
+    "bytes": 551,
+    "sha256": "2be1fa4e28caa9810719e7d466935eff58a25bf9b984e1a850dd4cf0080f4d0a"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/flock-challenge/blob/c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd/docs/BLAKE3_MAC_BENCHMARK.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/flock-challenge/c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd/docs/BLAKE3_MAC_BENCHMARK.md",
+    "bytes": 6440,
+    "sha256": "3e4e3f92de3861dd20e7872219b3fe7e9b93f447e7a499b64bc60e5ce58c4e97"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/4ea72c3b28873fca23b12b6f33193a2eeb5042f8/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/mlxfast-challenge/4ea72c3b28873fca23b12b6f33193a2eeb5042f8/benchmark.json",
+    "bytes": 8006,
+    "sha256": "e01d3ea1c9281cfe81e1693d987627005fed6963440fbef6a761e4f28dd67fb6"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/4ea72c3b28873fca23b12b6f33193a2eeb5042f8/README.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/mlxfast-challenge/4ea72c3b28873fca23b12b6f33193a2eeb5042f8/README.md",
+    "bytes": 24378,
+    "sha256": "df1e72c7d4a4aed30c8252d0e6d7991adec3fd0a683f1db2664e6d0a1229fe3e"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/mlxfast-challenge/461af5b76fc0b4f037150134ad4c424df095c846/benchmark.json",
+    "bytes": 8040,
+    "sha256": "36ab70129645d4fcaad2b0a77a7452f66e73574dcdf12126bb34f3af7d8ef185"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/README.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/mlxfast-challenge/461af5b76fc0b4f037150134ad4c424df095c846/README.md",
+    "bytes": 22409,
+    "sha256": "e28b0c9bf1c28b81d4f1504ce6785ceb46dd7c4834703de648ea36a6cc4008d5"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/benchmark.json",
+    "bytes": 761,
+    "sha256": "8b3398076ee568cde5618066650a028b9863be274572d38c227302f4274d5c71"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/chk.cc",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/chk.cc",
+    "bytes": 5382,
+    "sha256": "9e1a344ee3bee030fa67cb509070be627b85ed3c3fa1c64b3a64582f04e6a58a"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/statement.txt",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/statement.txt",
+    "bytes": 2986,
+    "sha256": "496a1b103e0b1696212c38ff5f1a9d62d22c881ca46c964218a709c06eaaab2a"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/benchmark.json",
+    "bytes": 657,
+    "sha256": "842f34a55333577d56a6940bc4c48d1af9d620009aa64ed46a88457171684c5d"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/checker.cpp",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/checker.cpp",
+    "bytes": 20614,
+    "sha256": "a25d6cd0e728eef1e497416523fd01e982c296dc957413fa54a234ef792e6e82"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/statement.txt",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/statement.txt",
+    "bytes": 2677,
+    "sha256": "3ddac3d7c2485061a188ba3ff99f80e83f73e5e7f1af7a6204390034003b231e"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/benchmark.json",
+    "bytes": 699,
+    "sha256": "262f9290c88b16748ba49aeb2d76f00cbe2bbd0cb658e236dd5571654e6a4791"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/chk.cc",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/chk.cc",
+    "bytes": 4086,
+    "sha256": "709826983dcf52db7be6cb7e413a0a1e9b5b6c4f40a83b7fe0f60635a0f1c68d"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/statement.txt",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/statement.txt",
+    "bytes": 3104,
+    "sha256": "f1bf0a3ae24231b1d15f8a6a0d7961bf1ff097dafbffb591edd19e96ac4a2bc3"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/benchmark.json",
+    "bytes": 674,
+    "sha256": "f6dbe84f2c60bc241595721b38c7d6ee92aeeebc0ee0d2ce02bec051e4f985f3"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/chk.cc",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/chk.cc",
+    "bytes": 9094,
+    "sha256": "bc37e5c2c7631ebacd7be2cef217931db65d8a0c7a1d979c3b5bf5b43ff23145"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/statement.txt",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/statement.txt",
+    "bytes": 9587,
+    "sha256": "7257158f34a9b4f747a02db2aa0447c711fc6b7304c0c7874ced0cdf15c193c4"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/benchmark.json",
+    "bytes": 662,
+    "sha256": "97cb8caf0bcbf814161dbac32398dfa51b294c2dc4876f91d141eb4d28431499"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/chk.cc",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/chk.cc",
+    "bytes": 5394,
+    "sha256": "80ffb55af49a284719a384e5365afec7675aa294fc98195c79aba51ee05c3db0"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/statement.txt",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/statement.txt",
+    "bytes": 4815,
+    "sha256": "ca4a2befd893940ed67a9a4c8db98bece5c80d759a2849a09266740e4b55fa2f"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/benchmark.json",
+    "bytes": 716,
+    "sha256": "ed41b338994f35cbb6957eb585f49f113d2269fd916609fb0444b319db0bb1a9"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/chk.cc",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/chk.cc",
+    "bytes": 6936,
+    "sha256": "3594c9aa0f2e081bf06209d23be8096932019c7a17adb7f0a495a20b4652d138"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/statement.txt",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/statement.txt",
+    "bytes": 2817,
+    "sha256": "098bbda17599031bf0f657feee50995328f39a411c40110b48108db84f3b408b"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/benchmark.json",
+    "bytes": 687,
+    "sha256": "67fd4c3b0bac020a48d45a2ee751d1cafd19f331b0924c7ba2988830c397bb41"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/chk.cc",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/chk.cc",
+    "bytes": 5733,
+    "sha256": "69a971ec31df446d836bcd0994c3a8c6f2539863fd27c7a560d553c98aed08de"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/statement.txt",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/statement.txt",
+    "bytes": 1675,
+    "sha256": "af6f19b3d83dbebe93af1e8bb49e2000bd68c9b207468bf66ece19a980bc0847"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/benchmark.json",
+    "bytes": 611,
+    "sha256": "d758ad1f95a7083aa2b5b3174950a5273396ddff50a9a309abe6fe69e824aaae"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/chk.cc",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/chk.cc",
+    "bytes": 1617,
+    "sha256": "a6c9f60e717710517e820c995830ecdaa08262761b987134680f99cfea8e1bda"
+  },
+  {
+    "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/statement.txt",
+    "rawUrl": "https://raw.githubusercontent.com/eigenlabs-research/frontiercs-benchmarks/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/statement.txt",
+    "bytes": 4745,
+    "sha256": "9b9e6a48865dcbaf0a37a550e4130e4744a1b4e8b620591b36ee3a0d79651659"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/ecdsafail-challenge/1196b9fd0f2197c55411b22081b98d57759e2d66/benchmark.json",
+    "bytes": 517,
+    "sha256": "213c8e602881130991b9374d8f991acb2d2a7cc3618ec5f24d5e3cc27add06fb"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/README.md",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/ecdsafail-challenge/1196b9fd0f2197c55411b22081b98d57759e2d66/README.md",
+    "bytes": 5582,
+    "sha256": "ac644b8d227144c34245d913b5cbe6857da02faa10c885bf0ad3b14a5d9d6f7a"
+  },
+  {
+    "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/src/sim.rs",
+    "rawUrl": "https://raw.githubusercontent.com/Layr-Labs/ecdsafail-challenge/1196b9fd0f2197c55411b22081b98d57759e2d66/src/sim.rs",
+    "bytes": 8572,
+    "sha256": "f0c72f2a280cd68acee1dbf8282098f72d6b3bf4311e0abf96d122fe002256d7"
+  },
+  {
+    "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/ecdsafail/ecadd-challenge-test/ca1bf336d447abfc9f7e581db7f4a938711e969d/benchmark.json",
+    "bytes": 421,
+    "sha256": "4caf897a630e7c1a3ad18d80b14028d5e1e453cd0d46ac629d9cd14350334bd7"
+  },
+  {
+    "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/README.md",
+    "rawUrl": "https://raw.githubusercontent.com/ecdsafail/ecadd-challenge-test/ca1bf336d447abfc9f7e581db7f4a938711e969d/README.md",
+    "bytes": 4072,
+    "sha256": "339b9370a2879ae3f35d191b31220e1a4bd9ea0afa2b8f6cb71cc414293cdebe"
+  },
+  {
+    "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/src/sim.rs",
+    "rawUrl": "https://raw.githubusercontent.com/ecdsafail/ecadd-challenge-test/ca1bf336d447abfc9f7e581db7f4a938711e969d/src/sim.rs",
+    "bytes": 8572,
+    "sha256": "f0c72f2a280cd68acee1dbf8282098f72d6b3bf4311e0abf96d122fe002256d7"
+  },
+  {
+    "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/benchmark.json",
+    "rawUrl": "https://raw.githubusercontent.com/ecdsafail/ecadd-challenge-test/db48f663f45dfeaa3845da1c0f103269a9771d1e/benchmark.json",
+    "bytes": 421,
+    "sha256": "4caf897a630e7c1a3ad18d80b14028d5e1e453cd0d46ac629d9cd14350334bd7"
+  },
+  {
+    "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/README.md",
+    "rawUrl": "https://raw.githubusercontent.com/ecdsafail/ecadd-challenge-test/db48f663f45dfeaa3845da1c0f103269a9771d1e/README.md",
+    "bytes": 4072,
+    "sha256": "339b9370a2879ae3f35d191b31220e1a4bd9ea0afa2b8f6cb71cc414293cdebe"
+  },
+  {
+    "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/src/sim.rs",
+    "rawUrl": "https://raw.githubusercontent.com/ecdsafail/ecadd-challenge-test/db48f663f45dfeaa3845da1c0f103269a9771d1e/src/sim.rs",
+    "bytes": 8572,
+    "sha256": "f0c72f2a280cd68acee1dbf8282098f72d6b3bf4311e0abf96d122fe002256d7"
+  }
+]

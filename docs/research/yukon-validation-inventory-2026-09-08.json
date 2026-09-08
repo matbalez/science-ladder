@@ -1,0 +1,1499 @@
+{
+  "checkedAt": "2026-09-08T10:56:00.530693+00:00",
+  "registryURL": "https://api.yukon.org/api/benchmarks",
+  "registrySnapshotSHA256": "f8f54c268df18c33b740ed97e9860a2042e7f5af2ee9407d22548d4058c5f68b",
+  "registryCount": 27,
+  "statusCounts": {
+    "open": 10,
+    "closed": 13,
+    "failed": 4
+  },
+  "challengeGroups": 3,
+  "scienceLadderApplicationCommit": "57c3b77941947a5e49172505f252059e594d2dbf",
+  "commissionedGuestSourceCommit": "952a8185ca4093619681c45f809d2dd67e3de154",
+  "proofExecutionProfileDigest": "sha256:e6c49d53902626028f63807cd724caa33282a89b7ef824e5921814a49faf224b",
+  "method": "Fresh anonymous registry and group snapshots; 61 unique manifest/checker/contract sources fetched successfully at exact registered commits; compare APIs checked the four advanced source references across three repositories; public pages inspected. No Yukon candidate commands, submissions or research posts executed.",
+  "coverageLimit": "All currently returned public records, including closed and failed/test records. No assertion about deleted/private history or hidden infrastructure.",
+  "sourceReferencesAdvanced": [
+    {
+      "name": "eigenlabs/eip8200-challenges/modexp",
+      "old": "195f7582c0a0fc3bd11ea66b27f30e120d3e3db5",
+      "new": "0c5b7c5a38f55c72069b8942e29fb3d49e51c7af",
+      "repository": "https://github.com/Layr-Labs/eip8200-challenges"
+    },
+    {
+      "name": "eigenlabs/eip8200-challenges/ripemd160",
+      "old": "195f7582c0a0fc3bd11ea66b27f30e120d3e3db5",
+      "new": "0c5b7c5a38f55c72069b8942e29fb3d49e51c7af",
+      "repository": "https://github.com/Layr-Labs/eip8200-challenges"
+    },
+    {
+      "name": "layr-labs/matrices-fast",
+      "old": "68ec63860d9fa225f5f7a9c1cb9eb67859309610",
+      "new": "0fb513bc04102c2602a27a0c206f3fc93ad01fe2",
+      "repository": "https://github.com/Layr-Labs/matrices-fast"
+    },
+    {
+      "name": "davidtai/mlxfast-gemma4-26b-a4b",
+      "old": "e7fa339aae4eb2e69e13d4137306d3e0295e4c46",
+      "new": "82b2567b8e80a96d83d45f8de9fc0de8a251b12b",
+      "repository": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine"
+    }
+  ],
+  "entries": [
+    {
+      "id": "60d71e6c-548f-45ae-afde-a4158c99cf11",
+      "name": "eigenlabs/eip8200-challenges/modexp",
+      "title": "precompile.fast / modexp",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/eip8200-challenges",
+      "sourceCommit": "0c5b7c5a38f55c72069b8942e29fb3d49e51c7af",
+      "rootDir": "",
+      "validationDesign": "Bind submitted bytecode to a Lean correctness theorem, replay through Comparator with restricted axioms, then measure gas on 44 vectors using protected execution.",
+      "scientificInterpretation": "Gas savings for the fixed semantics/workload under the proved correctness predicate. Broader EVM deployment claims need matched semantics and workload evidence.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "lean-toolchain",
+        "byte-proof-binding",
+        "deterministic-cost",
+        "multi-track"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/benchmark.json",
+          "contentSHA256": "ad78ba8daf3c6cb31f483342bf0e528f4f2d6b1eabd4ba0d85567a7346f4d4ee"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/docs/benchmark.md",
+          "contentSHA256": "0b3df91ce77794fdd15ad03469cf725836775130603215bf2d4292700f7f3f8a"
+        },
+        {
+          "label": "Scorer",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/Challenge/Modexp/Scorer.lean",
+          "contentSHA256": "3c2b62b97e70b2415779752c6ad4069ce7eb1c40d633ce3afcfe9b8015b7e25d"
+        }
+      ],
+      "previousSourceCommit": "195f7582c0a0fc3bd11ea66b27f30e120d3e3db5",
+      "sourceAdvanced": true,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port exact theorem/byte binding, dependencies, axiom policy and cost/parameter derivation.",
+        "Exercise representative real workload and adversarial artifacts with appropriate resource budgets; generic Lean replay alone is not that port."
+      ],
+      "yukonWorkflow": {
+        "challengeId": "fbfcd2e7-7d2c-4b00-a042-8c0de4f15592",
+        "trackName": "modexp",
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark-modexp.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 8388608
+      }
+    },
+    {
+      "id": "00a444d5-a160-425f-aabc-57892f305776",
+      "name": "eigenlabs/eip8200-challenges/ripemd160",
+      "title": "precompile.fast / ripemd160",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/eip8200-challenges",
+      "sourceCommit": "0c5b7c5a38f55c72069b8942e29fb3d49e51c7af",
+      "rootDir": "",
+      "validationDesign": "Bind submitted bytecode to a Lean correctness theorem, replay through Comparator with restricted axioms, then measure gas on 49 vectors, including clean/dirty-state checks using protected execution.",
+      "scientificInterpretation": "Gas savings for the fixed semantics/workload under the proved correctness predicate. Broader EVM deployment claims need matched semantics and workload evidence.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "lean-toolchain",
+        "byte-proof-binding",
+        "deterministic-cost",
+        "multi-track"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/benchmark.json",
+          "contentSHA256": "ad78ba8daf3c6cb31f483342bf0e528f4f2d6b1eabd4ba0d85567a7346f4d4ee"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/docs/benchmark.md",
+          "contentSHA256": "0b3df91ce77794fdd15ad03469cf725836775130603215bf2d4292700f7f3f8a"
+        },
+        {
+          "label": "Scorer",
+          "url": "https://github.com/Layr-Labs/eip8200-challenges/blob/0c5b7c5a38f55c72069b8942e29fb3d49e51c7af/Challenge/Ripemd160/Scorer.lean",
+          "contentSHA256": "a03917b70d646d9881a487d5ca33d039f6111eea22008925c47b54128e924c1f"
+        }
+      ],
+      "previousSourceCommit": "195f7582c0a0fc3bd11ea66b27f30e120d3e3db5",
+      "sourceAdvanced": true,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port exact theorem/byte binding, dependencies, axiom policy and cost/parameter derivation.",
+        "Exercise representative real workload and adversarial artifacts with appropriate resource budgets; generic Lean replay alone is not that port."
+      ],
+      "yukonWorkflow": {
+        "challengeId": "fbfcd2e7-7d2c-4b00-a042-8c0de4f15592",
+        "trackName": "ripemd160",
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark-ripemd160.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 8388608
+      }
+    },
+    {
+      "id": "8c3e7051-530a-4aee-88df-a426e6e78151",
+      "name": "layr-labs/matrices-fast",
+      "title": "matrices.fast",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/matrices-fast",
+      "sourceCommit": "0fb513bc04102c2602a27a0c206f3fc93ad01fe2",
+      "rootDir": "",
+      "validationDesign": "Build a Rust ordering algorithm; require valid repeat-identical permutations under per-matrix time limits; recompute symbolic factorization cost on a hidden corpus. Rank a 0.30/0.30/0.40 weighted mean of within-size-bucket geometric-mean flop ratios to AMD.",
+      "scientificInterpretation": "Lower predicted factorization work, with a plausible engineering link. This does not measure complete solver latency or numerical stability. Preserve per-bucket results and generalization checks.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "hidden-corpus",
+        "per-case-budgets",
+        "weighted-aggregation",
+        "diagnostic-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/matrices-fast/blob/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/benchmark.json",
+          "contentSHA256": "818ec7978d04982879a4b1ef321812afa76dcdb491518846ef13433d2645c70b"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/matrices-fast/blob/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/RULES.md",
+          "contentSHA256": "428d2ca876c8577709b804fb2e47121517c38cf380f814a6f39bb1a6b41de28d"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/matrices-fast/blob/0fb513bc04102c2602a27a0c206f3fc93ad01fe2/README.md",
+          "contentSHA256": "dc9448fecf9ac487042ef864b201d70d6dfdd206e50f9244d6253c4ca31da9c4"
+        }
+      ],
+      "previousSourceCommit": "68ec63860d9fa225f5f7a9c1cb9eb67859309610",
+      "sourceAdvanced": true,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "af5dd63a-8242-432a-8288-d32464889153",
+      "name": "eigenlabs/heesch",
+      "title": "Heesch",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/heesch",
+      "sourceCommit": "ce3b8d6974d3f318c3c6081b421ed51c7d041d6e",
+      "rootDir": "",
+      "validationDesign": "Validate geometric witnesses and non-tiling evidence from a fixed census or checked UNSAT certificate; rank completed coronas plus a bounded partial-coverage term.",
+      "scientificInterpretation": "Completed coronas with non-tiling evidence support a mathematical bound. Partial coverage is a local search objective, not a fractional Heesch number or proof-completion probability.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "native-certificate-checkers",
+        "large-artifacts",
+        "achievement-predicate",
+        "exact-rational-metadata"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/benchmark.json",
+          "contentSHA256": "9819b00a9d76b78fb5860f2f7ef756d5882be89da77025b4d273172b67de6812"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/docs/submitting.md",
+          "contentSHA256": "08e7dc2cfdc464d17c736889eecfaf8425c535b16969edee3361e0780e48b712"
+        },
+        {
+          "label": "Proof-checker dispatch",
+          "url": "https://github.com/Layr-Labs/heesch/blob/ce3b8d6974d3f318c3c6081b421ed51c7d041d6e/heesch_encoder/proofcheck/checkers.py",
+          "contentSHA256": "152d8bfabedb5354391a85bda999c67fd97b4464ed2e6b71c60a61f20807403d"
+        }
+      ],
+      "previousSourceCommit": "ce3b8d6974d3f318c3c6081b421ed51c7d041d6e",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen encoder, LRAT/checker pair and feasibility bands.",
+        "Add large submitted-certificate ingestion beyond current Git/source limits; a generated build product is a different path."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark.yml"
+        },
+        "researchDiscussionsEnabled": true,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 536870912
+      }
+    },
+    {
+      "id": "be15cf17-1dc9-4d1a-9b24-264e23575de9",
+      "name": "davidtai/mlxfast-gemma4-26b-a4b",
+      "title": "MLX.fast / Gemma",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine",
+      "sourceCommit": "82b2567b8e80a96d83d45f8de9fc0de8a251b12b",
+      "rootDir": "",
+      "validationDesign": "Build Swift/Metal inference code against pinned weights. Thermally gated paired measurements use a prefill/decode composite for the batch regime and a separate median-ratio series for single-stream DFlash; a declared token-divergence budget gates output.",
+      "scientificInterpretation": "Speed for a specified model, regime and accepted output difference. The participant contract permits 10% per-stream token divergence: application quality or lossless equivalence is not established by that budget alone.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates",
+        "separate-series"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine/blob/82b2567b8e80a96d83d45f8de9fc0de8a251b12b/benchmark.json",
+          "contentSHA256": "4c718a52656f551f09cfae31f8de7f91147ccf4d88a0c526095a9905a51522ae"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/mlxfast-gemma4-26b-a4b-engine/blob/82b2567b8e80a96d83d45f8de9fc0de8a251b12b/docs/participant-contract.md",
+          "contentSHA256": "9e63956fa24b69bc3e832796039dd8ff6412ce1d690dcad10c319201265086da"
+        }
+      ],
+      "previousSourceCommit": "e7fa339aae4eb2e69e13d4137306d3e0295e4c46",
+      "sourceAdvanced": true,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Apple-specific execution remains deliberately deferred where required by the original contract.",
+        "Port the exact model/proof assets, editable surface and measurement policy; do not claim Linux substitution or unchanged quality guarantees."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "a2e3eaa8-95c0-4a62-81d3-2cd7e78e8575",
+      "name": "proximity-prize/proximity-prize/irs-reduction-threshold-lower",
+      "title": "Proximity / lower",
+      "status": "open",
+      "sourceRepository": "https://github.com/proximity-prize/proximity-prize",
+      "sourceCommit": "1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c",
+      "rootDir": "",
+      "validationDesign": "Maximize an induced centibit floor at a certified-safe reduction radius; bind scalar/radius metadata to a fixed Lean theorem and restricted axiom closure; ranked workflow requires separate verifier acceptance.",
+      "scientificInterpretation": "A certified statement about one IRS reduction profile. The quantity does not establish whole-protocol security; lower and upper tracks improve different sides of the scientific characterization.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "lean-toolchain",
+        "statement-parameter-binding",
+        "exact-rational-metadata",
+        "multi-track",
+        "verifier-attestation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/benchmark.json",
+          "contentSHA256": "fde3ab3de98cfdffdfe4da141317bd0f12f18e65946e67fefc01839d6e432687"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/README.md",
+          "contentSHA256": "dd02a77161d778c67119b87b81563ac0c3ebe0f55e301ec81b1cf1745bd5a136"
+        },
+        {
+          "label": "Protected target",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/ProximityPrize/Benchmark/TargetLower.lean",
+          "contentSHA256": "7d11762452db502cc244e2522eb83f01d3d4b8318ec1771d0c86041181bdc474"
+        }
+      ],
+      "previousSourceCommit": "1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port exact theorem/byte binding, dependencies, axiom policy and cost/parameter derivation.",
+        "Exercise representative real workload and adversarial artifacts with appropriate resource budgets; generic Lean replay alone is not that port."
+      ],
+      "yukonWorkflow": {
+        "challengeId": "c62905f6-c846-48b1-8eae-24390ea195e4",
+        "trackName": "irs-reduction-threshold-lower",
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark-irs-reduction-threshold-lower.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": true,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "1226aa4f-1258-4eb7-8c9e-846ece1e2543",
+      "name": "proximity-prize/proximity-prize/irs-reduction-threshold-upper",
+      "title": "Proximity / upper",
+      "status": "open",
+      "sourceRepository": "https://github.com/proximity-prize/proximity-prize",
+      "sourceCommit": "1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c",
+      "rootDir": "",
+      "validationDesign": "Minimize an induced centibit ceiling at a certified unsafe radius suffix; bind scalar/radius metadata to a fixed Lean theorem and restricted axiom closure; ranked workflow requires separate verifier acceptance.",
+      "scientificInterpretation": "A certified statement about one IRS reduction profile. The quantity does not establish whole-protocol security; lower and upper tracks improve different sides of the scientific characterization.",
+      "requiredCapabilities": [
+        "proof-checking",
+        "lean-toolchain",
+        "statement-parameter-binding",
+        "exact-rational-metadata",
+        "multi-track",
+        "verifier-attestation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/benchmark.json",
+          "contentSHA256": "fde3ab3de98cfdffdfe4da141317bd0f12f18e65946e67fefc01839d6e432687"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/README.md",
+          "contentSHA256": "dd02a77161d778c67119b87b81563ac0c3ebe0f55e301ec81b1cf1745bd5a136"
+        },
+        {
+          "label": "Protected target",
+          "url": "https://github.com/proximity-prize/proximity-prize/blob/1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c/ProximityPrize/Benchmark/TargetUpper.lean",
+          "contentSHA256": "6aebed6c075924fd9fd2db9a6e347744c1c8252c0a9b6ab3536aa4c15c7768b3"
+        }
+      ],
+      "previousSourceCommit": "1b2ca03c8b0ad8a53d647f1eb13aa60b928b8a2c",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port exact theorem/byte binding, dependencies, axiom policy and cost/parameter derivation.",
+        "Exercise representative real workload and adversarial artifacts with appropriate resource budgets; generic Lean replay alone is not that port."
+      ],
+      "yukonWorkflow": {
+        "challengeId": "c62905f6-c846-48b1-8eae-24390ea195e4",
+        "trackName": "irs-reduction-threshold-upper",
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark-irs-reduction-threshold-upper.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": true,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "5d1ee4d7-80bd-4555-b182-6505f26ef495",
+      "name": "eigenlabs/qwen38-challenge",
+      "title": "MLX.fast / Qwen 3.8 (retired)",
+      "status": "closed",
+      "sourceRepository": "https://github.com/Layr-Labs/qwen-3.8-mtp-challenge",
+      "sourceCommit": "0863b06ac16e26e48fc06e97444095b00feb66d4",
+      "rootDir": "",
+      "validationDesign": "Evaluate editable inference/speculation code and optional draft weights against a fixed backbone; measure paired serial-relative decode rates over eight prompts and rank their median, with exact-token reverification and bounded timing.",
+      "scientificInterpretation": "Equivalent-token decode speed under the fixed evaluation regime. Retain raw ratios, quality gates and the actual pinned ceiling; older descriptive text is not a substitute for versioned configuration.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "large-artifacts",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Scoring configuration",
+          "url": "https://github.com/Layr-Labs/qwen-3.8-mtp-challenge/blob/0863b06ac16e26e48fc06e97444095b00feb66d4/benchmark.json",
+          "contentSHA256": "3655c68d513d8f666437c8a092787dc59229b8ac3b395bdf2bf4d8f5d221efbb"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/qwen-3.8-mtp-challenge/blob/0863b06ac16e26e48fc06e97444095b00feb66d4/README.md",
+          "contentSHA256": "0b1f796d775a361477f9e9b32b74ecc5ee7e7caa8fce659ea388d679b09844fa"
+        }
+      ],
+      "previousSourceCommit": "0863b06ac16e26e48fc06e97444095b00feb66d4",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Apple-specific execution remains deliberately deferred where required by the original contract.",
+        "Port the exact model/proof assets, editable surface and measurement policy; do not claim Linux substitution or unchanged quality guarantees."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "qwen-mtp-ranked-benchmark.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "8abde9cf-9256-4453-99e2-9de8632a7943",
+      "name": "eigenlabs/flock-challenge-multi/x86",
+      "title": "SNARK.fast / x86",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/flock-challenge-multi",
+      "sourceCommit": "c75aeceb34f8f33ff49c06a293b05dd7e00d463b",
+      "rootDir": "",
+      "validationDesign": "Build an editable Rust prover; issue fresh seed-driven workloads; the protected verifier checks every proof and controls timing. Rank 262,144 compressions divided by median duration over 100 measured trials after 20 warm-ups.",
+      "scientificInterpretation": "Verified proof-production throughput on the declared hardware and workload. BLAKE3 compressions per second must not be silently relabelled end-to-end Ethereum transactions per second.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "fresh-workloads",
+        "trusted-timing",
+        "statistical-policy",
+        "hardware-profile",
+        "linux-x86-16-vcpu"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/flock-challenge-multi/blob/c75aeceb34f8f33ff49c06a293b05dd7e00d463b/benchmark.json",
+          "contentSHA256": "17f0061685aec769c05f442668303c1ac0e09828ba292469cc96edcbaa2f8d57"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/flock-challenge-multi/blob/c75aeceb34f8f33ff49c06a293b05dd7e00d463b/docs/BLAKE3_X86_BENCHMARK.md",
+          "contentSHA256": "9a35b4bd4fb7edb1e3cbac7771bc1f7f50ba07c366279d535233d757324018a1"
+        }
+      ],
+      "previousSourceCommit": "c75aeceb34f8f33ff49c06a293b05dd7e00d463b",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Commission the required 16-vCPU/32-GB hardware and pinned Rust toolchain for original-contract comparisons.",
+        "Add a trusted ready/seed/capture timing scope and fresh committed seed provenance; current paired process timing is a different measurement."
+      ],
+      "yukonWorkflow": {
+        "challengeId": "fc968480-5224-4183-a46b-3818e86ed515",
+        "trackName": "x86",
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark-blake3-x86.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 8388608
+      }
+    },
+    {
+      "id": "c6931fd9-f783-4e1f-84df-c7ffe49c3426",
+      "name": "eigenlabs/lighter-prover-challenge",
+      "title": "Lighter.fast",
+      "status": "closed",
+      "sourceRepository": "https://github.com/Layr-Labs/lighter-prover-challenge",
+      "sourceCommit": "ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0",
+      "rootDir": "",
+      "validationDesign": "Build the candidate prover separately from the pinned verifier; verify proofs and public outputs for private active-transaction fixtures; trusted timing and transaction counts determine throughput on the ranked M4 Pro host.",
+      "scientificInterpretation": "Proving throughput for the fixed circuit/workload. Public empty-block smoke scores are noncompetitive; a fleet multiplier is an extrapolation, and circuit correctness is an inherited assumption.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "macos-arm64",
+        "large-memory"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/lighter-prover-challenge/blob/ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0/benchmark.json",
+          "contentSHA256": "24d817864f13dae8473622f7d2dd45b3931bb7a581e8898cf480e1a7e9dbd1a5"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/lighter-prover-challenge/blob/ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0/BENCHMARK.md",
+          "contentSHA256": "0610e081bf320e58da0a33474fb95ca04d737175000d27f29ff1318c53c6efb0"
+        }
+      ],
+      "previousSourceCommit": "ce919deaf8c8820b7d066feabb2ea2a2aec5dcb0",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Apple-specific execution remains deliberately deferred where required by the original contract.",
+        "Port the exact model/proof assets, editable surface and measurement policy; do not claim Linux substitution or unchanged quality guarantees."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 67108864
+      }
+    },
+    {
+      "id": "8806afb8-8dfa-4a9d-8f11-4735c5fde7c9",
+      "name": "eigenlabs/flock-challenge",
+      "title": "SNARK.fast / Apple",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/flock-challenge",
+      "sourceCommit": "c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd",
+      "rootDir": "",
+      "validationDesign": "Build an editable Rust prover; issue fresh seed-driven workloads; the protected verifier checks every proof and controls timing. Rank 262,144 compressions divided by median duration over 100 measured trials after 20 warm-ups.",
+      "scientificInterpretation": "Verified proof-production throughput on the declared hardware and workload. BLAKE3 compressions per second must not be silently relabelled end-to-end Ethereum transactions per second.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "fresh-workloads",
+        "trusted-timing",
+        "statistical-policy",
+        "hardware-profile",
+        "macos-arm64"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/flock-challenge/blob/c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd/benchmark.json",
+          "contentSHA256": "2be1fa4e28caa9810719e7d466935eff58a25bf9b984e1a850dd4cf0080f4d0a"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/flock-challenge/blob/c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd/docs/BLAKE3_MAC_BENCHMARK.md",
+          "contentSHA256": "3e4e3f92de3861dd20e7872219b3fe7e9b93f447e7a499b64bc60e5ce58c4e97"
+        }
+      ],
+      "previousSourceCommit": "c35c1c474650cd72ccbdc7280b0f4bb3ee1ab0dd",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Apple-specific execution remains deliberately deferred where required by the original contract.",
+        "Port the exact model/proof assets, editable surface and measurement policy; do not claim Linux substitution or unchanged quality guarantees."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark-blake3-mac.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 8388608
+      }
+    },
+    {
+      "id": "1854efdf-feba-4773-bae9-b80520881a74",
+      "name": "eigenlabs/mlxfast-challenge",
+      "title": "MLX.fast / Laguna (retired)",
+      "status": "closed",
+      "sourceRepository": "https://github.com/Layr-Labs/mlxfast-challenge",
+      "sourceCommit": "4ea72c3b28873fca23b12b6f33193a2eeb5042f8",
+      "rootDir": "",
+      "validationDesign": "Swift/Metal model execution with pinned checkpoint/goldens, paired baseline measurements, output-correctness and operating-state gates, and a weighted prefill/decode speedup objective.",
+      "scientificInterpretation": "Model inference performance at specified correctness and operating conditions. Keep different checkpoint versions and calibration baselines separate.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/4ea72c3b28873fca23b12b6f33193a2eeb5042f8/benchmark.json",
+          "contentSHA256": "e01d3ea1c9281cfe81e1693d987627005fed6963440fbef6a761e4f28dd67fb6"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/4ea72c3b28873fca23b12b6f33193a2eeb5042f8/README.md",
+          "contentSHA256": "df1e72c7d4a4aed30c8252d0e6d7991adec3fd0a683f1db2664e6d0a1229fe3e"
+        }
+      ],
+      "previousSourceCommit": "4ea72c3b28873fca23b12b6f33193a2eeb5042f8",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Apple-specific execution remains deliberately deferred where required by the original contract.",
+        "Port the exact model/proof assets, editable surface and measurement policy; do not claim Linux substitution or unchanged quality guarantees."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "a89b9cfe-1625-423b-bf38-f369c8cd5492",
+      "name": "gpsanant/mlxfast-challenge-dev-serial-v2-2",
+      "title": "gpsanant/mlxfast-challenge-dev-serial-v2-2",
+      "status": "failed",
+      "sourceRepository": "https://github.com/Layr-Labs/mlxfast-challenge",
+      "sourceCommit": "461af5b76fc0b4f037150134ad4c424df095c846",
+      "rootDir": "",
+      "validationDesign": "Swift/Metal model execution with pinned checkpoint/goldens, paired baseline measurements, output-correctness and operating-state gates, and a weighted prefill/decode speedup objective.",
+      "scientificInterpretation": "Model inference performance at specified correctness and operating conditions. Keep different checkpoint versions and calibration baselines separate.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/benchmark.json",
+          "contentSHA256": "36ab70129645d4fcaad2b0a77a7452f66e73574dcdf12126bb34f3af7d8ef185"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/README.md",
+          "contentSHA256": "e28b0c9bf1c28b81d4f1504ce6785ceb46dd7c4834703de648ea36a6cc4008d5"
+        }
+      ],
+      "previousSourceCommit": "461af5b76fc0b4f037150134ad4c424df095c846",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Apple-specific execution remains deliberately deferred where required by the original contract.",
+        "Port the exact model/proof assets, editable surface and measurement policy; do not claim Linux substitution or unchanged quality guarantees."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "d5ad0a15-9e0f-46d3-bd0e-9cedd2111b2b",
+      "name": "gpsanant/mlxfast-challenge-dev-serial-v2",
+      "title": "gpsanant/mlxfast-challenge-dev-serial-v2",
+      "status": "failed",
+      "sourceRepository": "https://github.com/Layr-Labs/mlxfast-challenge",
+      "sourceCommit": "461af5b76fc0b4f037150134ad4c424df095c846",
+      "rootDir": "",
+      "validationDesign": "Swift/Metal model execution with pinned checkpoint/goldens, paired baseline measurements, output-correctness and operating-state gates, and a weighted prefill/decode speedup objective.",
+      "scientificInterpretation": "Model inference performance at specified correctness and operating conditions. Keep different checkpoint versions and calibration baselines separate.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "swift-metal",
+        "macos-arm64",
+        "pinned-weights",
+        "hidden-corpus",
+        "trusted-timing",
+        "statistical-policy",
+        "quality-gates"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/benchmark.json",
+          "contentSHA256": "36ab70129645d4fcaad2b0a77a7452f66e73574dcdf12126bb34f3af7d8ef185"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/mlxfast-challenge/blob/461af5b76fc0b4f037150134ad4c424df095c846/README.md",
+          "contentSHA256": "e28b0c9bf1c28b81d4f1504ce6785ceb46dd7c4834703de648ea36a6cc4008d5"
+        }
+      ],
+      "previousSourceCommit": "461af5b76fc0b4f037150134ad4c424df095c846",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Apple-specific execution remains deliberately deferred where required by the original contract.",
+        "Port the exact model/proof assets, editable surface and measurement policy; do not claim Linux substitution or unchanged quality guarantees."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "6180ffe0-2cda-4a34-ae4c-37a8708a661e",
+      "name": "openfrontiercs/pack-the-polyominoes",
+      "title": "OpenFrontierCS / pack-the-polyominoes",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "447c1c0f723c7c8db6cd635ccae1008ced09fe0b",
+      "rootDir": "algorithmic/problems/0",
+      "validationDesign": "Run submitted C++ against the judge\u2019s cases. Check all transformed pieces for containment and overlap; the pinned checker computes occupied-cell area divided by enclosing rectangle area.",
+      "scientificInterpretation": "Direct packing utilization for the tested instances. This differs from the registry\u2019s generic reference-ratio description; application benefits require relevant instance evidence.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/benchmark.json",
+          "contentSHA256": "8b3398076ee568cde5618066650a028b9863be274572d38c227302f4274d5c71"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/chk.cc",
+          "contentSHA256": "9e1a344ee3bee030fa67cb509070be627b85ed3c3fa1c64b3a64582f04e6a58a"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/447c1c0f723c7c8db6cd635ccae1008ced09fe0b/algorithmic/problems/0/statement.txt",
+          "contentSHA256": "496a1b103e0b1696212c38ff5f1a9d62d22c881ca46c964218a709c06eaaab2a"
+        }
+      ],
+      "previousSourceCommit": "447c1c0f723c7c8db6cd635ccae1008ced09fe0b",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "frontiercs"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 65536
+      }
+    },
+    {
+      "id": "38b3863e-293c-49a2-8f42-53ac53d12a71",
+      "name": "openfrontiercs/number-loop-construction",
+      "title": "OpenFrontierCS / number-loop-construction",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "252a4145f3c06cec268881bb293c9ca2f277441a",
+      "rootDir": "algorithmic/problems/145",
+      "validationDesign": "Run submitted C++ against the judge\u2019s cases. Validate the fixed clue template, count loop solutions up to six, then rank by solution-count bucket and proportion of one-valued clues.",
+      "scientificInterpretation": "Uniqueness is a concrete construction property. The additional clue-composition preference needs an explicit mathematical or algorithmic rationale before being presented as scientific progress.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/benchmark.json",
+          "contentSHA256": "842f34a55333577d56a6940bc4c48d1af9d620009aa64ed46a88457171684c5d"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/checker.cpp",
+          "contentSHA256": "a25d6cd0e728eef1e497416523fd01e982c296dc957413fa54a234ef792e6e82"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/252a4145f3c06cec268881bb293c9ca2f277441a/algorithmic/problems/145/statement.txt",
+          "contentSHA256": "3ddac3d7c2485061a188ba3ff99f80e83f73e5e7f1af7a6204390034003b231e"
+        }
+      ],
+      "previousSourceCommit": "252a4145f3c06cec268881bb293c9ca2f277441a",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "frontiercs"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 65536
+      }
+    },
+    {
+      "id": "d227cbcd-d5dc-4209-9611-75950facf862",
+      "name": "openfrontiercs/sphere-packing",
+      "title": "OpenFrontierCS / sphere-packing",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "6b3fd62e05048afdcdd1dfe1b573bc3be15306b8",
+      "rootDir": "algorithmic/problems/48",
+      "validationDesign": "Run submitted C++ against the judge\u2019s cases. Validate finite center coordinates and derive feasible radius from pairwise and boundary distances; normalize against baseline/reference bounds.",
+      "scientificInterpretation": "Improved finite-cube packings. Floating-point feasibility is not a rigorous global-optimality certificate; retain numeric error controls and raw radius.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/benchmark.json",
+          "contentSHA256": "262f9290c88b16748ba49aeb2d76f00cbe2bbd0cb658e236dd5571654e6a4791"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/chk.cc",
+          "contentSHA256": "709826983dcf52db7be6cb7e413a0a1e9b5b6c4f40a83b7fe0f60635a0f1c68d"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/6b3fd62e05048afdcdd1dfe1b573bc3be15306b8/algorithmic/problems/48/statement.txt",
+          "contentSHA256": "f1bf0a3ae24231b1d15f8a6a0d7961bf1ff097dafbffb591edd19e96ac4a2bc3"
+        }
+      ],
+      "previousSourceCommit": "6b3fd62e05048afdcdd1dfe1b573bc3be15306b8",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "frontiercs"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 65536
+      }
+    },
+    {
+      "id": "733b6eb4-d48b-499f-92b2-a962a2e53637",
+      "name": "openfrontiercs/rectangle-knapsack",
+      "title": "OpenFrontierCS / rectangle-knapsack",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "83ccc1045b7292b45578b4336e3033604dc3c4e7",
+      "rootDir": "algorithmic/problems/47",
+      "validationDesign": "Run submitted C++ against the judge\u2019s cases. Check allowed item counts, rotations, containment and non-overlap; sum packed value and normalize between per-case references.",
+      "scientificInterpretation": "Greater feasible packed value is a direct optimization result. Document reference bounds and practical relevance of the item distribution.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/benchmark.json",
+          "contentSHA256": "f6dbe84f2c60bc241595721b38c7d6ee92aeeebc0ee0d2ce02bec051e4f985f3"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/chk.cc",
+          "contentSHA256": "bc37e5c2c7631ebacd7be2cef217931db65d8a0c7a1d979c3b5bf5b43ff23145"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/83ccc1045b7292b45578b4336e3033604dc3c4e7/algorithmic/problems/47/statement.txt",
+          "contentSHA256": "7257158f34a9b4f747a02db2aa0447c711fc6b7304c0c7874ced0cdf15c193c4"
+        }
+      ],
+      "previousSourceCommit": "83ccc1045b7292b45578b4336e3033604dc3c4e7",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "frontiercs"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 65536
+      }
+    },
+    {
+      "id": "aad568a9-2045-496d-9d6a-a27ffb0dc8df",
+      "name": "openfrontiercs/job-shop-scheduling",
+      "title": "OpenFrontierCS / job-shop-scheduling",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "73a3d1d65a1056bee085f882f4c97736590d3094",
+      "rootDir": "algorithmic/problems/46",
+      "validationDesign": "Run submitted C++ against the judge\u2019s cases. Validate machine permutations and the resulting precedence graph; reject cycles, compute makespan and normalize against per-case reference values.",
+      "scientificInterpretation": "Reduced completion time under the scheduling model. Preserve feasibility, workload coverage and the raw makespan; industrial transfer needs representative constraints.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/benchmark.json",
+          "contentSHA256": "97cb8caf0bcbf814161dbac32398dfa51b294c2dc4876f91d141eb4d28431499"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/chk.cc",
+          "contentSHA256": "80ffb55af49a284719a384e5365afec7675aa294fc98195c79aba51ee05c3db0"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/73a3d1d65a1056bee085f882f4c97736590d3094/algorithmic/problems/46/statement.txt",
+          "contentSHA256": "ca4a2befd893940ed67a9a4c8db98bece5c80d759a2849a09266740e4b55fa2f"
+        }
+      ],
+      "previousSourceCommit": "73a3d1d65a1056bee085f882f4c97736590d3094",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "frontiercs"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 65536
+      }
+    },
+    {
+      "id": "d82a09a7-c6a0-448a-b501-65d4e2100514",
+      "name": "openfrontiercs/traveling-santa",
+      "title": "OpenFrontierCS / traveling-santa",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "484ea328460142f1d632f62b48baf3dc773cb2e9",
+      "rootDir": "algorithmic/problems/44",
+      "validationDesign": "Run submitted C++ against the judge\u2019s cases. Check a complete city tour and recompute distance with the prime-index/periodic penalty; apply the pinned baseline normalization and score remapping.",
+      "scientificInterpretation": "Better constrained routes on this instance family. The artificial penalty and nonlinear score do not by themselves justify real logistics-efficiency claims.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/benchmark.json",
+          "contentSHA256": "ed41b338994f35cbb6957eb585f49f113d2269fd916609fb0444b319db0bb1a9"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/chk.cc",
+          "contentSHA256": "3594c9aa0f2e081bf06209d23be8096932019c7a17adb7f0a495a20b4652d138"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/484ea328460142f1d632f62b48baf3dc773cb2e9/algorithmic/problems/44/statement.txt",
+          "contentSHA256": "098bbda17599031bf0f657feee50995328f39a411c40110b48108db84f3b408b"
+        }
+      ],
+      "previousSourceCommit": "484ea328460142f1d632f62b48baf3dc773cb2e9",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "frontiercs"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 65536
+      }
+    },
+    {
+      "id": "ccd10e51-23cc-45ba-a546-32aae3f06826",
+      "name": "openfrontiercs/rectangle-free-grid",
+      "title": "OpenFrontierCS / rectangle-free-grid",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5",
+      "rootDir": "algorithmic/problems/27",
+      "validationDesign": "Run submitted C++ against the judge\u2019s cases. Check distinct grid positions and absence of rectangular four-corner patterns; normalize the selected-cell count by a size-dependent expression.",
+      "scientificInterpretation": "Larger valid constructions give extremal-combinatorics evidence for specified dimensions. The normalized score is not itself a proved fraction of the unknown optimum.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/benchmark.json",
+          "contentSHA256": "67fd4c3b0bac020a48d45a2ee751d1cafd19f331b0924c7ba2988830c397bb41"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/chk.cc",
+          "contentSHA256": "69a971ec31df446d836bcd0994c3a8c6f2539863fd27c7a560d553c98aed08de"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5/algorithmic/problems/27/statement.txt",
+          "contentSHA256": "af6f19b3d83dbebe93af1e8bb49e2000bd68c9b207468bf66ece19a980bc0847"
+        }
+      ],
+      "previousSourceCommit": "ef29fed3b6d2c177300c39bfe6a8a2d209dd3ac5",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "frontiercs"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 65536
+      }
+    },
+    {
+      "id": "b440dbb5-f982-49e1-afc2-da7def40d50a",
+      "name": "openfrontiercs/worldmap",
+      "title": "OpenFrontierCS / worldmap",
+      "status": "closed",
+      "sourceRepository": "https://github.com/eigenlabs-research/frontiercs-benchmarks",
+      "sourceCommit": "68913c3643719a84b6fe3de79bd8f0b83196f13b",
+      "rootDir": "algorithmic/problems/6",
+      "validationDesign": "Run submitted C++ against the judge\u2019s cases. Validate a labelled square map against the required adjacency graph; compute a normalized function of map side length divided by country count.",
+      "scientificInterpretation": "Compact graph representation under specified constraints. A display score above 100% is not more than a complete scientific solution.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-cpp",
+        "per-case-output-checking",
+        "hidden-corpus",
+        "per-case-budgets",
+        "suite-aggregation"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/benchmark.json",
+          "contentSHA256": "d758ad1f95a7083aa2b5b3174950a5273396ddff50a9a309abe6fe69e824aaae"
+        },
+        {
+          "label": "Output checker",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/chk.cc",
+          "contentSHA256": "a6c9f60e717710517e820c995830ecdaa08262761b987134680f99cfea8e1bda"
+        },
+        {
+          "label": "Problem statement",
+          "url": "https://github.com/eigenlabs-research/frontiercs-benchmarks/blob/68913c3643719a84b6fe3de79bd8f0b83196f13b/algorithmic/problems/6/statement.txt",
+          "contentSHA256": "9b9e6a48865dcbaf0a37a550e4130e4744a1b4e8b620591b36ee3a0d79651659"
+        }
+      ],
+      "previousSourceCommit": "68913c3643719a84b6fe3de79bd8f0b83196f13b",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "frontiercs"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": 65536
+      }
+    },
+    {
+      "id": "1ffb695a-309b-46b6-a728-2f97d8c7be74",
+      "name": "gpsanant/ecdsafail-challenge",
+      "title": "ECDSA.fail",
+      "status": "open",
+      "sourceRepository": "https://github.com/Layr-Labs/ecdsafail-challenge",
+      "sourceCommit": "1196b9fd0f2197c55411b22081b98d57759e2d66",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count \u00d7 peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/benchmark.json",
+          "contentSHA256": "213c8e602881130991b9374d8f991acb2d2a7cc3618ec5f24d5e3cc27add06fb"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/README.md",
+          "contentSHA256": "ac644b8d227144c34245d913b5cbe6857da02faa10c885bf0ad3b14a5d9d6f7a"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/Layr-Labs/ecdsafail-challenge/blob/1196b9fd0f2197c55411b22081b98d57759e2d66/src/sim.rs",
+          "contentSHA256": "f0c72f2a280cd68acee1dbf8282098f72d6b3bf4311e0abf96d122fe002256d7"
+        }
+      ],
+      "previousSourceCommit": "1196b9fd0f2197c55411b22081b98d57759e2d66",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": {
+          "provider": "github-actions",
+          "workflow": "benchmark.yml"
+        },
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "74d8a5f7-6390-49dc-93f7-da91cfc15c2f",
+      "name": "gpsanant/ecdsafail-4",
+      "title": "gpsanant/ecdsafail-4",
+      "status": "closed",
+      "sourceRepository": "https://github.com/ecdsafail/ecadd-challenge-test",
+      "sourceCommit": "ca1bf336d447abfc9f7e581db7f4a938711e969d",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count \u00d7 peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/benchmark.json",
+          "contentSHA256": "4caf897a630e7c1a3ad18d80b14028d5e1e453cd0d46ac629d9cd14350334bd7"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/README.md",
+          "contentSHA256": "339b9370a2879ae3f35d191b31220e1a4bd9ea0afa2b8f6cb71cc414293cdebe"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/src/sim.rs",
+          "contentSHA256": "f0c72f2a280cd68acee1dbf8282098f72d6b3bf4311e0abf96d122fe002256d7"
+        }
+      ],
+      "previousSourceCommit": "ca1bf336d447abfc9f7e581db7f4a938711e969d",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": null,
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "0d464d26-93fa-4153-8e63-c6e8f0b06b42",
+      "name": "gpsanant/ecdsafail-3",
+      "title": "gpsanant/ecdsafail-3",
+      "status": "closed",
+      "sourceRepository": "https://github.com/ecdsafail/ecadd-challenge-test",
+      "sourceCommit": "ca1bf336d447abfc9f7e581db7f4a938711e969d",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count \u00d7 peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/benchmark.json",
+          "contentSHA256": "4caf897a630e7c1a3ad18d80b14028d5e1e453cd0d46ac629d9cd14350334bd7"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/README.md",
+          "contentSHA256": "339b9370a2879ae3f35d191b31220e1a4bd9ea0afa2b8f6cb71cc414293cdebe"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/ca1bf336d447abfc9f7e581db7f4a938711e969d/src/sim.rs",
+          "contentSHA256": "f0c72f2a280cd68acee1dbf8282098f72d6b3bf4311e0abf96d122fe002256d7"
+        }
+      ],
+      "previousSourceCommit": "ca1bf336d447abfc9f7e581db7f4a938711e969d",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": null,
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "9672d9d7-e467-47d0-9a63-5b05ae77e8d4",
+      "name": "gpsanant/ecdsafail-2",
+      "title": "gpsanant/ecdsafail-2",
+      "status": "failed",
+      "sourceRepository": "https://github.com/ecdsafail/ecadd-challenge-test",
+      "sourceCommit": "db48f663f45dfeaa3845da1c0f103269a9771d1e",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count \u00d7 peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/benchmark.json",
+          "contentSHA256": "4caf897a630e7c1a3ad18d80b14028d5e1e453cd0d46ac629d9cd14350334bd7"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/README.md",
+          "contentSHA256": "339b9370a2879ae3f35d191b31220e1a4bd9ea0afa2b8f6cb71cc414293cdebe"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/src/sim.rs",
+          "contentSHA256": "f0c72f2a280cd68acee1dbf8282098f72d6b3bf4311e0abf96d122fe002256d7"
+        }
+      ],
+      "previousSourceCommit": "db48f663f45dfeaa3845da1c0f103269a9771d1e",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": null,
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    },
+    {
+      "id": "a2c4a34d-8d48-43af-a06d-79f52aedc9c0",
+      "name": "gpsanant/ecdsafail",
+      "title": "gpsanant/ecdsafail",
+      "status": "failed",
+      "sourceRepository": "https://github.com/ecdsafail/ecadd-challenge-test",
+      "sourceCommit": "db48f663f45dfeaa3845da1c0f103269a9771d1e",
+      "rootDir": "",
+      "validationDesign": "Compile editable Rust circuit construction; the protected simulator checks sampled point addition, ancilla cleanup, phase and reversal, then minimizes average Toffoli count \u00d7 peak qubits.",
+      "scientificInterpretation": "A bounded quantum-circuit resource result. Sampled validation is not a universal proof; gate/qubit product is not a direct measurement of physical attack cost.",
+      "requiredCapabilities": [
+        "program-evaluation",
+        "native-rust",
+        "sampled-correctness",
+        "composite-and-component-metrics"
+      ],
+      "supportedAsIs": false,
+      "supportCaveat": "The Yukon manifest, exact workload/toolchain, datasets and hardware have not been ported and replayed as a Science Ladder challenge; generic engine conformance is not evidence of unchanged workload compatibility.",
+      "evidence": [
+        {
+          "label": "Registered manifest",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/benchmark.json",
+          "contentSHA256": "4caf897a630e7c1a3ad18d80b14028d5e1e453cd0d46ac629d9cd14350334bd7"
+        },
+        {
+          "label": "Validation contract",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/README.md",
+          "contentSHA256": "339b9370a2879ae3f35d191b31220e1a4bd9ea0afa2b8f6cb71cc414293cdebe"
+        },
+        {
+          "label": "Simulator",
+          "url": "https://github.com/ecdsafail/ecadd-challenge-test/blob/db48f663f45dfeaa3845da1c0f103269a9771d1e/src/sim.rs",
+          "contentSHA256": "f0c72f2a280cd68acee1dbf8282098f72d6b3bf4311e0abf96d122fe002256d7"
+        }
+      ],
+      "previousSourceCommit": "db48f663f45dfeaa3845da1c0f103269a9771d1e",
+      "sourceAdvanced": false,
+      "currentFoundation": "V2 typed measurements and scientific metric review; isolated Linux program/checker, immutable assets, sealed proof products and Lean/DRAT replay; conservative paired process timing.",
+      "remainingWork": [
+        "Port the frozen trusted checker, dependencies and cases; preserve the original aggregation and interpretation.",
+        "Provision reviewed native evaluator bundles where needed; only public fixture behavior can be reproduced without access to private corpora."
+      ],
+      "yukonWorkflow": {
+        "challengeId": null,
+        "trackName": null,
+        "runner": null,
+        "researchDiscussionsEnabled": false,
+        "claimedScoreEnabled": false,
+        "maxSubmissionBytes": null
+      }
+    }
+  ]
+}

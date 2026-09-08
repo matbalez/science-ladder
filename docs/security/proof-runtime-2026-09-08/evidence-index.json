@@ -4,17 +4,26 @@
   "proofToolsCleanBuild": "https://github.com/matbalez/science-ladder/actions/runs/34216489933",
   "applicationCI": "https://github.com/matbalez/science-ladder/actions/runs/34216485202",
   "runtimeRelease": "https://github.com/matbalez/science-ladder/releases/tag/verification-952a8185ca40",
-  "executionProfileDigest": "sha256:d0bbe62987cf655f44241b036ff01af24313cd43fbc76f2ce75be9a57ef4a068",
+  "executionProfileDigest": "sha256:e6c49d53902626028f63807cd724caa33282a89b7ef824e5921814a49faf224b",
   "hardwareConformance": {
     "proof": {
       "passed": true,
       "cases": 14,
-      "receipt": "proof-conformance-final.json"
+      "receipt": "proof-conformance-final-2.json"
     },
     "native": {
       "passed": true,
       "cases": 6,
-      "receipt": "native-conformance-final.json"
+      "receipt": "native-conformance-final-2.json"
     }
-  }
+  },
+  "advisorySnapshot": "advisory-snapshot-final.json",
+  "supersededProfiles": [
+    {
+      "executionProfileDigest": "sha256:d0bbe62987cf655f44241b036ff01af24313cd43fbc76f2ce75be9a57ef4a068",
+      "enabled": false,
+      "reason": "Advisory generation timestamp preceded newly fetched sources; startup admission rejected it. Preserved prior signed conformance remains about that superseded profile."
+    }
+  ],
+  "service": "Three immutable profiles served on the same physical host; corrected profile startup and authorization renewal checked."
 }
