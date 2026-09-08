@@ -150,14 +150,15 @@ func resolveSources(ctx context.Context, sources []protocol.Source) (string, []F
 }
 
 type ScienceReview struct {
-	Outcome          string          `json:"outcome"`
-	Summary          string          `json:"summary"`
-	EvidenceStrength string          `json:"evidenceStrength"`
-	MetricValidity   string          `json:"metricValidity"`
-	PotentialImpact  string          `json:"potentialImpact"`
-	Safety           string          `json:"safety"`
-	Findings         []ReviewFinding `json:"findings"`
-	Limitations      []string        `json:"limitations"`
+	MetricAssessment *MetricAssessment `json:"metricAssessment,omitempty"`
+	Outcome          string            `json:"outcome"`
+	Summary          string            `json:"summary"`
+	EvidenceStrength string            `json:"evidenceStrength"`
+	MetricValidity   string            `json:"metricValidity"`
+	PotentialImpact  string            `json:"potentialImpact"`
+	Safety           string            `json:"safety"`
+	Findings         []ReviewFinding   `json:"findings"`
+	Limitations      []string          `json:"limitations"`
 }
 type ReviewFinding struct {
 	Severity        string `json:"severity"`
@@ -169,7 +170,8 @@ type ReviewFinding struct {
 func reviewSchema() map[string]any {
 	str := map[string]any{"type": "string"}
 	fields := map[string]any{"outcome": map[string]any{"type": "string", "enum": []string{"automated_pass", "human_review_required", "changes_required"}}, "summary": str, "evidenceStrength": str, "metricValidity": str, "potentialImpact": str, "safety": str, "findings": map[string]any{"type": "array", "items": map[string]any{"type": "object", "additionalProperties": false, "required": []string{"severity", "area", "message", "suggestedChange"}, "properties": map[string]any{"severity": map[string]any{"type": "string", "enum": []string{"info", "review", "error"}}, "area": str, "message": str, "suggestedChange": str}}}, "limitations": map[string]any{"type": "array", "items": str}}
-	return map[string]any{"type": "object", "additionalProperties": false, "required": []string{"outcome", "summary", "evidenceStrength", "metricValidity", "potentialImpact", "safety", "findings", "limitations"}, "properties": fields}
+	fields["metricAssessment"] = map[string]any{"type": "object", "additionalProperties": false, "required": []string{"decision", "scientificConnection", "preservedConditions", "shortcutAnalysis", "claimScope"}, "properties": map[string]any{"decision": map[string]any{"type": "string", "enum": []string{"accepted", "needs_work", "unsupported"}}, "scientificConnection": str, "preservedConditions": str, "shortcutAnalysis": str, "claimScope": str}}
+	return map[string]any{"type": "object", "additionalProperties": false, "required": []string{"outcome", "summary", "evidenceStrength", "metricValidity", "potentialImpact", "safety", "findings", "limitations", "metricAssessment"}, "properties": fields}
 }
 func (s *Server) scientificReview(ctx context.Context, version string) error {
 	return s.scientificReviewAttempt(ctx, version, "", "")
@@ -212,7 +214,7 @@ func (s *Server) scientificReviewAttempt(ctx context.Context, version, requestID
 	if err != nil {
 		return err
 	}
-	body := map[string]any{"model": s.Config.OpenAIModel, "store": false, "instructions": scientificReviewInstructions, "input": string(raw(map[string]any{"manifest": json.RawMessage(manifest), "candidate": json.RawMessage(candidate), "sourceResolution": sourceStatus, "sourceFindings": json.RawMessage(sourceFindings), "pinnedEvidence": evidence, "creatorRereviewReason": reason})), "text": map[string]any{"format": map[string]any{"type": "json_schema", "name": "science_ladder_scientific_review", "strict": true, "schema": reviewSchema()}}}
+	body := map[string]any{"model": s.Config.OpenAIModel, "store": false, "instructions": scientificReviewInstructions + " For the metricAssessment, explicitly assess whether improving the ranked metric suggests meaningful scientific or applied-science progress. Address the supplied rationale, preserved correctness/quality conditions, a concrete score-gaming shortcut and the strongest justified claim. A computable or reproducible score alone is not enough. Choose needs_work for a repairable argument and unsupported when the scientific connection is absent; do not accept marketing impact language as evidence.", "input": string(raw(map[string]any{"manifest": json.RawMessage(manifest), "candidate": json.RawMessage(candidate), "sourceResolution": sourceStatus, "sourceFindings": json.RawMessage(sourceFindings), "pinnedEvidence": evidence, "creatorRereviewReason": reason})), "text": map[string]any{"format": map[string]any{"type": "json_schema", "name": "science_ladder_scientific_review", "strict": true, "schema": reviewSchema()}}}
 	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.openai.com/v1/responses", bytes.NewReader(raw(body)))
 	if err != nil {
 		return err
@@ -272,6 +274,7 @@ func (s *Server) scientificReviewAttempt(ctx context.Context, version, requestID
 		review.Outcome = "human_review_required"
 		review.Findings = append(review.Findings, ReviewFinding{"review", "safety", "The manifest requires human safety review", "Record a human safety decision before publication"})
 	}
+	applyMetricAssessment(&review, contract)
 	for _, finding := range review.Findings {
 		if finding.Severity != "error" && finding.Severity != "review" && finding.Severity != "info" {
 			return errors.New("scientific review finding severity is invalid")

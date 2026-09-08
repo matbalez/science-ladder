@@ -221,7 +221,7 @@ func TestArtifactActiveContentAndNames(t *testing.T) {
 }
 
 func TestGatesRejectMissingUnknownDuplicate(t *testing.T) {
-	m := Manifest{Metric: Metric{Quantum: "1", Direction: "maximize"}, HardGates: []string{"valid"}}
+	m := Manifest{APIVersion: APIVersion, Metric: Metric{Quantum: "1", Direction: "maximize"}, HardGates: []string{"valid"}}
 	for _, value := range []string{`{"apiVersion":"science-ladder/v1","kind":"ValidatorResult","score":"1","gates":{}}`, `{"apiVersion":"science-ladder/v1","kind":"ValidatorResult","score":"1","gates":{"valid":true,"other":true}}`, `{"apiVersion":"science-ladder/v1","kind":"ValidatorResult","score":"1","gates":{"valid":true,"valid":false}}`} {
 		if _, _, err := ValidateResult([]byte(value), m); err == nil {
 			t.Fatal("invalid gate set accepted")

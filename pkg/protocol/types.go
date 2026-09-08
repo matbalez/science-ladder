@@ -4,6 +4,7 @@ package protocol
 import "time"
 
 const APIVersion = "science-ladder/v1"
+const ManifestV2 = "science-ladder/v2"
 const PayloadType = "application/vnd.science-ladder.v1+json"
 const ScoutVersion = "1.1.0"
 
@@ -46,10 +47,11 @@ type Metric struct {
 }
 
 type Milestone struct {
-	ID             string `json:"id"`
-	Title          string `json:"title"`
-	ThresholdTicks string `json:"thresholdTicks"`
-	Rationale      string `json:"rationale"`
+	Requires       []MeasurementPredicate `json:"requires,omitempty"`
+	ID             string                 `json:"id"`
+	Title          string                 `json:"title"`
+	ThresholdTicks string                 `json:"thresholdTicks"`
+	Rationale      string                 `json:"rationale"`
 }
 
 type SubmissionContract struct {
@@ -90,30 +92,31 @@ type Fixture struct {
 }
 
 type Manifest struct {
-	VerificationPolicy   string             `json:"verificationPolicy,omitempty"`
-	APIVersion           string             `json:"apiVersion"`
-	Kind                 string             `json:"kind"`
-	ID                   string             `json:"id"`
-	CreatedAt            time.Time          `json:"createdAt"`
-	Producer             string             `json:"producer"`
-	Slug                 string             `json:"slug"`
-	Title                string             `json:"title"`
-	Summary              string             `json:"summary"`
-	ScientificQuestion   string             `json:"scientificQuestion"`
-	Evidence             []Source           `json:"evidence"`
-	Impact               string             `json:"impact"`
-	Limitations          []string           `json:"limitations"`
-	SafetyClassification string             `json:"safetyClassification"`
-	EconomicMode         string             `json:"economicMode"`
-	Metric               Metric             `json:"metric"`
-	HardGates            []string           `json:"hardGates"`
-	Milestones           []Milestone        `json:"milestones"`
-	Deadline             time.Time          `json:"deadline"`
-	Submission           SubmissionContract `json:"submission"`
-	Validator            Validator          `json:"validator"`
-	Suite                Suite              `json:"suite"`
-	Resources            Resources          `json:"resources"`
-	Fixtures             []Fixture          `json:"fixtures"`
+	Evaluation           *EvaluationContract `json:"evaluation,omitempty"`
+	VerificationPolicy   string              `json:"verificationPolicy,omitempty"`
+	APIVersion           string              `json:"apiVersion"`
+	Kind                 string              `json:"kind"`
+	ID                   string              `json:"id"`
+	CreatedAt            time.Time           `json:"createdAt"`
+	Producer             string              `json:"producer"`
+	Slug                 string              `json:"slug"`
+	Title                string              `json:"title"`
+	Summary              string              `json:"summary"`
+	ScientificQuestion   string              `json:"scientificQuestion"`
+	Evidence             []Source            `json:"evidence"`
+	Impact               string              `json:"impact"`
+	Limitations          []string            `json:"limitations"`
+	SafetyClassification string              `json:"safetyClassification"`
+	EconomicMode         string              `json:"economicMode"`
+	Metric               Metric              `json:"metric"`
+	HardGates            []string            `json:"hardGates"`
+	Milestones           []Milestone         `json:"milestones"`
+	Deadline             time.Time           `json:"deadline"`
+	Submission           SubmissionContract  `json:"submission"`
+	Validator            Validator           `json:"validator"`
+	Suite                Suite               `json:"suite"`
+	Resources            Resources           `json:"resources"`
+	Fixtures             []Fixture           `json:"fixtures"`
 }
 
 type Lock struct {
@@ -138,10 +141,12 @@ type Lock struct {
 }
 
 type ValidatorResult struct {
-	APIVersion string          `json:"apiVersion"`
-	Kind       string          `json:"kind"`
-	Score      string          `json:"score"`
-	Gates      map[string]bool `json:"gates"`
+	ComparisonID string            `json:"comparisonId,omitempty"`
+	Measurements map[string]string `json:"measurements,omitempty"`
+	APIVersion   string            `json:"apiVersion"`
+	Kind         string            `json:"kind"`
+	Score        string            `json:"score"`
+	Gates        map[string]bool   `json:"gates"`
 }
 
 type ObjectRef struct {
@@ -261,33 +266,34 @@ type VulnerabilityScan struct {
 }
 
 type RunReceipt struct {
-	ParentJobDigest         string          `json:"parentJobDigest,omitempty"`
-	VerificationPolicy      string          `json:"verificationPolicy,omitempty"`
-	AcceptanceReceiptDigest string          `json:"acceptanceReceiptDigest,omitempty"`
-	DeploymentMode          string          `json:"deploymentMode"`
-	OfficialAcceptance      bool            `json:"officialAcceptance"`
-	APIVersion              string          `json:"apiVersion"`
-	Kind                    string          `json:"kind"`
-	ID                      string          `json:"id"`
-	CreatedAt               time.Time       `json:"createdAt"`
-	Producer                string          `json:"producer"`
-	JobID                   string          `json:"jobId"`
-	JobDigest               string          `json:"jobDigest"`
-	ChallengeLockDigest     string          `json:"challengeLockDigest"`
-	ArtifactDigest          string          `json:"artifactDigest"`
-	SuiteDigest             string          `json:"suiteDigest"`
-	ExecutionProfileDigest  string          `json:"executionProfileDigest"`
-	RunnerEpoch             string          `json:"runnerEpoch"`
-	FencingToken            int64           `json:"fencingToken"`
-	HostID                  string          `json:"hostId"`
-	HostGroup               string          `json:"hostGroup"`
-	Official                bool            `json:"official"`
-	Outcome                 string          `json:"outcome"`
-	ScoreTicks              string          `json:"scoreTicks,omitempty"`
-	Gates                   map[string]bool `json:"gates,omitempty"`
-	DurationMillis          int64           `json:"durationMillis"`
-	CleanupAttested         bool            `json:"cleanupAttested"`
-	BuildReport             *BuildReport    `json:"buildReport,omitempty"`
+	ValidatorResult         *ValidatorResult `json:"validatorResult,omitempty"`
+	ParentJobDigest         string           `json:"parentJobDigest,omitempty"`
+	VerificationPolicy      string           `json:"verificationPolicy,omitempty"`
+	AcceptanceReceiptDigest string           `json:"acceptanceReceiptDigest,omitempty"`
+	DeploymentMode          string           `json:"deploymentMode"`
+	OfficialAcceptance      bool             `json:"officialAcceptance"`
+	APIVersion              string           `json:"apiVersion"`
+	Kind                    string           `json:"kind"`
+	ID                      string           `json:"id"`
+	CreatedAt               time.Time        `json:"createdAt"`
+	Producer                string           `json:"producer"`
+	JobID                   string           `json:"jobId"`
+	JobDigest               string           `json:"jobDigest"`
+	ChallengeLockDigest     string           `json:"challengeLockDigest"`
+	ArtifactDigest          string           `json:"artifactDigest"`
+	SuiteDigest             string           `json:"suiteDigest"`
+	ExecutionProfileDigest  string           `json:"executionProfileDigest"`
+	RunnerEpoch             string           `json:"runnerEpoch"`
+	FencingToken            int64            `json:"fencingToken"`
+	HostID                  string           `json:"hostId"`
+	HostGroup               string           `json:"hostGroup"`
+	Official                bool             `json:"official"`
+	Outcome                 string           `json:"outcome"`
+	ScoreTicks              string           `json:"scoreTicks,omitempty"`
+	Gates                   map[string]bool  `json:"gates,omitempty"`
+	DurationMillis          int64            `json:"durationMillis"`
+	CleanupAttested         bool             `json:"cleanupAttested"`
+	BuildReport             *BuildReport     `json:"buildReport,omitempty"`
 }
 
 type Signature struct {

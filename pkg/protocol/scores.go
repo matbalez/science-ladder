@@ -57,6 +57,10 @@ func NormalizeScore(score string, metric Metric) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	return normalizeRationalScore(v, metric)
+}
+
+func normalizeRationalScore(v *big.Rat, metric Metric) (string, error) {
 	q, err := decimal(metric.Quantum)
 	if err != nil || q.Sign() <= 0 {
 		return "", errors.New("quantum must be a positive decimal")
@@ -148,8 +152,22 @@ func ValidateResult(data []byte, manifest Manifest) (ValidatorResult, string, er
 	if err := DecodeStrict(data, &result); err != nil {
 		return result, "", err
 	}
-	if result.APIVersion != APIVersion || result.Kind != "ValidatorResult" {
+	if result.APIVersion != manifest.APIVersion || result.Kind != "ValidatorResult" {
 		return result, "", errors.New("unsupported result version/kind")
+	}
+	if manifest.APIVersion == APIVersion {
+		if result.ComparisonID != "" || len(result.Measurements) != 0 || manifest.Evaluation != nil {
+			return result, "", errors.New("v1 results cannot contain v2 measurement semantics")
+		}
+	} else if manifest.APIVersion == ManifestV2 {
+		if manifest.Evaluation == nil || result.ComparisonID != manifest.Evaluation.ComparisonID {
+			return result, "", errors.New("result belongs to a different comparison series")
+		}
+		if err := ValidateMeasurements(result.Measurements, *manifest.Evaluation); err != nil {
+			return result, "", err
+		}
+	} else {
+		return result, "", errors.New("unsupported manifest version")
 	}
 	if len(result.Gates) != len(manifest.HardGates) {
 		return result, "", errors.New("missing or unknown hard gate")
@@ -158,6 +176,25 @@ func ValidateResult(data []byte, manifest Manifest) (ValidatorResult, string, er
 		if _, ok := result.Gates[gate]; !ok {
 			return result, "", errors.New("missing hard gate")
 		}
+	}
+	if manifest.Evaluation != nil {
+		// The primary typed measurement is authoritative. A separately asserted
+		// scalar cannot inflate it or hide rational rounding at a milestone.
+		value := result.Measurements[manifest.Metric.Name]
+		if result.Score != value {
+			return result, "", errors.New("score differs from primary measurement")
+		}
+		for _, d := range manifest.Evaluation.Measurements {
+			if d.Name == manifest.Metric.Name {
+				x, err := MeasurementNumber(value, d.Type)
+				if err != nil {
+					return result, "", err
+				}
+				ticks, err := normalizeRationalScore(x, manifest.Metric)
+				return result, ticks, err
+			}
+		}
+		return result, "", errors.New("primary measurement is undeclared")
 	}
 	ticks, err := NormalizeScore(result.Score, manifest.Metric)
 	return result, ticks, err

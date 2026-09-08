@@ -1,0 +1,51 @@
+{
+  "$defs": {
+    "ValidatorResult": {
+      "additionalProperties": false,
+      "properties": {
+        "apiVersion": {
+          "const": "science-ladder/v2"
+        },
+        "comparisonId": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "gates": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "maxProperties": 128,
+          "type": "object"
+        },
+        "kind": {
+          "const": "ValidatorResult"
+        },
+        "measurements": {
+          "additionalProperties": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxProperties": 128,
+          "type": "object"
+        },
+        "score": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "comparisonId",
+        "measurements",
+        "apiVersion",
+        "kind",
+        "score",
+        "gates"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/matbalez/science-ladder/blob/main/protocol/schemas/validator-result-v2.schema.json",
+  "$ref": "#/$defs/ValidatorResult",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Science Ladder ValidatorResult v2"
+}

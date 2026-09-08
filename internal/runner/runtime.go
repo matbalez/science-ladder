@@ -451,6 +451,9 @@ func (r *Runtime) runJob(ctx context.Context, job protocol.RunnerJob) (protocol.
 				receipt.Outcome = "valid"
 				receipt.ScoreTicks = ticks
 				receipt.Gates = result.Gates
+				if job.Manifest.APIVersion == protocol.ManifestV2 {
+					receipt.ValidatorResult = &result
+				}
 				for _, pass := range result.Gates {
 					if !pass {
 						receipt.Outcome = "hard_gate_failed"

@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"encoding/json"
 	"github.com/jackc/pgx/v5"
 	"github.com/matbalez/science-ladder/pkg/protocol"
 	"net/http"
@@ -56,9 +57,10 @@ func (s *Server) editorDecision(w http.ResponseWriter, r *http.Request, u *User)
 	}
 	return s.mutate(w, r, u, func(tx pgx.Tx) (int, any, error) {
 		var in struct {
-			VersionID string `json:"versionId"`
-			Action    string `json:"action"`
-			Reason    string `json:"reason"`
+			VersionID        string            `json:"versionId"`
+			Action           string            `json:"action"`
+			Reason           string            `json:"reason"`
+			MetricAssessment *MetricAssessment `json:"metricAssessment,omitempty"`
 		}
 		if err := readJSON(r, &in); err != nil {
 			return 0, nil, err
@@ -67,8 +69,23 @@ func (s *Server) editorDecision(w http.ResponseWriter, r *http.Request, u *User)
 			return 0, nil, fail(422, "reason_required", "A public decision reason of at least 20 characters is required")
 		}
 		var status string
-		if err := tx.QueryRow(r.Context(), `SELECT status FROM challenge_versions WHERE id=$1 FOR UPDATE`, in.VersionID).Scan(&status); err != nil {
+		var manifest []byte
+		if err := tx.QueryRow(r.Context(), `SELECT status,manifest FROM challenge_versions WHERE id=$1 FOR UPDATE`, in.VersionID).Scan(&status, &manifest); err != nil {
 			return 0, nil, err
+		}
+		var contract protocol.Manifest
+		if err := json.Unmarshal(manifest, &contract); err != nil {
+			return 0, nil, err
+		}
+		if in.Action == "approve_review" && contract.APIVersion == protocol.ManifestV2 {
+			if err := validateMetricAssessment(in.MetricAssessment); err != nil {
+				return 0, nil, fail(422, "metric_assessment_required", err.Error())
+			}
+			if in.MetricAssessment.Decision != "accepted" {
+				return 0, nil, fail(422, "metric_not_accepted", "Approval must explicitly accept the scientific metric rationale")
+			}
+		} else if in.MetricAssessment != nil {
+			return 0, nil, fail(422, "metric_assessment_not_applicable", "A metric assessment belongs to approval of a v2 challenge")
 		}
 		sql := ""
 		switch in.Action {
@@ -119,6 +136,20 @@ func (s *Server) editorDecision(w http.ResponseWriter, r *http.Request, u *User)
 		id := ID()
 		if _, err = tx.Exec(r.Context(), `INSERT INTO editorial_decisions(id,version_id,editor_id,action,reason) VALUES($1,$2,$3,$4,$5)`, id, in.VersionID, u.ID, in.Action, in.Reason); err != nil {
 			return 0, nil, err
+		}
+		if in.MetricAssessment != nil {
+			manifestDigest, err := protocol.Digest(contract)
+			if err != nil {
+				return 0, nil, err
+			}
+			report := map[string]any{"manifestDigest": manifestDigest, "metricAssessment": in.MetricAssessment, "editorDecisionId": id, "editor": u.Login}
+			digest, err := protocol.Digest(report)
+			if err != nil {
+				return 0, nil, err
+			}
+			if _, err = tx.Exec(r.Context(), `INSERT INTO review_runs(id,version_id,kind,status,report,digest) VALUES($1,$2,'scientific-metric','accepted',$3,$4)`, ID(), in.VersionID, raw(report), digest); err != nil {
+				return 0, nil, err
+			}
 		}
 		if in.Action == "resolve_unscorable" {
 			rows, err := tx.Query(r.Context(), `UPDATE submissions SET status='validated',outcome='challenge_unscorable',score_ticks=NULL WHERE version_id=$1 AND status<>'finalized' RETURNING id`, in.VersionID)

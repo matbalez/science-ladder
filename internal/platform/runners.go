@@ -371,6 +371,11 @@ func (s *Server) runnerResult(w http.ResponseWriter, r *http.Request, host runne
 	if !terminal[run.Outcome] {
 		return fail(422, "run_outcome_invalid", "Unknown competitive outcome requires operator resolution")
 	}
+	if !isBuild {
+		if err = protocol.ValidateRunMeasurementEvidence(run, job.Manifest); err != nil {
+			return fail(422, "measurement_evidence_invalid", err.Error())
+		}
+	}
 	if run.Outcome == "valid" && !isBuild {
 		if len(run.Gates) != len(job.Manifest.HardGates) {
 			return fail(422, "gates_invalid", "Every locked gate must be present exactly once")

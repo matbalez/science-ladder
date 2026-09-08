@@ -57,8 +57,30 @@ func ValidateManifest(m Manifest) error {
 	if !ValidVerificationPolicy(ManifestVerificationPolicy(m)) {
 		return errors.New("verification policy must be platform or independent")
 	}
-	if m.APIVersion != APIVersion || m.Kind != "ChallengeManifest" || !identifierPattern.MatchString(m.ID) || m.Producer == "" || m.CreatedAt.IsZero() {
+	if (m.APIVersion != APIVersion && m.APIVersion != ManifestV2) || m.Kind != "ChallengeManifest" || !identifierPattern.MatchString(m.ID) || m.Producer == "" || m.CreatedAt.IsZero() {
 		return errors.New("invalid manifest identity/version")
+	}
+	if m.APIVersion == APIVersion {
+		if m.Evaluation != nil {
+			return errors.New("evaluation extensions require an explicit v2 manifest")
+		}
+		for _, milestone := range m.Milestones {
+			if len(milestone.Requires) != 0 {
+				return errors.New("achievement predicates require an explicit v2 manifest")
+			}
+		}
+	} else {
+		if m.Evaluation == nil {
+			return errors.New("v2 requires a frozen evaluation contract and scientific metric rationale")
+		}
+		if err := ValidateEvaluation(*m.Evaluation, m.Metric, m.Evidence, m.Resources); err != nil {
+			return err
+		}
+		for _, milestone := range m.Milestones {
+			if err := ValidatePredicates(milestone.Requires, *m.Evaluation); err != nil {
+				return err
+			}
+		}
 	}
 	if len(m.Slug) > 100 || !slugPattern.MatchString(m.Slug) || len(m.Title) < 5 || len(m.Title) > 160 || m.Summary == "" || m.ScientificQuestion == "" || m.Impact == "" {
 		return errors.New("scientific question, impact, title, summary and slug required")
@@ -158,6 +180,9 @@ func ValidateManifest(m Manifest) error {
 	}
 	if m.Validator.Profile != "artifact-checker-v1" || m.Validator.DependencyLock == "" || !ValidDigest(m.Validator.RuntimeImageDigest) {
 		return errors.New("locked artifact-checker-v1 runtime and dependency lock required")
+	}
+	if m.Evaluation != nil && m.Evaluation.Mode != "artifact" && m.Validator.Profile == "artifact-checker-v1" {
+		return errors.New("proof, program and performance evaluation require a separately enrolled native execution profile")
 	}
 	if err := ValidatePath(m.Validator.DependencyLock); err != nil {
 		return errors.New("dependency lock must be a safe relative source path")

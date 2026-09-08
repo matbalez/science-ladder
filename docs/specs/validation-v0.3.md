@@ -2,7 +2,7 @@
 
 7 September 2026. Companion to the [Yukon compatibility audit](../research/yukon-validation-audit-2026-09-07.md) and [scientific metric policy](../scientific-metric-policy.md).
 
-**Status:** target architecture and acceptance requirements, not an implemented protocol version. The deployed API remains `science-ladder/v1`, with `artifact-checker-v1` as its only execution profile. None of the profile names below is an accepted YAML value today. Do not weaken the existing profile or change published locks to simulate broader support.
+**Status:** implementation in progress. The source now includes explicitly versioned v2 measurement contracts, exact achievement predicates, scientific-metric review gates and paired-timing arithmetic, with regression tests. Native execution and trusted-timing integration are still being built; the deployed API remains unchanged, with `artifact-checker-v1` as its only execution profile. The profile families below remain acceptance targets until their hosted conformance tests pass. Do not weaken the existing profile or change published locks to simulate broader support.
 
 ## Objective
 
@@ -75,6 +75,8 @@ A measured-performance contract must predeclare:
 Use measured calibration and workload knowledge to select the rule. Do not impose one universal percentage or copy Yukon's timing constants without validating them on the target host. Normalize to a matched baseline when justified, and preserve the raw measurements and regression constraints so aggregate wins cannot hide unacceptable losses.
 
 ## Runtime and resource capabilities
+
+**Current delivery scope (user decision, 7 September 2026):** Implement and exercise Linux evaluation first. Defer the specific MLX benchmark, Apple executor implementation and Mac provisioning. Keep the execution interface independent of Linux/Firecracker so a later macOS/Metal adapter does not require changing challenge semantics, score authority, evidence bindings or comparison identities. A matching Apple executor is an optional future implementation, not a launch prerequisite. This scope change does not defer the Linux proof, submitted-program, measurement or scientific-metric gaps.
 
 Executors advertise and attest reviewed capabilities. Scheduling must match the locked contract to those capabilities; an unavailable profile must be reported before reserving execution capacity or admitting a competitive challenge. CPU/GPU architecture, OS, device/driver, toolchains and memory are distinct from the verification policy and from scientific quality.
 

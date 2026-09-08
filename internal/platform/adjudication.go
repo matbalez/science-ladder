@@ -131,6 +131,30 @@ func (s *Server) adjudicate(ctx context.Context, version string) error {
 		claims := []string{}
 		record, advance := false, false
 		if outcome == "valid" && score != nil {
+			var measurementRuns []protocol.RunReceipt
+			if m.Evaluation != nil {
+				runRows, err := tx.Query(ctx, `SELECT rr.result FROM runner_results rr JOIN runner_jobs j ON j.id=rr.job_id WHERE j.submission_id=$1 AND j.purpose IN ('submission','confirmation') ORDER BY j.purpose`, id)
+				if err != nil {
+					return err
+				}
+				for runRows.Next() {
+					var data []byte
+					var run protocol.RunReceipt
+					if err = runRows.Scan(&data); err != nil {
+						runRows.Close()
+						return err
+					}
+					if err = json.Unmarshal(data, &run); err != nil {
+						runRows.Close()
+						return err
+					}
+					measurementRuns = append(measurementRuns, run)
+				}
+				runRows.Close()
+				if err = runRows.Err(); err != nil {
+					return err
+				}
+			}
 			record = better(*score, best, m.Metric.Direction)
 			rows, err := tx.Query(ctx, `SELECT m.id,mv.threshold_ticks::text FROM milestone_tiers m JOIN milestone_version_mappings mv ON mv.milestone_id=m.id LEFT JOIN milestone_claims c ON c.milestone_id=m.id WHERE mv.version_id=$1 AND c.id IS NULL ORDER BY m.id`, version)
 			if err != nil {
@@ -142,7 +166,25 @@ func (s *Server) adjudicate(ctx context.Context, version string) error {
 					rows.Close()
 					return err
 				}
-				if crosses(*score, threshold, m.Metric.Direction) {
+				eligible := true
+				if m.Evaluation != nil {
+					found := false
+					for _, milestone := range m.Milestones {
+						if milestone.ID == mid {
+							found = true
+							eligible, err = protocol.ConfirmedAchievement(m, milestone, measurementRuns)
+							if err != nil {
+								rows.Close()
+								return err
+							}
+						}
+					}
+					if !found {
+						rows.Close()
+						return errors.New("milestone mapping does not match locked evaluation")
+					}
+				}
+				if eligible && crosses(*score, threshold, m.Metric.Direction) {
 					claims = append(claims, mid)
 				}
 			}

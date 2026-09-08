@@ -14,6 +14,16 @@ var SchemaTypes = map[string]any{"challenge-candidate": Candidate{}, "challenge-
 // Schema exports the strict wire shape from the same Go types as server and CLI.
 // Relational rules (for example ordered milestones) also require ValidateManifest.
 func Schema(name string) (map[string]any, error) {
+	return schemaVersion(name, false)
+}
+
+// SchemaV2 describes the new manifest/result contract within existing signed
+// transport envelopes. Schema continues to export the frozen legacy shape.
+func SchemaV2(name string) (map[string]any, error) {
+	return schemaVersion(name, true)
+}
+
+func schemaVersion(name string, v2 bool) (map[string]any, error) {
 	value, ok := SchemaTypes[name]
 	if !ok {
 		return nil, errors.New("unknown protocol schema")
@@ -56,8 +66,14 @@ func Schema(name string) (map[string]any, error) {
 						continue
 					}
 					key := parts[0]
+					if !v2 && (t.Name() == "Manifest" && key == "evaluation" || t.Name() == "Milestone" && key == "requires" || t.Name() == "RunReceipt" && key == "validatorResult" || t.Name() == "ValidatorResult" && (key == "comparisonId" || key == "measurements")) {
+						continue
+					}
 					property := describe(field.Type)
 					if !strings.Contains(tag, ",omitempty") {
+						required = append(required, key)
+					}
+					if v2 && (t.Name() == "Manifest" && key == "evaluation" || t.Name() == "ValidatorResult" && (key == "comparisonId" || key == "measurements")) {
 						required = append(required, key)
 					}
 					if strings.HasSuffix(key, "Ticks") {
@@ -68,6 +84,9 @@ func Schema(name string) (map[string]any, error) {
 					}
 					if key == "apiVersion" {
 						property = map[string]any{"const": APIVersion}
+						if v2 && (t.Name() == "Manifest" || t.Name() == "ValidatorResult") {
+							property = map[string]any{"const": ManifestV2}
+						}
 					}
 					if key == "economicMode" {
 						property = map[string]any{"const": "none"}
@@ -131,5 +150,9 @@ func Schema(name string) (map[string]any, error) {
 	set("ArtifactTree", "version", map[string]any{"const": 1})
 	set("ArtifactEntry", "type", map[string]any{"const": "file"})
 	set("ArtifactEntry", "mode", map[string]any{"const": "0644"})
-	return map[string]any{"$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://github.com/matbalez/science-ladder/blob/main/protocol/schemas/" + name + "-v1.schema.json", "title": "Science Ladder " + reflect.TypeOf(value).Name() + " v1", "$ref": root["$ref"], "$defs": definitions}, nil
+	version := "v1"
+	if v2 {
+		version = "v2"
+	}
+	return map[string]any{"$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://github.com/matbalez/science-ladder/blob/main/protocol/schemas/" + name + "-" + version + ".schema.json", "title": "Science Ladder " + reflect.TypeOf(value).Name() + " " + version, "$ref": root["$ref"], "$defs": definitions}, nil
 }

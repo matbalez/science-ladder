@@ -257,6 +257,15 @@ func (s *Server) lockChallenge(w http.ResponseWriter, r *http.Request, u *User) 
 		if err != nil {
 			return 0, nil, err
 		}
+		if m.APIVersion == protocol.ManifestV2 {
+			accepted, err := metricReviewAccepted(r.Context(), tx, id, manifestDigest)
+			if err != nil {
+				return 0, nil, err
+			}
+			if !accepted {
+				return 0, nil, fail(409, "scientific_metric_review_required", "Publication requires an accepted metric assessment bound to this manifest")
+			}
+		}
 		digests := []string{machine}
 		rows, err := tx.Query(r.Context(), `SELECT digest FROM review_runs WHERE version_id=$1 ORDER BY created_at`, id)
 		if err != nil {
