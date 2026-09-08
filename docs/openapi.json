@@ -3653,6 +3653,25 @@
               }
             ],
             "description": "Latest editorial edition, or null if none exists. Existing challenge visibility rules apply."
+          },
+          "education": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "Public educational context from the adopted candidate, separate from the immutable executable manifest. Legacy candidates may omit it.",
+            "properties": {
+              "frontier": {
+                "type": "string"
+              },
+              "significance": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "frontier",
+              "significance"
+            ]
           }
         }
       },

@@ -66,7 +66,7 @@ func schemaVersion(name string, v2 bool) (map[string]any, error) {
 						continue
 					}
 					key := parts[0]
-					if !v2 && (t.Name() == "VulnerabilityFinding" && key == "disposition" || t.Name() == "SubmissionContract" && key == "format" || t.Name() == "Manifest" && key == "evaluation" || t.Name() == "Milestone" && key == "requires" || t.Name() == "RunReceipt" && key == "validatorResult" || t.Name() == "ValidatorResult" && (key == "comparisonId" || key == "measurements" || key == "timing")) {
+					if !v2 && (t.Name() == "VulnerabilityFinding" && key == "disposition" || t.Name() == "SubmissionContract" && key == "format" || t.Name() == "Manifest" && key == "evaluation" || t.Name() == "Candidate" && key == "education" || t.Name() == "Milestone" && key == "requires" || t.Name() == "RunReceipt" && key == "validatorResult" || t.Name() == "ValidatorResult" && (key == "comparisonId" || key == "measurements" || key == "timing")) {
 						continue
 					}
 					property := describe(field.Type)
@@ -127,7 +127,7 @@ func schemaVersion(name string, v2 bool) (map[string]any, error) {
 	}
 	set("Candidate", "promptVersion", map[string]any{"enum": []string{"1.1.0", "1.0.0"}})
 	if v2 {
-		set("Candidate", "promptVersion", map[string]any{"enum": []string{ScoutVersion, "1.1.0", "1.0.0"}})
+		set("Candidate", "promptVersion", map[string]any{"enum": []string{ScoutVersion, "1.2.0", "1.1.0", "1.0.0"}})
 	}
 	set("Candidate", "disposition", map[string]any{"enum": []string{"viable", "needs_work", "rejected"}})
 	if c, ok := definitions["Candidate"].(map[string]any); ok {

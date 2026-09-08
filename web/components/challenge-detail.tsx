@@ -10,12 +10,10 @@ import {
   Check,
   Clock3,
   Download,
-  FileCheck2,
   Flag,
   GitBranch,
   LockKeyhole,
   ShieldCheck,
-  Terminal,
 } from "lucide-react";
 import { useAction, useResource } from "@/lib/api";
 import {
@@ -28,7 +26,7 @@ import {
   safeWebUrl,
   shortHash,
 } from "@/lib/scientific";
-import type { Challenge, Intent } from "@/lib/types";
+import type { Challenge } from "@/lib/types";
 import { useSession } from "./shell";
 import { ArtifactViewer, FrontierChart } from "./science-visuals";
 import {
@@ -44,6 +42,7 @@ import {
   Status,
 } from "./ui";
 import { SubmissionTable } from "./submission";
+import { ChallengeEducation } from "./challenge-education";
 import { LoadPathsExplorer } from "./load-paths";
 import { MeasurementContract } from "./measurement-contract";
 import { Participate } from "./participate";
@@ -62,7 +61,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
     refresh,
   } = useResource<Challenge>(`/challenges/${encodeURIComponent(slug)}`, 15000);
   const [tab, setTab] = useState("overview");
-  const [showSubmit, setShowSubmit] = useState(false);
   const [showFlag, setShowFlag] = useState(false);
   if (loading && !c)
     return (
@@ -80,10 +78,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         <ErrorMessage error={error} retry={refresh} />
       </div>
     );
-  const accepting =
-    c.status === "published" &&
-    c.intakeStatus === "open" &&
-    (!c.deadline || new Date(c.deadline).getTime() > Date.now());
   const manifest = c.manifest || {};
   const science = {
     ...asRecord(manifest.science),
@@ -185,22 +179,8 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             challengeTitle={c.title}
             status={`${humanize(c.status)} · ${humanize(c.reviewStatus)} · Intake ${c.intakeStatus}`}
           />
-          <button
-            className="participate-submit-link"
-            disabled={!accepting}
-            onClick={() => setShowSubmit((v) => !v)}
-          >
-            <Terminal size={17} />
-            {!accepting
-              ? "Submissions unavailable"
-              : showSubmit
-                ? "Close submission"
-                : "Submit a solution"}
-            <ArrowUpRight size={15} />
-          </button>
         </div>
       </header>
-      {showSubmit && <SubmitForm challenge={c} onAccepted={() => refresh()} />}
       {hasNativeLoadPathsChecker(c) && <LoadPathsExplorer />}
       <div className="detail-stat-row">
         <div>
@@ -283,9 +263,12 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             <div>
               <section className="content-section">
                 <h2>{asText(science.question, c.summary)}</h2>
-                {asText(science.impactStatement) && (
-                  <p>{asText(science.impactStatement)}</p>
-                )}
+                <ChallengeEducation challenge={c} />
+                {!c.education &&
+                  !["load-paths", "quiet-echoes-labs512"].includes(c.slug) &&
+                  asText(science.impactStatement) && (
+                    <p>{asText(science.impactStatement)}</p>
+                  )}
                 {explorerUrl && (
                   <p>
                     <Link
@@ -737,263 +720,5 @@ export function FlagForm({ versionId }: { versionId: string }) {
         </>
       )}
     </form>
-  );
-}
-function SubmitForm({
-  challenge: c,
-  onAccepted,
-}: {
-  challenge: Challenge;
-  onAccepted: () => void;
-}) {
-  const session = useSession();
-  const [repository, setRepository] = useState("");
-  const [ref, setRef] = useState("");
-  const [model, setModel] = useState("");
-  const [harness, setHarness] = useState("");
-  const [disclosure, setDisclosure] = useState("");
-  const [license, setLicense] = useState(
-    asText(
-      asRecord(c.manifest?.submission).license,
-      asText(asRecord(c.manifest?.submission).requiredLicense, "MIT"),
-    ),
-  );
-  const [consent, setConsent] = useState(false);
-  const [publish, setPublish] = useState(false);
-  const [intent, setIntent] = useState<Intent>();
-  const resource = useResource<Intent>(
-    intent ? `/submission-intents/${intent.id}` : null,
-    4000,
-  );
-  const current = resource.data || intent;
-  const action = useAction();
-  const [accepted, setAccepted] = useState<string>();
-  if (!session.data?.user)
-    return (
-      <div className="panel admission-panel">
-        <LockKeyhole />
-        <div>
-          <h3>Sign in to submit an exact artifact.</h3>
-          <p>
-            Official validation is invitation-only and capped. Public
-            exploration and local verification remain open.
-          </p>
-        </div>
-        <Link href="/account" className="button primary">
-          Sign in with GitHub
-          <ArrowRight size={15} />
-        </Link>
-      </div>
-    );
-  if (!session.data.capabilities.submission)
-    return (
-      <div className="panel admission-panel">
-        <LockKeyhole />
-        <div>
-          <h3>
-            Hosted submissions are currently unavailable for this account.
-          </h3>
-          <p>
-            {!session.data.user.invited
-              ? "An invitation is required for hosted validation."
-              : "Check your quota and the current runner availability in your account."}{" "}
-            You can still reproduce and improve artifacts locally.
-          </p>
-        </div>
-        <Link href="/account" className="button ghost">
-          View access
-        </Link>
-      </div>
-    );
-  return (
-    <section className="panel submit-panel">
-      <div className="section-title">
-        <div>
-          <h2>Submit a solution</h2>
-        </div>
-        <Badge>{session.data.quotas.remaining} validations remaining</Badge>
-      </div>
-      {accepted ? (
-        <div className="success-note">
-          <FileCheck2 size={22} />
-          <div>
-            <strong>Submission accepted.</strong>
-            <p>View its verification progress and final result.</p>
-            <Link href={`/submissions/${accepted}`} className="button primary">
-              Open submission receipt
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      ) : current ? (
-        <div>
-          <Status value={current.status} />
-          <dl className="contract-grid">
-            <div>
-              <dt>Source commit</dt>
-              <dd className="mono">{current.sourceCommit || ref}</dd>
-            </div>
-            <div>
-              <dt>Artifact digest</dt>
-              <dd className="mono">
-                {current.artifactDigest || "Fetching artifact…"}
-              </dd>
-            </div>
-          </dl>
-          <Findings findings={current.findings} />
-          <ErrorMessage error={resource.error} retry={resource.refresh} />
-          <ErrorMessage error={action.error} />
-          {current.status === "ready" ? (
-            <>
-              <p>
-                Your artifact is ready. Reserve a verification run to submit it.
-              </p>
-              <button
-                className="button primary"
-                disabled={action.busy}
-                onClick={async () => {
-                  const r = await action.run<{ submissionId: string }>(
-                    `/submission-intents/${current.id}/accept`,
-                  );
-                  if (r) {
-                    setAccepted(r.submissionId);
-                    onAccepted();
-                    session.refresh();
-                  }
-                }}
-              >
-                Accept & reserve validation
-                <ArrowRight size={16} />
-              </button>
-            </>
-          ) : current.status === "failed" ? (
-            <button
-              className="button ghost"
-              onClick={() => {
-                setIntent(undefined);
-                action.clearError();
-              }}
-            >
-              Revise source
-            </button>
-          ) : current.submissionId ? (
-            <Link
-              className="button primary"
-              href={`/submissions/${current.submissionId}`}
-            >
-              Open submission
-            </Link>
-          ) : (
-            <Loading label="Fetching and quarantining the exact source" />
-          )}
-        </div>
-      ) : (
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const r = await action.run<Intent>("/submission-intents", {
-              versionId: c.versionId,
-              repository,
-              ref,
-              license,
-              attribution: {
-                model: model || undefined,
-                harness: harness || undefined,
-                disclosure: disclosure || undefined,
-              },
-              publish,
-            });
-            if (r) setIntent(r);
-          }}
-        >
-          <div className="form-grid">
-            <Field
-              label="GitHub repository"
-              help="The platform must have access to this repository."
-            >
-              <input
-                required
-                placeholder="owner/repository"
-                pattern="[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
-                value={repository}
-                onChange={(e) => setRepository(e.target.value.trim())}
-              />
-            </Field>
-            <Field
-              label="Exact pushed commit"
-              help="A full 40-character Git commit SHA."
-            >
-              <input
-                required
-                pattern="[a-fA-F0-9]{40}"
-                className="mono"
-                placeholder="40-character SHA"
-                value={ref}
-                onChange={(e) => setRef(e.target.value.trim())}
-              />
-            </Field>
-            <Field label="Model (self-attested)">
-              <input
-                value={model}
-                placeholder="Model name and version, or human-only"
-                onChange={(e) => setModel(e.target.value)}
-              />
-            </Field>
-            <Field label="Harness (self-attested)">
-              <input
-                value={harness}
-                placeholder="Agent / harness and version"
-                onChange={(e) => setHarness(e.target.value)}
-              />
-            </Field>
-            <Field label="Required artifact license">
-              <input
-                required
-                value={license}
-                onChange={(e) => setLicense(e.target.value)}
-              />
-            </Field>
-            <Field
-              label="Public research note (optional)"
-              help="Keep private reasoning, credentials, and unpublished research out of this field."
-            >
-              <input
-                value={disclosure}
-                onChange={(e) => setDisclosure(e.target.value)}
-              />
-            </Field>
-          </div>
-          <p className="field-help">
-            The best verified score is public even when its artifact remains
-            private. Unpublished artifact files and full receipts are visible
-            only to their submitter.
-          </p>
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={publish}
-              onChange={(e) => setPublish(e.target.checked)}
-            />
-            Also publish this artifact if it does not reach the public frontier.
-          </label>
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              required
-              checked={consent}
-              onChange={(e) => setConsent(e.target.checked)}
-            />
-            I agree that public-frontier artifacts and the submitted attribution
-            are published immediately under the declared license. Official
-            scores come from the validator.
-          </label>
-          <ErrorMessage error={action.error} />
-          <button className="button primary" disabled={action.busy || !consent}>
-            {action.busy ? "Fetching source…" : "Fetch & inspect exact commit"}
-            <ArrowRight size={16} />
-          </button>
-        </form>
-      )}
-    </section>
   );
 }

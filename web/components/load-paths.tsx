@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { densityContours, densityColor } from "@/lib/density-contours";
 import styles from "./load-paths.module.css";
 
 type Geometry = {
@@ -17,6 +18,7 @@ export function LoadPathsExplorer() {
   const [error, setError] = useState(false);
   const [geometry, setGeometry] = useState(0);
   const [load, setLoad] = useState(0);
+  const [mesh, setMesh] = useState(false);
   const [deformation, setDeformation] = useState(0);
   useEffect(() => {
     const abort = new AbortController();
@@ -32,6 +34,10 @@ export function LoadPathsExplorer() {
     return () => abort.abort();
   }, []);
   const c = cases[geometry];
+  const contours = useMemo(
+    () => (c ? densityContours(c.physicalDensity) : []),
+    [c],
+  );
   if (!c)
     return (
       <section className={styles.panel}>
@@ -48,8 +54,22 @@ export function LoadPathsExplorer() {
   );
   const factor = (deformation * 0.04) / maxMove;
   const point = (x: number, y: number) => {
-    const node = y * (c.nx + 1) + x;
-    return `${x + 4 + factor * c.displacements[2 * node][load]},${c.ny - y + 5 - factor * c.displacements[2 * node + 1][load]}`;
+    const ix = Math.min(Math.floor(x), c.nx - 1),
+      iy = Math.min(Math.floor(y), c.ny - 1);
+    const tx = x - ix,
+      ty = y - iy;
+    const displacement = (axis: number) =>
+      [
+        [ix, iy, (1 - tx) * (1 - ty)],
+        [ix + 1, iy, tx * (1 - ty)],
+        [ix + 1, iy + 1, tx * ty],
+        [ix, iy + 1, (1 - tx) * ty],
+      ].reduce(
+        (v, [xx, yy, w]) =>
+          v + w * c.displacements[2 * (yy * (c.nx + 1) + xx) + axis][load],
+        0,
+      );
+    return `${(x + 4 + factor * displacement(0)).toFixed(4)},${(c.ny - y + 5 - factor * displacement(1)).toFixed(4)}`;
   };
   const force = c.loads[load];
   return (
@@ -76,9 +96,9 @@ export function LoadPathsExplorer() {
       </div>
       <svg
         className={styles.drawing}
-        viewBox={`0 0 ${c.nx + 14} ${c.ny + 12}`}
+        viewBox={`1 3 ${c.nx + 8} ${c.ny + 7}`}
         role="img"
-        aria-label={`Reference ${c.id.replace("cantilever-", "")} cantilever. Darker cells contain more material. Load ${load + 1}; ${deformation ? "illustrative displacement shown" : "undeformed"}.`}
+        aria-label={`Reference ${c.id.replace("cantilever-", "")} cantilever. Darker regions contain more material. Load ${load + 1}; ${deformation ? "illustrative displacement shown" : "undeformed"}.`}
       >
         <defs>
           <pattern
@@ -116,20 +136,35 @@ export function LoadPathsExplorer() {
           fill="url(#load-path-support)"
         />
         <rect x="4" y="5" width={c.nx} height={c.ny} fill="#e8e3d8" />
-        {c.physicalDensity.flatMap((row, y) =>
-          row.map((density, x) => (
-            <polygon
-              key={`${x}-${y}`}
-              points={[
-                point(x, y),
-                point(x + 1, y),
-                point(x + 1, y + 1),
-                point(x, y + 1),
-              ].join(" ")}
-              fill={`rgb(${Math.round(235 - density * 199)},${Math.round(229 - density * 190)},${Math.round(216 - density * 181)})`}
+        {!mesh &&
+          contours.map(({ level, polygons }) => (
+            <path
+              key={level}
+              data-density-contour={level}
+              d={polygons
+                .map(
+                  (vertices) =>
+                    `M${vertices.map(([x, y]) => point(x, y)).join("L")}Z`,
+                )
+                .join("")}
+              fill={densityColor(level)}
             />
-          )),
-        )}
+          ))}
+        {mesh &&
+          c.physicalDensity.flatMap((row, y) =>
+            row.map((density, x) => (
+              <polygon
+                key={`${x}-${y}`}
+                points={[
+                  point(x, y),
+                  point(x + 1, y),
+                  point(x + 1, y + 1),
+                  point(x, y + 1),
+                ].join(" ")}
+                fill={densityColor(density)}
+              />
+            )),
+          )}
         <line
           x1={c.nx + 5}
           y1={c.ny - force.y + 5}
@@ -140,10 +175,27 @@ export function LoadPathsExplorer() {
           markerEnd="url(#load-path-arrow)"
         />
       </svg>
+      <div className={styles.legend}>
+        <span>Less material</span>
+        <span className={styles.scale} />
+        <span>More material</span>
+      </div>
       <div className={styles.controls}>
+        <label>
+          Display
+          <select
+            aria-label="Density display"
+            value={mesh ? "mesh" : "contours"}
+            onChange={(e) => setMesh(e.target.value === "mesh")}
+          >
+            <option value="contours">Density contours</option>
+            <option value="mesh">Simulation cells</option>
+          </select>
+        </label>
         <label>
           Load
           <select
+            aria-label="Load"
             value={load}
             onChange={(e) => setLoad(Number(e.target.value))}
           >
@@ -175,7 +227,10 @@ export function LoadPathsExplorer() {
         </div>
       </div>
       <p className={styles.caption}>
-        Frozen reference design. Darker cells contain more material.
+        Frozen reference design · {c.nx} × {c.ny} simulation cells.
+        {mesh
+          ? " Showing the exact cell densities."
+          : " Contours interpolate density between cells for readability; they are not a finer simulation or a manufactured boundary."}{" "}
         Displacement is rescaled for illustration; the score uses the unchanged
         linear-elastic calculation.
       </p>

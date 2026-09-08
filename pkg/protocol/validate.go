@@ -14,7 +14,7 @@ var identifierPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$`)
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 
 func ValidateCandidate(c Candidate) error {
-	if c.APIVersion != APIVersion || c.Kind != "ChallengeCandidate" || !identifierPattern.MatchString(c.ID) || c.Producer == "" || c.CreatedAt.IsZero() || c.PromptVersion != ScoutVersion && c.PromptVersion != "1.1.0" && c.PromptVersion != "1.0.0" {
+	if c.APIVersion != APIVersion || c.Kind != "ChallengeCandidate" || !identifierPattern.MatchString(c.ID) || c.Producer == "" || c.CreatedAt.IsZero() || c.PromptVersion != ScoutVersion && c.PromptVersion != "1.2.0" && c.PromptVersion != "1.1.0" && c.PromptVersion != "1.0.0" {
 		return errors.New("invalid candidate identity/version")
 	}
 	if c.Disposition != "viable" && c.Disposition != "needs_work" && c.Disposition != "rejected" {
@@ -30,6 +30,11 @@ func ValidateCandidate(c Candidate) error {
 	}
 	if c.Disposition == "rejected" && len(c.Uncertainties) == 0 {
 		return errors.New("rejected candidate requires explicit reasons")
+	}
+	if c.Education != nil || c.PromptVersion == ScoutVersion && c.Disposition == "viable" {
+		if err := ValidateEducation(c.Education); err != nil {
+			return err
+		}
 	}
 	if c.Manifest != nil {
 		return ValidateManifest(*c.Manifest)
@@ -308,6 +313,17 @@ func ValidateSubmissionContract(c SubmissionContract) error {
 		default:
 			return fmt.Errorf("unsupported data artifact extension %s", extension)
 		}
+	}
+	return nil
+}
+
+// Legacy locks omit education. New scientific reviews require it; replay does not.
+func ValidateEducation(e *Education) error {
+	if e == nil || strings.TrimSpace(e.Frontier) == "" || strings.TrimSpace(e.Significance) == "" {
+		return errors.New("education.frontier and education.significance are required: explain the research frontier and why metric progress matters")
+	}
+	if len(e.Frontier) > 12000 || len(e.Significance) > 12000 {
+		return errors.New("each education section must be at most 12,000 bytes")
 	}
 	return nil
 }

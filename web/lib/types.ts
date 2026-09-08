@@ -75,6 +75,7 @@ export interface ResearcherContext {
   reason: string;
 }
 export interface Challenge {
+  education?: { frontier: string; significance: string };
   id: string;
   slug: string;
   title: string;

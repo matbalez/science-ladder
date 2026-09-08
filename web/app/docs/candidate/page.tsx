@@ -160,9 +160,10 @@ export default function Page() {
                   <code>promptVersion</code>
                 </td>
                 <td>
-                  <code>"1.2.0"</code> for the current Scout prompt;{" "}
-                  <code>"1.1.0"</code> and <code>"1.0.0"</code> remain accepted.
-                  Record the version actually used.
+                  <code>"1.3.0"</code> for the current Scout prompt;{" "}
+                  <code>"1.2.0"</code>, <code>"1.1.0"</code> and{" "}
+                  <code>"1.0.0"</code> remain accepted. Record the version
+                  actually used.
                 </td>
               </tr>
               <tr>
@@ -212,16 +213,49 @@ export default function Page() {
           timestamps, prompt versions, score ticks and the metric quantum so
           YAML preserves their types.
         </p>
-        <CodeBlock code="sl candidate lint science-ladder-candidate.yaml" />
+        <p>For Scout 1.3 files, update the CLI before linting:</p>
+        <CodeBlock code="go install github.com/matbalez/science-ladder/cmd/sl@main\nsl candidate lint science-ladder-candidate.yaml" />
       </section>
 
+      <section id="education">
+        <h2>Explain the science</h2>
+        <p>
+          New challenges need two reader-facing sections in the candidate YAML,
+          alongside <code>manifest</code>. Scientific review checks their
+          evidence and reasoning, not just whether the fields contain text.
+        </p>
+        <CodeBlock
+          code={`education:
+  frontier: >-
+    Explain the question, what the strongest published results achieve,
+    what remains unknown, and how this benchmark relates to that frontier.
+    Name the primary sources listed in evidence and date any record claim.
+  significance: >-
+    Explain what a concrete improvement would establish, which conditions
+    the checker holds fixed, and why that matters. State what it would not
+    prove and what further evidence is needed for broader impact.`}
+        />
+        <p>
+          Use the current{" "}
+          <ExternalLink
+            href={`${schemaRoot}challenge-candidate-v2.schema.json`}
+          >
+            candidate schema
+          </ExternalLink>
+          . Education is public context stored with the adopted candidate; it
+          does not change the executable validation contract . The downloadable
+          Quiet Echoes files above are historical v1 examples; existing locked
+          challenges retain their original contracts.
+        </p>
+      </section>
       <section id="repository">
         <h2>Repository requirements</h2>
         <p>
           If you already have a repository, prepare the candidate file using its
           manifest and evidence. Import that file, then enter{" "}
           <code>owner/repository</code> and the full 40-character commit SHA.
-          Public repositories can be read directly. Private repositories need access through the Science Ladder GitHub App.
+          Public repositories can be read directly. Private repositories need
+          access through the Science Ladder GitHub App.
         </p>
         <p>
           The manifest specifies the question and evidence, score and baseline,
@@ -237,8 +271,9 @@ export default function Page() {
             too.
           </li>
           <li>
-            Use a deterministic Python checker with bounded CPU and memory.
-            Submissions contain data; hosted checkers have no network access.
+            Use a bounded checker with a declared runtime. V2 contracts also
+            support isolated candidate programs, proof checking and paired
+            timings. Hosted checkers have no network access.
           </li>
           <li>
             Keep the proposed <code>manifest</code> consistent with the

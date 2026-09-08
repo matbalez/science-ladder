@@ -374,6 +374,12 @@ export function Creator() {
                 You’ll attach the public GitHub repository and exact commit
                 next.
               </p>
+              <p>
+                Include two short explanations: where the research frontier
+                stands, and what an improvement in your metric would mean. Cite
+                the research and distinguish your benchmark baseline from the
+                best published results.
+              </p>
               <div className={styles.guideLinks}>
                 <Link href="/docs/candidate" target="_blank">
                   YAML format &amp; example <ArrowUpRight size={14} />
@@ -774,6 +780,14 @@ function CandidateSummary({
             asText(candidate.question, asText(science.question)),
           )}
         </p>
+      )}
+      {asText(asRecord(candidate.education).frontier) && (
+        <>
+          <h3>Where the research stands</h3>
+          <p>{asText(asRecord(candidate.education).frontier)}</p>
+          <h3>What progress would mean</h3>
+          <p>{asText(asRecord(candidate.education).significance)}</p>
+        </>
       )}
       {asList(candidate.unresolvedQuestions || candidate.uncertainties).length >
         0 && (

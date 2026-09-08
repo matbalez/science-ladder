@@ -108,3 +108,19 @@
     width: 125px;
   }
 }
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #686352;
+  margin: -0.25rem 0 1.25rem;
+}
+.scale {
+  width: 100px;
+  height: 7px;
+  border-radius: 8px;
+  background: linear-gradient(to right, #ebe5d8, #242723);
+}

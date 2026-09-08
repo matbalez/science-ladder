@@ -25,6 +25,8 @@ func (s *Server) scout(w http.ResponseWriter, r *http.Request, u *User) error {
 	switch version {
 	case "v1", protocol.ScoutVersion:
 		version = protocol.ScoutVersion
+	case "1.2.0":
+		prompt = prompts.ScoutV12
 	case "1.1.0":
 		prompt = prompts.ScoutV11
 	case "1.0.0":

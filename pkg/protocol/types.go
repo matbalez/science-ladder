@@ -6,7 +6,7 @@ import "time"
 const APIVersion = "science-ladder/v1"
 const ManifestV2 = "science-ladder/v2"
 const PayloadType = "application/vnd.science-ladder.v1+json"
-const ScoutVersion = "1.2.0"
+const ScoutVersion = "1.3.0"
 
 type Source struct {
 	PublicationDate string `json:"publicationDate,omitempty"`
@@ -19,19 +19,20 @@ type Source struct {
 }
 
 type Candidate struct {
-	APIVersion           string    `json:"apiVersion"`
-	Kind                 string    `json:"kind"`
-	ID                   string    `json:"id"`
-	CreatedAt            time.Time `json:"createdAt"`
-	Producer             string    `json:"producer"`
-	PromptVersion        string    `json:"promptVersion"`
-	Model                string    `json:"model,omitempty"`
-	Disposition          string    `json:"disposition"` // viable, needs_work, rejected
-	Sources              []Source  `json:"sources"`
-	Uncertainties        []string  `json:"uncertainties"`
-	RejectedAlternatives []string  `json:"rejectedAlternatives"`
-	RepositoryPlan       []string  `json:"repositoryPlan"`
-	Manifest             *Manifest `json:"manifest,omitempty"`
+	Education            *Education `json:"education,omitempty"`
+	APIVersion           string     `json:"apiVersion"`
+	Kind                 string     `json:"kind"`
+	ID                   string     `json:"id"`
+	CreatedAt            time.Time  `json:"createdAt"`
+	Producer             string     `json:"producer"`
+	PromptVersion        string     `json:"promptVersion"`
+	Model                string     `json:"model,omitempty"`
+	Disposition          string     `json:"disposition"` // viable, needs_work, rejected
+	Sources              []Source   `json:"sources"`
+	Uncertainties        []string   `json:"uncertainties"`
+	RejectedAlternatives []string   `json:"rejectedAlternatives"`
+	RepositoryPlan       []string   `json:"repositoryPlan"`
+	Manifest             *Manifest  `json:"manifest,omitempty"`
 }
 
 type Metric struct {
@@ -90,6 +91,12 @@ type Fixture struct {
 	Path            string `json:"path"`
 	ExpectedOutcome string `json:"expectedOutcome"`
 	ExpectedTicks   string `json:"expectedTicks,omitempty"`
+}
+
+// Education explains the research context without extending the scored claim.
+type Education struct {
+	Frontier     string `json:"frontier"`
+	Significance string `json:"significance"`
 }
 
 type Manifest struct {

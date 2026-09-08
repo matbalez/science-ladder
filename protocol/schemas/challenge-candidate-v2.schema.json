@@ -52,6 +52,9 @@
             "rejected"
           ]
         },
+        "education": {
+          "$ref": "#/$defs/Education"
+        },
         "id": {
           "maxLength": 131072,
           "type": "string"
@@ -72,6 +75,7 @@
         },
         "promptVersion": {
           "enum": [
+            "1.3.0",
             "1.2.0",
             "1.1.0",
             "1.0.0"
@@ -180,6 +184,24 @@
         "maxRuns",
         "minRuns",
         "scratchMb"
+      ],
+      "type": "object"
+    },
+    "Education": {
+      "additionalProperties": false,
+      "properties": {
+        "frontier": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "significance": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "frontier",
+        "significance"
       ],
       "type": "object"
     },
