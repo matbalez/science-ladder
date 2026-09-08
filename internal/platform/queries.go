@@ -36,7 +36,7 @@ func (s *Server) listChallenges(w http.ResponseWriter, r *http.Request, u *User)
 		limit = n
 	}
 	search := r.URL.Query().Get("search")
-	rows, err := queryObjects(r.Context(), s.DB, challengeSQL+` WHERE v.status IN('published','closed','superseded','compromised') AND NOT EXISTS(SELECT 1 FROM challenge_versions newer WHERE newer.challenge_id=c.id AND newer.status IN('published','closed','superseded','compromised') AND newer.created_at>v.created_at) AND ($1='' OR v.manifest->>'title' ILIKE '%'||$1||'%' OR v.manifest->>'summary' ILIKE '%'||$1||'%') ORDER BY v.created_at DESC LIMIT $2`, search, limit)
+	rows, err := queryObjects(r.Context(), s.DB, challengeSQL+` WHERE v.status IN('published','closed','superseded','compromised') AND NOT EXISTS(SELECT 1 FROM challenge_versions newer WHERE newer.challenge_id=c.id AND newer.status IN('published','closed','superseded','compromised','withdrawn') AND newer.created_at>v.created_at) AND ($1='' OR v.manifest->>'title' ILIKE '%'||$1||'%' OR v.manifest->>'summary' ILIKE '%'||$1||'%') ORDER BY v.created_at DESC LIMIT $2`, search, limit)
 	if err != nil {
 		return err
 	}
@@ -44,6 +44,13 @@ func (s *Server) listChallenges(w http.ResponseWriter, r *http.Request, u *User)
 	return nil
 }
 func (s *Server) getChallenge(w http.ResponseWriter, r *http.Request, u *User) error {
+	var withdrawn bool
+	if err := s.DB.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM challenges c JOIN challenge_versions v ON v.challenge_id=c.id WHERE c.slug=$1 AND v.status='withdrawn' AND NOT EXISTS(SELECT 1 FROM challenge_versions newer WHERE newer.challenge_id=c.id AND newer.created_at>v.created_at AND newer.status IN('published','closed','superseded','compromised','withdrawn')))`, r.PathValue("slug")).Scan(&withdrawn); err != nil {
+		return err
+	}
+	if withdrawn {
+		return fail(410, "challenge_withdrawn", "This challenge has been removed from the public platform because it does not meet the publication standard. Submissions are closed.")
+	}
 	uid := ""
 	if u != nil {
 		uid = u.ID

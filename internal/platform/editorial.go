@@ -93,6 +93,8 @@ func (s *Server) editorDecision(w http.ResponseWriter, r *http.Request, u *User)
 			sql = `UPDATE challenge_versions SET review_status='human_approved' WHERE id=$1 AND review_status='human_review_required'`
 		case "changes_required":
 			sql = `UPDATE challenge_versions SET review_status='changes_required',status='changes_required' WHERE id=$1 AND lock_digest IS NULL`
+		case "withdraw":
+			sql = `UPDATE challenge_versions SET status='withdrawn',intake_status='closed',badges='{}' WHERE id=$1 AND status IN('published','closed','superseded')`
 		case "reject":
 			sql = `UPDATE challenge_versions SET review_status='rejected',intake_status='closed' WHERE id=$1`
 		case "feature":

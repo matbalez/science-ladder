@@ -15,7 +15,7 @@ import {
   LockKeyhole,
   ShieldCheck,
 } from "lucide-react";
-import { useAction, useResource } from "@/lib/api";
+import { ApiError, useAction, useResource } from "@/lib/api";
 import {
   asList,
   asRecord,
@@ -66,6 +66,17 @@ export function ChallengeDetail({ slug }: { slug: string }) {
     return (
       <div className="page">
         <Loading />
+      </div>
+    );
+  if (error instanceof ApiError && error.code === "challenge_withdrawn")
+    return (
+      <div className="page">
+        <Link href="/" className="back-link">
+          <ArrowLeft size={14} />
+          Explore challenges
+        </Link>
+        <h1>Challenge removed</h1>
+        <p>{error.message}</p>
       </div>
     );
   if (!c)

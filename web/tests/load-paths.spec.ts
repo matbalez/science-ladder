@@ -1,3 +1,4 @@
+import reference from "./fixtures/load-paths-reference.json";
 import { test, expect } from "@playwright/test";
 import { LOAD_PATHS_SOURCE } from "../lib/solver-prompt";
 const manifest = {
@@ -48,6 +49,9 @@ for (const width of [1440, 390]) {
     );
     await page.route("**/v1/challenges/load-paths", (r) =>
       r.fulfill({ json: challenge }),
+    );
+    await page.route("**/showcase/load-paths/reference.json", (r) =>
+      r.fulfill({ json: reference }),
     );
     await page.goto("/challenges/load-paths");
     const explorer = page.getByRole("region", {

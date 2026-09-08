@@ -2241,7 +2241,8 @@
                       "pause",
                       "resume",
                       "compromise",
-                      "resolve_unscorable"
+                      "resolve_unscorable",
+                      "withdraw"
                     ]
                   },
                   "reason": {

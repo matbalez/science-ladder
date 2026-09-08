@@ -194,6 +194,9 @@ export function ReviewConsole({
                     </option>
                     <option value="changes_required">Require changes</option>
                     <option value="reject">Reject review</option>
+                    <option value="withdraw">
+                      Remove from public platform
+                    </option>
                     <option value="pause">Pause new submissions</option>
                     <option value="resume">Resume submissions</option>
                     <option value="compromise">Mark version compromised</option>

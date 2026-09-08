@@ -160,10 +160,10 @@ export default function Page() {
                   <code>promptVersion</code>
                 </td>
                 <td>
-                  <code>"1.3.0"</code> for the current Scout prompt;{" "}
-                  <code>"1.2.0"</code>, <code>"1.1.0"</code> and{" "}
-                  <code>"1.0.0"</code> remain accepted. Record the version
-                  actually used.
+                  <code>"1.4.0"</code> for the current Scout prompt;{" "}
+                  <code>"1.3.0"</code>, <code>"1.2.0"</code>,{" "}
+                  <code>"1.1.0"</code> and <code>"1.0.0"</code> remain accepted.
+                  Record the version actually used.
                 </td>
               </tr>
               <tr>
@@ -213,12 +213,18 @@ export default function Page() {
           timestamps, prompt versions, score ticks and the metric quantum so
           YAML preserves their types.
         </p>
-        <p>For Scout 1.3 files, update the CLI before linting:</p>
+        <p>For current Scout files, update the CLI before linting:</p>
         <CodeBlock code="go install github.com/matbalez/science-ladder/cmd/sl@main\nsl candidate lint science-ladder-candidate.yaml" />
       </section>
 
       <section id="education">
         <h2>Explain the science</h2>
+        <p>
+          The reference must be the strongest substantiated result for the exact
+          problem and objective under comparable conditions. Cite and reproduce
+          it. An intentionally limited optimizer or tutorial baseline does not
+          qualify for publication.
+        </p>
         <p>
           New challenges need two reader-facing sections in the candidate YAML,
           alongside <code>manifest</code>. Scientific review checks their
