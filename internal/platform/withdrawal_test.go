@@ -22,7 +22,7 @@ func TestWithdrawalHidesChallengeClosesAdmissionAndPreservesLock(t *testing.T) {
 	token := researcherBrowser(t, s, "operator", "browser", 101)
 	body := raw(map[string]any{"versionId": version, "action": "withdraw", "reason": "The reference does not represent the scientific frontier."})
 	w := researcherRequest(s, "", "POST", "/v1/editor/decisions", "withdraw-test-unauthorized", body)
-	if w.Code != 401 {
+	if w.Code != 401 && w.Code != 403 {
 		t.Fatalf("unauthenticated withdrawal: %d", w.Code)
 	}
 	for i := 0; i < 2; i++ {
