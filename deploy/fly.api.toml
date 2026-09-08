@@ -7,6 +7,7 @@ kill_timeout = "30s"
   dockerfile = "Dockerfile.api"
 
 [env]
+  OPERATOR_PREPARATION_DAILY_LIMIT = "100"
   DEPLOYMENT_MODE = "controlled-demo"
   LISTEN_ADDR = ":8080"
   PUBLIC_ORIGIN = "https://science-ladder.fly.dev"

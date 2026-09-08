@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"net/http"
 )
@@ -15,7 +16,8 @@ func (s *Server) reservePreparation(ctx context.Context, tx pgx.Tx, u *User) err
 		return err
 	}
 	var quota int
-	if err := tx.QueryRow(ctx, `SELECT validation_quota FROM users WHERE id=$1`, u.ID).Scan(&quota); err != nil {
+	var role string
+	if err := tx.QueryRow(ctx, `SELECT validation_quota,role FROM users WHERE id=$1`, u.ID).Scan(&quota, &role); err != nil {
 		return err
 	}
 	if quota <= 0 {
@@ -35,12 +37,13 @@ func (s *Server) reservePreparation(ctx context.Context, tx pgx.Tx, u *User) err
 	if total >= 1000 {
 		return fail(503, "preparation_capacity_exhausted", "Remote preparation daily capacity is reserved; try after the next UTC day")
 	}
-	tag, err := tx.Exec(ctx, `INSERT INTO preparation_budgets(owner_id,used) VALUES($1,1) ON CONFLICT(owner_id,day) DO UPDATE SET used=preparation_budgets.used+1 WHERE preparation_budgets.used<20`, u.ID)
+	limit := preparationDailyLimit(role, s.Config.OperatorPreparationDailyLimit)
+	tag, err := tx.Exec(ctx, `INSERT INTO preparation_budgets(owner_id,used) VALUES($1,1) ON CONFLICT(owner_id,day) DO UPDATE SET used=preparation_budgets.used+1 WHERE preparation_budgets.used<$2`, u.ID, limit)
 	if err != nil {
 		return err
 	}
 	if tag.RowsAffected() != 1 {
-		return fail(429, "preparation_daily_limit", "This account has used its 20 daily remote-preparation requests")
+		return fail(429, "preparation_daily_limit", fmt.Sprintf("This account has used its %d daily remote-preparation requests", limit))
 	}
 	return nil
 }
@@ -78,4 +81,16 @@ func (s *Server) replayBeforeFetch(w http.ResponseWriter, r *http.Request, u *Us
 	}
 	respond(w, status, json.RawMessage(response))
 	return true, nil
+}
+
+// Operators may configure a larger, still metered allowance for release validation.
+// Role comes from the database; ordinary users retain the twenty-request cap.
+func preparationDailyLimit(role string, configured int) int {
+	if role != "operator" || configured < 20 {
+		return 20
+	}
+	if configured > 1000 {
+		return 1000
+	}
+	return configured
 }
