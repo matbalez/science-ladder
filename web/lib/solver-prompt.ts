@@ -3,7 +3,7 @@ import { TRIANGLE_SOURCE } from "./triangle-reference.ts";
 import type { Challenge } from "./types.ts";
 import { asList, asRecord, asText } from "./scientific.ts";
 
-export const CLI_SOURCE = "a973e27528b6a521d5ad120ecbe375aca1412351";
+export const CLI_SOURCE = "cd73a393ff12a3ec22f3b9c5e7c5c0ea0a40cfcc";
 const quote = (value: string) => "'" + value.replace(/'/g, "'\\''") + "'";
 
 /** The native path belongs to a verified immutable source, not its display slug. */
