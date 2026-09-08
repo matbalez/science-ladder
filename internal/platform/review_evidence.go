@@ -16,7 +16,7 @@ import (
 	"github.com/matbalez/science-ladder/pkg/protocol"
 )
 
-const reviewEvidencePolicy = "pinned-text-evidence-v2"
+const reviewEvidencePolicy = "pinned-text-evidence-v3"
 const reviewEvidenceLimit = 192 << 10
 
 type reviewEvidenceFile struct {
@@ -66,7 +66,7 @@ func selectReviewEvidence(document []byte, sourceDigest, commit string, reposito
 		return result, errors.New("scientific evidence manifest binding mismatch")
 	}
 	result.ManifestDigest = expected
-	selected := []string{manifest.Validator.DependencyLock, "docs/science.md", "docs/method.md", "docs/numerical-validation.json", "challenge-brief.md", "THIRD_PARTY_NOTICES.md", "LICENSE", "DATA_LICENSE.md", "literature/reference.json", "docs/source-evidence.json", "tests/test_checker.py", "tools/reproduce.py"}
+	selected := []string{manifest.Validator.DependencyLock, "visualization/README.md", "visualization/reference.json", "visualization/context.schema.json", "visualization/checks.md", "docs/science.md", "docs/method.md", "docs/numerical-validation.json", "challenge-brief.md", "THIRD_PARTY_NOTICES.md", "LICENSE", "DATA_LICENSE.md", "literature/reference.json", "docs/source-evidence.json", "tests/test_checker.py", "tools/reproduce.py"}
 	for _, arg := range manifest.Validator.Entrypoint {
 		if strings.HasPrefix(arg, "/sl/challenge/") {
 			selected = append(selected, strings.TrimPrefix(arg, "/sl/challenge/"))

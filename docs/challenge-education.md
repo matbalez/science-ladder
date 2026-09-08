@@ -1,7 +1,7 @@
 # Educational context
 
 Every new challenge must explain **where the research stands** and **what progress
-would mean**. Scout 1.3 generates `education.frontier` and
+would mean**. Scout 1.3 introduced (and current Scout 1.6 generates) `education.frontier` and
 `education.significance` in the candidate YAML, beside `manifest`. These are
 plain text, not HTML. Cite titles and locations from the candidate's primary
 sources. Explain a concrete score improvement, preserved conditions, scientific
@@ -37,3 +37,14 @@ not yet support claims of better deployed radar or a general algorithmic advance
 Load Paths has physically interpretable numerical validation, but beating its
 110-iteration reference alone is not a field-frontier result. The public pages now
 make both distinctions explicit.
+
+## Visualization requirement
+
+Scout 1.6 requires the repository package in [visualization v1](specs/visualization-v1.md),
+using the [brief template](templates/visualization-brief.md). The
+[showcase briefs](showcase-visualizations.md) explain what each existing challenge’s
+visualization should teach and distinguish current features from planned additions.
+This is an authoring and scientific-review requirement; candidate lint does not
+render previews, and generic creator-package hosting remains separate work.
+Historical Load Paths discussion above describes its numerical demonstration;
+that challenge remains withdrawn for failing the frontier-reference bar.

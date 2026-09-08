@@ -4,8 +4,11 @@ import _ "embed"
 
 // Scout is a versioned portable prompt, not an instruction to publish automatically.
 //
-//go:embed challenge-scout-v1.5.md
+//go:embed challenge-scout-v1.6.md
 var Scout string
+
+//go:embed challenge-scout-v1.5.md
+var ScoutV15 string
 
 //go:embed challenge-scout-v1.4.md
 var ScoutV14 string

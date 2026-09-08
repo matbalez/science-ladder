@@ -6,7 +6,7 @@ import "time"
 const APIVersion = "science-ladder/v1"
 const ManifestV2 = "science-ladder/v2"
 const PayloadType = "application/vnd.science-ladder.v1+json"
-const ScoutVersion = "1.5.0"
+const ScoutVersion = "1.6.0"
 
 type Source struct {
 	PublicationDate string `json:"publicationDate,omitempty"`
