@@ -3639,3 +3639,29 @@ small {
 .triangle-reading input { display:block; width:100%; margin-top:16px; accent-color:#ad512d; }
 @media(max-width:700px) { .triangle-intro { flex-direction:column; gap:10px; } .triangle-layout { grid-template-columns:1fr; gap:0; } .triangle-reading { padding:0 12px 12px; } }
 .detail-stat-row .score-number { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+.multiply-explorer { background: #f3f0e8; color: #252820; border: 1px solid #d6d0c2; border-radius: 24px; padding: clamp(24px, 4vw, 52px); margin: 24px 0 44px; }
+.multiply-explorer p { color: #67685c; max-width: 72ch; line-height: 1.6; }
+.multiply-header { display: flex; gap: 32px; justify-content: space-between; flex-wrap: wrap; }
+.multiply-header h2 { margin: 0; font-size: clamp(22px, 3vw, 32px); }
+.multiply-counts { display: flex; gap: 26px; }
+.multiply-counts span { font-size: 13px; color: #67685c; }
+.multiply-counts strong { display: block; color: #252820; font-size: 40px; font-weight: 500; }
+.multiply-matrices { display: grid; grid-template-columns: 1fr 24px 1fr 24px 1fr; align-items: center; gap: 18px; max-width: 780px; margin: 28px auto; }
+.multiply-matrix-wrap h3 { text-align: center; font-family: var(--font-mono); }
+.multiply-matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; border-left: 2px solid #949788; border-right: 2px solid #949788; padding: 8px; }
+.multiply-matrix span { position: relative; display: grid; place-items: center; min-height: 50px; border-radius: 5px; font-family: var(--font-mono); font-size: 19px; color: #85887b; }
+.multiply-matrix span.active { background: #d6e7bb; color: #252820; }
+.multiply-matrix small { position: absolute; right: 4px; top: 0; font-size: 14px; }
+.multiply-symbol { font-size: 26px; text-align: center; }
+.multiply-slider { display: flex; align-items: center; gap: 24px; max-width: 780px; margin: 28px auto 12px; font-size: 14px; }
+.multiply-slider input { flex: 1; min-width: 0; accent-color: #476132; }
+.multiply-equation { font-family: var(--font-mono); font-size: 23px; color: #252820 !important; }
+@media (max-width: 620px) {
+  .multiply-matrices { gap: 5px; grid-template-columns: 1fr 12px 1fr 12px 1fr; }
+  .multiply-matrix { gap: 2px; padding: 3px; }
+  .multiply-matrix span { font-size: 13px; min-height: 36px; }
+  .multiply-matrix small { font-size: 10px; right: 0; }
+  .multiply-symbol { font-size: 16px; }
+  .multiply-slider { gap: 12px; }
+}

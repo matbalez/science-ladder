@@ -14,7 +14,7 @@ var identifierPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$`)
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 
 func ValidateCandidate(c Candidate) error {
-	if c.APIVersion != APIVersion || c.Kind != "ChallengeCandidate" || !identifierPattern.MatchString(c.ID) || c.Producer == "" || c.CreatedAt.IsZero() || c.PromptVersion != ScoutVersion && c.PromptVersion != "1.3.0" && c.PromptVersion != "1.2.0" && c.PromptVersion != "1.1.0" && c.PromptVersion != "1.0.0" {
+	if c.APIVersion != APIVersion || c.Kind != "ChallengeCandidate" || !identifierPattern.MatchString(c.ID) || c.Producer == "" || c.CreatedAt.IsZero() || c.PromptVersion != ScoutVersion && c.PromptVersion != "1.4.0" && c.PromptVersion != "1.3.0" && c.PromptVersion != "1.2.0" && c.PromptVersion != "1.1.0" && c.PromptVersion != "1.0.0" {
 		return errors.New("invalid candidate identity/version")
 	}
 	if c.Disposition != "viable" && c.Disposition != "needs_work" && c.Disposition != "rejected" {
@@ -31,7 +31,7 @@ func ValidateCandidate(c Candidate) error {
 	if c.Disposition == "rejected" && len(c.Uncertainties) == 0 {
 		return errors.New("rejected candidate requires explicit reasons")
 	}
-	if c.Education != nil || (c.PromptVersion == ScoutVersion || c.PromptVersion == "1.3.0") && c.Disposition == "viable" {
+	if c.Education != nil || (c.PromptVersion == ScoutVersion || c.PromptVersion == "1.4.0" || c.PromptVersion == "1.3.0") && c.Disposition == "viable" {
 		if err := ValidateEducation(c.Education); err != nil {
 			return err
 		}

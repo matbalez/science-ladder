@@ -13,7 +13,6 @@ import {
   Flag,
   GitBranch,
   LockKeyhole,
-  ShieldCheck,
 } from "lucide-react";
 import { ApiError, useAction, useResource } from "@/lib/api";
 import {
@@ -43,6 +42,8 @@ import {
 } from "./ui";
 import { SubmissionTable } from "./submission";
 import { ChallengeEducation, challengeEducation } from "./challenge-education";
+import { MultiplyExplorer } from "./multiply-explorer";
+import { MULTIPLY_SOURCE } from "@/lib/multiply-reference";
 import { SmallestTriangleExplorer } from "./smallest-triangle";
 import { TRIANGLE_SOURCE } from "@/lib/triangle-reference";
 import { LoadPathsExplorer } from "./load-paths";
@@ -195,14 +196,28 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         </div>
       </header>
       {hasNativeLoadPathsChecker(c) && <LoadPathsExplorer />}
-      {c.repository === "matbalez/science-ladder-smallest-triangle" && c.sourceCommit === TRIANGLE_SOURCE && <SmallestTriangleExplorer />}
+      {c.repository === "matbalez/science-ladder-one-less-multiply" &&
+        c.sourceCommit === MULTIPLY_SOURCE && <MultiplyExplorer />}
+      {c.repository === "matbalez/science-ladder-smallest-triangle" &&
+        c.sourceCommit === TRIANGLE_SOURCE && <SmallestTriangleExplorer />}
       <div className="detail-stat-row">
         <div>
           <span className="tiny-label">
             {c.publicFrontier ? "PUBLIC FRONTIER" : "BASELINE"}
           </span>
           <strong>
-            <span className="score-number" title={formatTicks(c.publicFrontier?.scoreTicks || c.metric.baselineTicks, c.metric.quantum)}>{formatTicks(c.publicFrontier?.scoreTicks || c.metric.baselineTicks, c.metric.quantum)}</span>
+            <span
+              className="score-number"
+              title={formatTicks(
+                c.publicFrontier?.scoreTicks || c.metric.baselineTicks,
+                c.metric.quantum,
+              )}
+            >
+              {formatTicks(
+                c.publicFrontier?.scoreTicks || c.metric.baselineTicks,
+                c.metric.quantum,
+              )}
+            </span>
             <small>{c.metric.units}</small>
           </strong>
           <span>
@@ -213,7 +228,12 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         <div>
           <span className="tiny-label">VERIFIED BEST</span>
           <strong>
-            <span className="score-number" title={formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}>{formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}</span>
+            <span
+              className="score-number"
+              title={formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}
+            >
+              {formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}
+            </span>
           </strong>
           <span>
             {c.verifiedBest
@@ -393,30 +413,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             </div>
             <aside>
               <MilestoneLadder challenge={c} />
-              <div className="trust-panel">
-                <ShieldCheck size={20} />
-                <h3>Challenge record</h3>
-                <p>
-                  Scores measure performance under this checker, not broader
-                  scientific validity.
-                </p>
-                <a
-                  href={`/v1/exports/challenge-versions/${c.versionId}`}
-                  className="button small ghost"
-                  download
-                >
-                  <Download size={14} />
-                  Export public record
-                </a>
-                <button
-                  className="text-button"
-                  onClick={() => setShowFlag((v) => !v)}
-                >
-                  <Flag size={13} />
-                  Flag a concern
-                </button>
-              </div>
-              {showFlag && <FlagForm versionId={c.versionId} />}
             </aside>
           </div>
         )}
@@ -509,6 +505,26 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                     : "This challenge requires confirmation on a different physical host group before a result can advance the frontier or claim a milestone."}{" "}
                   Scores are adjudicated in acceptance-receipt order.
                 </p>
+                <details className="local-setup">
+                  <summary>Verification record</summary>
+                  <p>
+                    Download the public specification, submissions, signed
+                    verification receipts, and artifact links as JSON.
+                  </p>
+                  <a
+                    href={`/v1/exports/challenge-versions/${c.versionId}`}
+                    download
+                  >
+                    Download verification record
+                  </a>
+                </details>
+                <button
+                  className="text-button"
+                  onClick={() => setShowFlag((v) => !v)}
+                >
+                  <Flag size={13} /> Flag a concern
+                </button>
+                {showFlag && <FlagForm versionId={c.versionId} />}
                 <JsonViewer
                   value={evaluation}
                   label="Inspect the complete evaluation contract"

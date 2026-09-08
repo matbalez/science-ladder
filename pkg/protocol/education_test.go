@@ -42,9 +42,11 @@ func TestNewScoutRequiresEducationButLegacyCandidateRemainsReadable(t *testing.T
 	if err = ValidateCandidate(c); err != nil {
 		t.Fatal(err)
 	}
-	c.PromptVersion = ScoutVersion
-	if err = ValidateCandidate(c); err == nil || !strings.Contains(err.Error(), "education") {
-		t.Fatalf("missing education: %v", err)
+	for _, version := range []string{"1.3.0", "1.4.0", ScoutVersion} {
+		c.PromptVersion = version
+		if err = ValidateCandidate(c); err == nil || !strings.Contains(err.Error(), "education") {
+			t.Fatalf("missing education for %s: %v", version, err)
+		}
 	}
 	c.Education = &Education{Frontier: "Published length-512 reference; optimum unknown.", Significance: "Lower exact energy improves the finite objective, not all signal properties."}
 	b, err = json.Marshal(c)

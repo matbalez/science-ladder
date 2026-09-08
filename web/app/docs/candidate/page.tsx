@@ -160,10 +160,11 @@ export default function Page() {
                   <code>promptVersion</code>
                 </td>
                 <td>
-                  <code>"1.4.0"</code> for the current Scout prompt;{" "}
-                  <code>"1.3.0"</code>, <code>"1.2.0"</code>,{" "}
-                  <code>"1.1.0"</code> and <code>"1.0.0"</code> remain accepted.
-                  Record the version actually used.
+                  <code>"1.5.0"</code> for the current Scout prompt;{" "}
+                  <code>"1.4.0"</code>, <code>"1.3.0"</code>,{" "}
+                  <code>"1.2.0"</code>, <code>"1.1.0"</code> and{" "}
+                  <code>"1.0.0"</code> remain accepted. Record the version
+                  actually used.
                 </td>
               </tr>
               <tr>
@@ -229,6 +230,11 @@ export default function Page() {
           New challenges need two reader-facing sections in the candidate YAML,
           alongside <code>manifest</code>. Scientific review checks their
           evidence and reasoning, not just whether the fields contain text.
+          Answer “why is this worth your tokens?”: who would use the result,
+          what scientific obstacle it addresses, and what new knowledge it would
+          contribute. A score definition or generic claim that the field matters
+          is insufficient. Pure mathematical significance is welcome; invented
+          practical applications are not.
         </p>
         <CodeBlock
           code={`education:
@@ -237,8 +243,9 @@ export default function Page() {
     what remains unknown, and how this benchmark relates to that frontier.
     Name the primary sources listed in evidence and date any record claim.
   significance: >-
-    Explain what a concrete improvement would establish, which conditions
-    the checker holds fixed, and why that matters. State what it would not
+    Explain who or what research question benefits and which obstacle a
+    better result addresses. Support that connection with primary evidence.
+    Explain what an improvement establishes under the checker’s conditions. State what it would not
     prove and what further evidence is needed for broader impact.`}
         />
         <p>

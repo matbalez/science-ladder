@@ -1,3 +1,4 @@
+import { MULTIPLY_SOURCE } from "./multiply-reference.ts";
 import { TRIANGLE_SOURCE } from "./triangle-reference.ts";
 import type { Challenge } from "./types.ts";
 import { asList, asRecord, asText } from "./scientific.ts";
@@ -23,10 +24,24 @@ export function hasNativeLoadPathsChecker(
     c.sourceCommit === LOAD_PATHS_SOURCE
   );
 }
-export function hasNativeTriangleChecker(c: Pick<Challenge, "repository" | "sourceCommit">): boolean {
-  return c.repository === "matbalez/science-ladder-smallest-triangle" && c.sourceCommit === TRIANGLE_SOURCE;
+export function hasNativeTriangleChecker(
+  c: Pick<Challenge, "repository" | "sourceCommit">,
+): boolean {
+  return (
+    c.repository === "matbalez/science-ladder-smallest-triangle" &&
+    c.sourceCommit === TRIANGLE_SOURCE
+  );
 }
-const triangleSetup = "python3 tools/reproduce.py\npython3 -m unittest discover -s validator -v\npython3 local.py";
+export function hasNativeMultiplyChecker(
+  c: Pick<Challenge, "repository" | "sourceCommit">,
+): boolean {
+  return (
+    c.repository === "matbalez/science-ladder-one-less-multiply" &&
+    c.sourceCommit === MULTIPLY_SOURCE
+  );
+}
+const triangleSetup =
+  "python3 tools/reproduce.py\npython3 -m unittest discover -s validator -v\npython3 local.py";
 const loadPathsSetup =
   "python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install -r requirements.txt\npython validator/test_science.py\npython local.py";
 export function challengeSetupCommands(c: Challenge): string {
@@ -40,11 +55,11 @@ export function challengeSetupCommands(c: Challenge): string {
     checkout +
     (hasNativeQuietEchoesChecker(c)
       ? "\npython3 tools/reproduce.py --check\npython3 -m unittest discover -s tests -v"
-      : hasNativeTriangleChecker(c)
+      : hasNativeTriangleChecker(c) || hasNativeMultiplyChecker(c)
         ? "\n" + triangleSetup
         : hasNativeLoadPathsChecker(c)
-        ? "\n" + loadPathsSetup
-        : "\n# Read README.md and the manifest.\n# Follow the documented native baseline and test commands, if provided.")
+          ? "\n" + loadPathsSetup
+          : "\n# Read README.md and the manifest.\n# Follow the documented native baseline and test commands, if provided.")
   );
 }
 
@@ -68,6 +83,7 @@ export function solverInstructions(c: Challenge): string {
   const nativeQuietEchoes = hasNativeQuietEchoesChecker(c);
   const nativeLoadPaths = hasNativeLoadPathsChecker(c);
   const nativeTriangle = hasNativeTriangleChecker(c);
+  const nativeMultiply = hasNativeMultiplyChecker(c);
   const nativeProgram = asRecord(m.validator).profile === "native-evaluator-v2";
   const page = `https://science-ladder.fly.dev/challenges/${encodeURIComponent(c.slug)}`;
   const api = "https://science-ladder.fly.dev";
@@ -117,15 +133,19 @@ python3 checker.py --submission fixtures/baseline --suite suite --output "$SL_BA
 cat "$SL_BASELINE_RUN/result.json"
 
 Expect the reproduced baseline energy 17996 and every gate true. The checker refuses to overwrite output; the fresh directory above keeps each report without deleting earlier results.`
-    : nativeTriangle
-      ? `Run from the pinned checkout:
+    : nativeMultiply
+      ? `From the pinned checkout:
+${triangleSetup}
+Expect 23 products and all 729 exact tensor identities to pass. Read challenge-brief.md and docs/submitting.md. Only a smaller exactly correct decomposition improves the reference. Local source runs with your account permissions.`
+      : nativeTriangle
+        ? `Run from the pinned checkout:
 ${triangleSetup}
 Expect area 0.024303979620992486, 364 checked triples and 26 exact bottlenecks. Read docs/frontier.md and docs/submitting.md before editing submission/solver.py. Python 3.10+ standard library only, on macOS or Linux. Local source runs with your account permissions.`
-      : nativeLoadPaths
-      ? `Run from the pinned checkout:
+        : nativeLoadPaths
+          ? `Run from the pinned checkout:
 ${loadPathsSetup}
 Expect all scientific tests to pass and the local reference score to reproduce 1.000000. Read docs/science.md and docs/submitting.md before editing submission/solver.py. Local source runs with your account permissions.`
-      : "Use the native setup, baseline and public-test commands documented by this exact challenge, if available. If no native checker is documented, report that limitation instead of inventing commands. The optional container checks in step 4 can reproduce the pinned runtime. Do not claim baseline verification until a supported checker has actually run."
+          : "Use the native setup, baseline and public-test commands documented by this exact challenge, if available. If no native checker is documented, report that limitation instead of inventing commands. The optional container checks in step 4 can reproduce the pinned runtime. Do not claim baseline verification until a supported checker has actually run."
 }
 If the baseline or fixtures fail, diagnose and report the discrepancy before search. Local results are unofficial; hosted verification runs separately. Private-suite challenges expose only their authorized public checks; never try to extract hidden tests.
 
@@ -134,7 +154,7 @@ Artifact paths allowed by this manifest: ${JSON.stringify(contract.allowedPaths 
 Allowed extensions: ${JSON.stringify(contract.allowedExtensions || [])}
 Maximum files: ${asText(contract.maxFiles, "read the manifest")}; maximum bytes: ${asText(contract.maxBytes, "read the manifest")}.
 Required artifact license: ${license || "read and confirm the manifest license"}.
-Keep an artifact-only directory at ../candidate-artifact. Paths above are relative to that directory. Keep search code, notes, logs, credentials and extra files outside it. ${nativeQuietEchoes ? "For Quiet Echoes, sequence.txt contains exactly 512 ASCII '+' or '-' characters followed by one LF; executable solver code is not the submitted artifact." : nativeTriangle ? "For Smallest Triangle, submit solver.py alone. It emits fourteen points as bounded rational strings or exact algebraic coefficients. The checker examines all 364 triangles and compares the unrounded minimum against the exact frontier reference." : nativeLoadPaths ? "For Load Paths, submit solver.py alone. It reads one case from stdin and writes a JSON density grid. The hosted checker computes all nine load compliances and enforces the 35% physical material budget." : "Follow the exact data format and hard gates documented by this challenge."}
+Keep an artifact-only directory at ../candidate-artifact. Paths above are relative to that directory. Keep search code, notes, logs, credentials and extra files outside it. ${nativeQuietEchoes ? "For Quiet Echoes, sequence.txt contains exactly 512 ASCII '+' or '-' characters followed by one LF; executable solver code is not the submitted artifact." : nativeMultiply ? "For One Less Multiply, submit solver.py alone. It emits U,V,W arrays of exact rational coefficient strings. All 729 tensor identities must hold. Do not treat a small floating-point residual, a finite-field-only formula, or a commutative-only construction as an exact rational bilinear algorithm." : nativeTriangle ? "For Smallest Triangle, submit solver.py alone. It emits fourteen points as bounded rational strings or exact algebraic coefficients. The checker examines all 364 triangles and compares the unrounded minimum against the exact frontier reference." : nativeLoadPaths ? "For Load Paths, submit solver.py alone. It reads one case from stdin and writes a JSON density grid. The hosted checker computes all nine load compliances and enforces the 35% physical material budget." : "Follow the exact data format and hard gates documented by this challenge."}
 ${
   safePath
     ? `To start from the attributed baseline after reproducing it:
@@ -159,17 +179,22 @@ Before final submission, repeat the full native checks:
 python3 tools/reproduce.py --check
 python3 -m unittest discover -s tests -v
 Then repeat the candidate checker commands above using a new output directory and retain the final result.`
-    : nativeTriangle
+    : nativeMultiply
       ? `After editing the artifact:
 python3 local.py --solver ../candidate-artifact/solver.py
 python3 -m unittest discover -s validator -v
+The result must pass all 729 exact identities on every execution. A rank-23 reproduction is valid but does not improve the frontier. Keep method notes and both upstream MIT notices in the public repository outside the one-file artifact.`
+      : nativeTriangle
+        ? `After editing the artifact:
+python3 local.py --solver ../candidate-artifact/solver.py
+python3 -m unittest discover -s validator -v
 Inspect the exact beats-reference predicate as well as area. Validity is not an improvement. Keep method notes outside the one-file artifact.`
-      : nativeLoadPaths
-      ? `After editing the artifact:
+        : nativeLoadPaths
+          ? `After editing the artifact:
 python local.py --solver ../candidate-artifact/solver.py
 python validator/test_science.py
 The minimum ratio across all three cases is the ranking score. Inspect material fractions and residuals as well. Store reproducible method notes outside the one-file artifact.`
-      : "Use the challenge's documented native checker for the fast local feedback loop when it provides one. Before final submission, rerun its documented baseline/public tests and final candidate check. If using the optional container route instead, run the commands in step 4. Keep actual reports and state which checking path ran."
+          : "Use the challenge's documented native checker for the fast local feedback loop when it provides one. Before final submission, rerun its documented baseline/public tests and final candidate check. If using the optional container route instead, run the commands in step 4. Keep actual reports and state which checking path ran."
 }
 Keep your best valid candidate and report whether it improves the reference. Retain the local reports; compute the canonical artifact digest in the next step.
 

@@ -376,9 +376,10 @@ export function Creator() {
               </p>
               <p>
                 Include two short explanations: where the research frontier
-                stands, and what an improvement in your metric would mean. Cite
-                the research and distinguish your benchmark baseline from the
-                best published results.
+                stands, and why this is worth solving. Explain which scientific
+                question or community would benefit, what a better result would
+                establish, and support that connection with research. Reproduce
+                the strongest comparable public reference.
               </p>
               <div className={styles.guideLinks}>
                 <Link href="/docs/candidate" target="_blank">

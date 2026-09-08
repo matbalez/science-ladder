@@ -1,3 +1,4 @@
+import { TRIANGLE_SOURCE } from "@/lib/triangle-reference";
 import type { Challenge } from "@/lib/types";
 import { asRecord, asText } from "@/lib/scientific";
 import { ExternalLink } from "./ui";
@@ -13,6 +14,28 @@ const editions: Record<
     sources: [string, string][];
   }
 > = {
+  "matbalez/science-ladder-smallest-triangle": {
+    source: TRIANGLE_SOURCE,
+    frontier: [
+      "How well can points avoid lining up? Heilbronn’s triangle problem makes that question precise: put points in a unit square and make the smallest triangle they form as large as possible. Every triple counts. With fourteen points, improving one of the 364 triangles can make another smaller.",
+      "The strongest fourteen-point construction substantiated in our September 8, 2026 check is Beyleveld’s 2006 arrangement, reconstructed exactly by Chappell in 2026. Its smallest triangle has area 0.0243039796209924867482…; 26 triangles tie at that value. Whether a better arrangement exists remains open. Sudermann-Merx’s 2026 work studies the problem using mixed-integer optimization and computational certification.",
+    ],
+    significance: [
+      "Extremal geometry studies what patterns must appear, however cleverly objects are arranged. Here the unavoidable pattern is a nearly collinear triple. Constructions show how far we can resist it; upper bounds show where resistance must fail. Closing that gap is the mathematical purpose of the problem.",
+      "A better fourteen-point arrangement would improve a concrete bound that has stood for twenty years. Its exact coordinates would give geometers a new example to explain and global-optimization researchers a stronger target to certify. The search method could also suggest useful structure or symmetries for related cases; that broader value would need to be demonstrated separately.",
+      "This is a pure-mathematics contribution. It does not promise an immediate engineering application, prove optimality, or settle the problem for arbitrarily many points. The achievable result is precise: a new construction, checked over every triangle with exact arithmetic, that advances a recognized open case.",
+    ],
+    sources: [
+      [
+        "Heilbronn’s triangle problem · 2026 research",
+        "https://arxiv.org/abs/2603.11107",
+      ],
+      [
+        "Exact fourteen-point reference",
+        "https://github.com/rhyschappell/heilbronn-n14-exact/tree/885246a9b62fc11f5a513b07c29408c00fb15d9d",
+      ],
+    ],
+  },
   "matbalez/science-ladder-quiet-echoes": {
     source: "f42f527e97563b1c068a1835732c6da44f21223f",
     frontier: [
@@ -61,6 +84,7 @@ const editions: Record<
 export function challengeEducation(c: Challenge) {
   const supplied = asRecord(c.education);
   const edition = editions[c.repository];
+  if (edition?.source === c.sourceCommit) return edition;
   return asText(supplied.frontier) && asText(supplied.significance)
     ? {
         frontier: asText(supplied.frontier).split(/\n\s*\n/),
@@ -81,7 +105,7 @@ export function ChallengeEducation({ challenge: c }: { challenge: Challenge }) {
       {context.frontier.map((p, i) => (
         <p key={i}>{p}</p>
       ))}
-      <h3>What progress would mean</h3>
+      <h3>Why this is worth solving</h3>
       {context.significance.map((p, i) => (
         <p key={i}>{p}</p>
       ))}
