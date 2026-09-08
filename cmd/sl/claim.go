@@ -183,7 +183,22 @@ func claimCommand(args []string) error {
 				Score        string            `json:"score"`
 				Measurements map[string]string `json:"measurements"`
 			}
-			if e = protocol.DecodeStrict(data, &native); e != nil {
+			canonical, err := protocol.CanonicalJSON(data)
+			if err != nil {
+				return err
+			}
+			var fields map[string]json.RawMessage
+			if e = json.Unmarshal(canonical, &fields); e != nil {
+				return e
+			}
+			for _, reserved := range []string{"apiVersion", "kind", "comparisonId", "gates", "result", "outcome", "timing"} {
+				if _, ok := fields[reserved]; ok {
+					return errors.New("native report with validation metadata must use the full ValidatorResult format")
+				}
+			}
+			// Scientific diagnostics (for example bottleneck geometry) remain in
+			// the local report. Only declared measurements enter the claim.
+			if e = json.Unmarshal(canonical, &native); e != nil {
 				return e
 			}
 			gates := map[string]bool{}

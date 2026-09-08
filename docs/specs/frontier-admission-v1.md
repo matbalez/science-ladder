@@ -55,7 +55,9 @@ Legacy native drivers that raise on scientific invalidity and write only
 `score` and `measurements` can use `--checked-gates name1,name2,...`. List exactly
 the frozen gates actually checked by that driver. After successful execution the
 CLI supplies version/comparison metadata and those explicit gate assertions, then
-applies the same full report validation. This is a local attestation, not a server
+applies the same full report validation. Extra scientific diagnostics stay in the
+local report; validation metadata cannot be overridden through this adapter.
+This is a local attestation, not a server
 certification. The pinned One Less Multiply and Smallest Triangle Participate
 instructions include their corresponding checked gates. New creators should emit
 the complete ValidatorResult directly.

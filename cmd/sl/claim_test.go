@@ -97,7 +97,7 @@ func TestClaimFinalCheckAndSubmissionBinding(t *testing.T) {
 		}
 	}
 	t.Setenv("SL_CLAIM_TEST_MODE", "")
-	t.Setenv("SL_CLAIM_TEST_RESULT", `{"score":"17992","measurements":{}}`)
+	t.Setenv("SL_CLAIM_TEST_RESULT", `{"score":"17992","measurements":{},"bottlenecks":[[1,2,3]]}`)
 	for _, extra := range []string{"", ",unknown-gate"} {
 		out := filepath.Join(dir, "native"+fmt.Sprint(len(extra))+".json")
 		nativeArgs := args(out)
