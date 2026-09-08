@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "952a8185ca4093619681c45f809d2dd67e3de154",
+  "runtimeBuild": "https://github.com/matbalez/science-ladder/actions/runs/34216486504",
+  "proofToolsCleanBuild": "https://github.com/matbalez/science-ladder/actions/runs/34216489933",
+  "applicationCI": "https://github.com/matbalez/science-ladder/actions/runs/34216485202",
+  "runtimeRelease": "https://github.com/matbalez/science-ladder/releases/tag/verification-952a8185ca40",
+  "executionProfileDigest": "sha256:d0bbe62987cf655f44241b036ff01af24313cd43fbc76f2ce75be9a57ef4a068",
+  "hardwareConformance": {
+    "proof": {
+      "passed": true,
+      "cases": 14,
+      "receipt": "proof-conformance-final.json"
+    },
+    "native": {
+      "passed": true,
+      "cases": 6,
+      "receipt": "native-conformance-final.json"
+    }
+  }
+}

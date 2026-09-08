@@ -2,7 +2,7 @@
 
 7 September 2026. Companion to the [Yukon compatibility audit](../research/yukon-validation-audit-2026-09-07.md) and [scientific metric policy](../scientific-metric-policy.md).
 
-**Status, 8 September 2026:** the public API includes v2 typed measurements, achievement predicates, scientific-metric assessments, executor enrollment/routing and paired timing. The new Linux profile passed four signed Scaleway conformance probes (candidate isolation, C++, Rust and paired timing) and runs alongside the original Quiet Echoes profile on the same physical host. Build-product handoff and frozen proof statements are implemented in source; proof-toolchain conformance and the Load Paths public flow are still being completed. Apple/Metal is representable in the execution contract but has no commissioned backend. Do not describe pending adapters or hardware as available, or modify existing locks to simulate broader support.
+**Status, 8 September 2026:** the public API includes v2 typed measurements, achievement predicates, scientific-metric assessments, executor enrollment/routing and paired timing. The numerical Linux profile passed five signed Scaleway conformance probes (candidate isolation, C++, Rust, NumPy/SciPy and paired timing) and runs alongside the original Quiet Echoes profile on the same physical host. Load Paths is published with three finalized platform-verified seed submissions. The additional proof profile passed 14 signed proof/product checks and six native checks, including proof/timing composition, and is enrolled on that same server. See the [proof runtime evidence](../security/proof-runtime-review-2026-09-08.md). Apple/Metal is representable in the execution contract but has no commissioned backend. Do not describe pending adapters or hardware as available, or modify existing locks to simulate broader support.
 
 ## Objective
 
@@ -19,9 +19,9 @@ A positive answer to one does not answer the others.
 | Target capability | Input and evaluation | Yukon coverage | Current state |
 | --- | --- | --- | --- |
 | Data artifact checking | Immutable data plus a reviewed deterministic checker | Quiet Echoes; a bounded census-only Heesch adaptation | Existing profile; adaptations still need their own checker and review |
-| Proof checking | Proof source/certificate, fixed statement, pinned elaborator and trusted proof checker; separately derived objective | Full Heesch, Proximity, MODEXP and RIPEMD-160 | Needs a new reviewed profile and toolchains |
-| Program evaluation | Build submitted source in isolation; feed cases to an untrusted program; independently validate its outputs and compute objective | ECDSA circuit construction, sparse ordering, all eight OpenFrontierCS tasks | Needs a new profile and execution boundary |
-| Measured performance | Program evaluation plus trusted timing, matched hardware, repeat schedule, workload/quality gates and statistical decision rule | Flock x86/Apple, Lighter, current Gemma MLX and retired MLX/Qwen contracts | Needs a new measurement policy and hardware-specific executors |
+| Proof checking | Proof source/certificate, fixed statement, pinned elaborator and trusted proof checker; separately derived objective | Full Heesch, Proximity, MODEXP and RIPEMD-160 | Lean/DRAT assets commissioned after signed corpus; each real challenge still needs its own statement/adapter review |
+| Program evaluation | Build submitted source in isolation; feed cases to an untrusted program; independently validate its outputs and compute objective | ECDSA circuit construction, sparse ordering, all eight OpenFrontierCS tasks | Implemented Linux candidate/checker boundary; actual challenge adapter and reviewed assets still required |
+| Measured performance | Program evaluation plus trusted timing, matched hardware, repeat schedule, workload/quality gates and statistical decision rule | Flock x86/Apple, Lighter, current Gemma MLX and retired MLX/Qwen contracts | Implemented Linux paired timing policy; workload-specific adaptation required; Apple backend deferred |
 
 A proof-checked performance challenge composes capabilities; it must not choose between correctness and speed. Language is a toolchain property, not a scientific category. Do not require every challenge to be rewritten into Python.
 

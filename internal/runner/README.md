@@ -120,10 +120,11 @@ calls, resource limits, output limits and descendant cleanup in real Firecracker
 guests. Its signed receipt is a development conformance result, not vulnerability
 clearance, independent replication, external review or a competitive score.
 
-The native profile is not yet deployed for public submissions. Trusted paired
-performance measurement, proof adapters, extended resource/asset handling and
-final release commissioning are still under development. Publishing the runtime
-image alone does not commission it.
+The numerical native profile serves the public Load Paths challenge. Trusted
+paired timing and extended resource/asset handling are implemented. Proof adapters
+use an additional pinned profile and their own conformance receipts; consult
+[deployment status](../../docs/deployment-status.md) for commissioned profiles.
+Publishing a runtime image alone does not commission it.
 
 ### Native execution domains and review
 

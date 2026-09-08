@@ -1,7 +1,7 @@
 import type { Challenge } from "./types.ts";
 import { asList, asRecord, asText } from "./scientific.ts";
 
-export const CLI_SOURCE = "c8bbd347e29cd627a5e89cb40676a9a6dc2db4fa";
+export const CLI_SOURCE = "952a8185ca4093619681c45f809d2dd67e3de154";
 const quote = (value: string) => "'" + value.replace(/'/g, "'\\''") + "'";
 
 /** The native path belongs to a verified immutable source, not its display slug. */
