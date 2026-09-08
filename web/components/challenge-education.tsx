@@ -58,19 +58,22 @@ const editions: Record<
   },
 };
 
-export function ChallengeEducation({ challenge: c }: { challenge: Challenge }) {
+export function challengeEducation(c: Challenge) {
   const supplied = asRecord(c.education);
   const edition = editions[c.repository];
-  const context =
-    asText(supplied.frontier) && asText(supplied.significance)
-      ? {
-          frontier: asText(supplied.frontier).split(/\n\s*\n/),
-          significance: asText(supplied.significance).split(/\n\s*\n/),
-          sources: [] as [string, string][],
-        }
-      : edition?.source === c.sourceCommit
-        ? edition
-        : undefined;
+  return asText(supplied.frontier) && asText(supplied.significance)
+    ? {
+        frontier: asText(supplied.frontier).split(/\n\s*\n/),
+        significance: asText(supplied.significance).split(/\n\s*\n/),
+        sources: [] as [string, string][],
+      }
+    : edition?.source === c.sourceCommit
+      ? edition
+      : undefined;
+}
+
+export function ChallengeEducation({ challenge: c }: { challenge: Challenge }) {
+  const context = challengeEducation(c);
   if (!context) return null;
   return (
     <div>

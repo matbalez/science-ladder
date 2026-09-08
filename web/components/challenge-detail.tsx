@@ -42,7 +42,7 @@ import {
   Status,
 } from "./ui";
 import { SubmissionTable } from "./submission";
-import { ChallengeEducation } from "./challenge-education";
+import { ChallengeEducation, challengeEducation } from "./challenge-education";
 import { LoadPathsExplorer } from "./load-paths";
 import { MeasurementContract } from "./measurement-contract";
 import { Participate } from "./participate";
@@ -264,11 +264,9 @@ export function ChallengeDetail({ slug }: { slug: string }) {
               <section className="content-section">
                 <h2>{asText(science.question, c.summary)}</h2>
                 <ChallengeEducation challenge={c} />
-                {!c.education &&
-                  !["load-paths", "quiet-echoes-labs512"].includes(c.slug) &&
-                  asText(science.impactStatement) && (
-                    <p>{asText(science.impactStatement)}</p>
-                  )}
+                {!challengeEducation(c) && asText(science.impactStatement) && (
+                  <p>{asText(science.impactStatement)}</p>
+                )}
                 {explorerUrl && (
                   <p>
                     <Link
