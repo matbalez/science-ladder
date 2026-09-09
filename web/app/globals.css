@@ -3602,18 +3602,15 @@ small {
 .card-meta > .badge:last-child {
   margin-left: auto;
 }
-.local-setup > summary,
+.verification-record > summary,
 .account-settings > summary {
   cursor: pointer;
   font-size: 16px;
   font-weight: 500;
 }
-.local-setup[open] > summary,
+.verification-record[open] > summary,
 .account-settings[open] > summary {
   margin-bottom: 14px;
-}
-.local-setup > .code-block {
-  margin-top: 16px;
 }
 
 .account-settings > p {
@@ -3725,8 +3722,8 @@ small {
 .challenge-prose .text-list > h3 { margin: 36px 0 14px; }
 .challenge-prose .challenge-education > p { margin: 0 0 20px; line-height: 1.85; }
 .challenge-prose .text-list { margin-top: 36px; }
-.challenge-prose .local-setup[open] > summary { margin-bottom: 24px; }
-.challenge-prose .local-setup > p { margin-top: 20px; }
+.challenge-prose .verification-record[open] > summary { margin-bottom: 24px; }
+.challenge-prose .verification-record > p { margin-top: 20px; }
 @media (max-width: 700px) {
  .challenge-prose .challenge-education > h3,
  .challenge-prose .content-section > h3,

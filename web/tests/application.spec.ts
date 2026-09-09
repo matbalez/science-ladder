@@ -433,11 +433,16 @@ test("educational explorer link is secondary and bound to the exact registered s
     "href",
     "/showcase/quiet-echoes/index.html",
   );
-  await page.locator(".local-setup > summary").click();
-  const setup = page.locator(".local-setup .code-block");
-  await expect(setup).toContainText("python3 tools/reproduce.py --check");
-  await expect(setup).toContainText("python3 -m unittest discover -s tests -v");
-  await expect(setup).not.toContainText("sl challenge test");
+  await expect(page.getByText("Local setup", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Participate", exact: true }).click();
+  const instructions = page.getByLabel("Agent instructions", { exact: true });
+  await expect(instructions).toHaveValue(/sl clone/);
+  await expect(instructions).toHaveValue(/sl setup/);
+  await expect(instructions).toHaveValue(/sl run --baseline/);
+  await expect(instructions).toHaveValue(/sl submit/);
+  await page
+    .getByRole("button", { name: "Close participation instructions" })
+    .click();
   await expect(
     page.getByText("No verified submission has improved the reference yet.", {
       exact: true,

@@ -159,22 +159,6 @@ function hasNativeMultiplyChecker(c) {
     return (c.repository === "matbalez/science-ladder-one-less-multiply" &&
         c.sourceCommit === MULTIPLY_SOURCE);
 }
-const triangleSetup = "python3 tools/reproduce.py\npython3 -m unittest discover -s validator -v\npython3 local.py";
-const loadPathsSetup = "python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install -r requirements.txt\npython validator/test_science.py\npython local.py";
-function challengeSetupCommands(c) {
-    if (!/^[a-f0-9]{40}$/.test(c.sourceCommit) ||
-        !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(c.repository))
-        return "# Verify the exact repository and full source commit before cloning.";
-    const checkout = `git clone --no-checkout ${quote(`https://github.com/${c.repository}.git`)} challenge\ncd challenge\ngit checkout --detach ${quote(c.sourceCommit)}`;
-    return (checkout +
-        (hasNativeQuietEchoesChecker(c)
-            ? "\npython3 tools/reproduce.py --check\npython3 -m unittest discover -s tests -v"
-            : hasNativeTriangleChecker(c) || hasNativeMultiplyChecker(c)
-                ? "\n" + triangleSetup
-                : hasNativeLoadPathsChecker(c)
-                    ? "\n" + loadPathsSetup
-                    : "\n# Read README.md and the manifest.\n# Follow the documented native baseline and test commands, if provided."));
-}
 const CLI_VERSION = "0.3.0";
 /** Credential-free instructions; workspace commands resolve a frozen source, never a branch. */
 function solverInstructions(c) {

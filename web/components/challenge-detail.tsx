@@ -19,7 +19,6 @@ import { useSession } from "./shell";
 import { FrontierChart } from "./science-visuals";
 import {
   Badge,
-  CodeBlock,
   Empty,
   ErrorMessage,
   ExternalLink,
@@ -45,7 +44,6 @@ import { Participate } from "./participate";
 import { ResearcherSection } from "./researchers";
 import {
   hasNativeLoadPathsChecker,
-  challengeSetupCommands,
   solverInstructions,
 } from "@/lib/solver-prompt";
 export function ChallengeDetail({ slug }: { slug: string }) {
@@ -395,14 +393,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                       : undefined
                   }
                 />
-                <details className="content-section local-setup">
-                  <summary>Local setup</summary>
-                  <p>
-                    Clone this version and reproduce the baseline before
-                    changing the candidate.
-                  </p>
-                  <CodeBlock code={challengeSetupCommands(c)} />
-                </details>
               </div>
             </div>
           )}
@@ -481,7 +471,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                       : "This challenge requires confirmation on a different physical host group before a result can advance the frontier or claim a milestone."}{" "}
                     Scores are adjudicated in acceptance-receipt order.
                   </p>
-                  <details className="local-setup">
+                  <details className="verification-record">
                     <summary>Verification record</summary>
                     <p>
                       <ExternalLink
