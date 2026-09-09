@@ -122,7 +122,7 @@ func claimCommand(args []string) error {
 	if a != b {
 		return errors.New("local manifest differs from the published version; use the pinned challenge source")
 	}
-	_, before, e := protocol.CanonicalArtifact(*artifact, m.Submission)
+	_, before, e := localArtifact(*artifact, m.Submission)
 	if e != nil {
 		return e
 	}
@@ -137,7 +137,7 @@ func claimCommand(args []string) error {
 	if e = command.Run(); e != nil {
 		return fmt.Errorf("local checker failed: %w", e)
 	}
-	_, after, e := protocol.CanonicalArtifact(*artifact, m.Submission)
+	_, after, e := localArtifact(*artifact, m.Submission)
 	if e != nil {
 		return e
 	}

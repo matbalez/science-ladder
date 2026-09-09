@@ -100,7 +100,14 @@ func remoteCommand(args []string) error {
 		rest = rest[1:]
 	}
 	f := flag.NewFlagSet(command, flag.ContinueOnError)
-	api := f.String("api", os.Getenv("SL_API_URL"), "API origin")
+	defaultOrigin := os.Getenv("SL_API_URL")
+	if defaultOrigin == "" {
+		defaultOrigin = defaultAPI
+		if _, w, e := findWorkspace(); e == nil {
+			defaultOrigin = w.API
+		}
+	}
+	api := f.String("api", defaultOrigin, "API origin")
 	version := f.String("version", "", "challenge version ID")
 	repository := f.String("repository", "", "owner/repository")
 	commit := f.String("commit", "", "full GitHub commit SHA")
@@ -149,7 +156,7 @@ func remoteCommand(args []string) error {
 		if _, err = claim.Validate(m); err != nil {
 			return err
 		}
-		_, digest, err := protocol.CanonicalArtifact(*artifactPath, m.Submission)
+		_, digest, err := localArtifact(*artifactPath, m.Submission)
 		if err != nil {
 			return err
 		}

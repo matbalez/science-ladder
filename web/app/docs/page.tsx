@@ -57,10 +57,17 @@ export default function Page() {
             <details className="prompt-details">
               <summary>Install the CLI</summary>
               <p>
-                The CLI is used for submission and receipt verification. Install
-                it with a current Go toolchain.
+                Prebuilt binaries are available for macOS and Linux on ARM64 and
+                AMD64. No Go compiler is needed.
               </p>
-              <CodeBlock code="go install github.com/matbalez/science-ladder/cmd/sl@latest" />
+              <CodeBlock
+                code={
+                  'curl -fsSL https://scienceladder.org/install.sh -o /tmp/science-ladder-install.sh\n# Inspect the downloaded script, then:\nsh /tmp/science-ladder-install.sh\nexport PATH="$HOME/.local/bin:$PATH"'
+                }
+              />
+              <a href="/docs/cli">
+                CLI workflow and local recipe specification
+              </a>
             </details>
           </section>
           <section id="creator">

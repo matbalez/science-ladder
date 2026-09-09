@@ -98,8 +98,8 @@ test("anonymous pending challenge has complete accessible, copyable participatio
   const text = dialog.getByLabel(/agent instructions/i);
   const value = await text.inputValue();
   expect(value).toContain("test-version-123");
-  expect(value).toContain("git checkout --detach '" + "a".repeat(40) + "'");
-  expect(value).toContain("--artifact 'fixtures/reference-data'");
+  expect(value).toContain("Exact source commit: " + "a".repeat(40));
+  expect(value).toContain("sl run --baseline");
   expect(value).toContain("matrix.csv");
   expect(value).not.toContain("512 ASCII");
   expect(value).toContain("sl auth login");
@@ -148,22 +148,16 @@ test("standalone explorer keeps science central and puts tools below the visuali
   await opener.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
-  const value = await dialog
-    .getByLabel(/agent instructions/i)
-    .inputValue();
+  const value = await dialog.getByLabel(/agent instructions/i).inputValue();
   expect(value).toContain("56ddbf39-2b67-4172-9a9d-e3c78e44c7cf");
   expect(value).toContain("f42f527e97563b1c068a1835732c6da44f21223f");
-  expect(value).toContain("--artifact 'fixtures/baseline'");
+  expect(value).toContain("sl run --baseline");
   expect(value).toContain("exactly 512 ASCII");
   expect(value).toContain("Python 3.13 or newer on macOS or Linux");
-  expect(value).toContain(
-    "python3 checker.py --submission ../candidate-artifact",
-  );
-  expect(value.indexOf("go install")).toBeGreaterThan(
-    value.indexOf("Before final submission, repeat the full native checks"),
-  );
+  expect(value).toContain("SL_VERSION=0.3.0");
+  expect(value).not.toContain("go install");
   expect(value).not.toContain("Docker running for local checks");
-  expect(value).toContain("--license 'CC-BY-4.0'");
+  expect(value).toContain("Required artifact license: CC-BY-4.0");
   await dialog
     .getByRole("button", { name: "Copy instructions for my agent" })
     .click();

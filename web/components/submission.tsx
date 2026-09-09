@@ -18,9 +18,17 @@ import { Badge, Empty, ErrorMessage, JsonViewer, Loading, Status } from "./ui";
 export function SubmissionTable({
   submissions,
   quantum,
+  direction,
+  leaderId,
+  leaderLabel = "Leader",
+  compact = false,
 }: {
   submissions: Submission[];
   quantum?: string;
+  direction?: "maximize" | "minimize";
+  leaderId?: string;
+  leaderLabel?: string;
+  compact?: boolean;
 }) {
   if (!submissions.length)
     return (
@@ -38,9 +46,9 @@ export function SubmissionTable({
             <th>Submission</th>
             <th>Attribution</th>
             <th>{quantum ? "Score" : "Score units"}</th>
-            <th>Processing</th>
+            {!compact && <th>Processing</th>}
             <th>Validation</th>
-            <th>Publication</th>
+            {!compact && <th>Publication</th>}
             <th>Submitted</th>
             <th>
               <span className="sr-only">Details</span>
@@ -49,15 +57,40 @@ export function SubmissionTable({
         </thead>
         <tbody>
           {[...submissions]
-            .sort((a, b) => b.sequence - a.sequence)
+            .sort((a, b) => {
+              if (!direction) return b.sequence - a.sequence;
+              const valid = (s: Submission) =>
+                s.outcome === "valid" &&
+                ["platform_verified", "independently_replicated"].includes(
+                  s.verificationStatus || "",
+                ) &&
+                /^-?\d+$/.test(s.scoreTicks || "");
+              if (valid(a) !== valid(b)) return valid(a) ? -1 : 1;
+              if (valid(a) && valid(b)) {
+                const aa = BigInt(a.scoreTicks!),
+                  bb = BigInt(b.scoreTicks!);
+                if (aa !== bb)
+                  return (
+                    (aa < bb ? -1 : 1) * (direction === "maximize" ? -1 : 1)
+                  );
+                return a.sequence - b.sequence;
+              }
+              return b.sequence - a.sequence;
+            })
             .map((s) => (
-              <tr key={s.id}>
+              <tr
+                key={s.id}
+                className={s.id === leaderId ? "leader-row" : undefined}
+              >
                 <td>
                   <Link
                     className="receipt-number"
                     href={`/submissions/${s.id}`}
                   >
                     #{String(s.sequence).padStart(3, "0")}
+                    {s.id === leaderId && (
+                      <Badge tone="lime">{leaderLabel}</Badge>
+                    )}
                   </Link>
                 </td>
                 <td>
@@ -74,9 +107,11 @@ export function SubmissionTable({
                 <td className="mono">
                   {formatTicks(s.scoreTicks, quantum || "1")}
                 </td>
-                <td>
-                  <Status value={s.status} />
-                </td>
+                {!compact && (
+                  <td>
+                    <Status value={s.status} />
+                  </td>
+                )}
                 <td>
                   <Status value={s.outcome || "pending"} />
                   {s.verificationStatus && (
@@ -87,12 +122,18 @@ export function SubmissionTable({
                     </small>
                   )}
                 </td>
-                <td>
-                  <span className="inline-meta">
-                    {s.public ? <Globe size={13} /> : <LockKeyhole size={13} />}{" "}
-                    {s.public ? "Public" : "Private"}
-                  </span>
-                </td>
+                {!compact && (
+                  <td>
+                    <span className="inline-meta">
+                      {s.public ? (
+                        <Globe size={13} />
+                      ) : (
+                        <LockKeyhole size={13} />
+                      )}{" "}
+                      {s.public ? "Public" : "Private"}
+                    </span>
+                  </td>
+                )}
                 <td className="subtle">{dateLabel(s.createdAt)}</td>
                 <td>
                   <Link

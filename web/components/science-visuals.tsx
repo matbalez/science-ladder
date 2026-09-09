@@ -13,7 +13,10 @@ function chartData(challenge: Challenge) {
       (s) =>
         s.scoreTicks !== undefined &&
         /^-?\d+$/.test(s.scoreTicks) &&
-        s.outcome === "valid",
+        s.outcome === "valid" &&
+        ["platform_verified", "independently_replicated"].includes(
+          s.verificationStatus || "",
+        ),
     )
     .sort((a, b) => a.sequence - b.sequence);
   const scores = [
@@ -122,7 +125,7 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
   const [selected, setSelected] = useState<number>();
   useLearningView("frontier chart", {
     description:
-      "Score history ordered by acceptance receipt, with a step line for improvements over the reference. A flat baseline means no advance. Dots are valid submitted results; horizontal lines are milestone targets.",
+      "Score history ordered by acceptance receipt, with a step line for improvements over the reference. A flat baseline means no advance. Dots are verified submitted results; horizontal lines are milestone targets.",
     selectedSequence: selected,
     advances: events
       .map((e) => ({ sequence: e.sequence, scoreTicks: e.scoreTicks }))
@@ -135,6 +138,19 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
       }))
       .slice(-30),
   });
+  const baseline = BigInt(challenge.metric.baselineTicks);
+  const magnitude = baseline < 0n ? -baseline : baseline;
+  const offsetAxis = max > min && (max - min) * 10000n < magnitude;
+  const axisLabel = (ticks: string) => {
+    const display = formatTicks(
+      offsetAxis ? (BigInt(ticks) - baseline).toString() : ticks,
+      challenge.metric.quantum,
+    );
+    const number = Number(display.replaceAll(",", ""));
+    return Number.isFinite(number)
+      ? Number(number.toPrecision(6)).toString()
+      : display;
+  };
   const maxSequence = Math.max(...items.map((s) => s.sequence), 1);
   const x = (seq: number) => 90 + (seq / maxSequence) * 760;
   const y = (score: string) => 248 - plotRatio(score, min, max) * 200;
@@ -154,10 +170,20 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
         </span>
         <span>
           <i className="muted-dot" />
-          Valid result
+          Verified result
         </span>
         <span>Receipt order →</span>
       </div>
+      {offsetAxis && (
+        <p className="chart-axis-note">
+          Axis shows change from reference{" "}
+          {formatTicks(
+            challenge.metric.baselineTicks,
+            challenge.metric.quantum,
+          )}
+          .
+        </p>
+      )}
       <svg
         viewBox="0 0 930 310"
         role="img"
@@ -174,10 +200,13 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
               fontSize="10"
               fontFamily="monospace"
             >
-              {formatTicks(
-                (max - ((max - min) * BigInt(i)) / 4n).toString(),
-                challenge.metric.quantum,
-              )}
+              <title>
+                {formatTicks(
+                  (max - ((max - min) * BigInt(i)) / 4n).toString(),
+                  challenge.metric.quantum,
+                )}
+              </title>
+              {axisLabel((max - ((max - min) * BigInt(i)) / 4n).toString())}
             </text>
           </g>
         ))}
@@ -189,15 +218,10 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
               strokeDasharray="4 6"
               opacity=".65"
             />
-            <text
-              x="868"
-              y={y(m.thresholdTicks) - 7}
-              textAnchor="end"
-              fill="#9ead8c"
-              fontSize="10"
-            >
-              {m.label}
-            </text>
+            <title>
+              {m.label}:{" "}
+              {formatTicks(m.thresholdTicks, challenge.metric.quantum)}
+            </title>
           </g>
         ))}
         <path d={path} stroke="#cdf992" strokeWidth="2.5" fill="none" />
@@ -238,6 +262,19 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
             : "Awaiting the first verified result"}
         </text>
       </svg>
+      <details className="chart-targets">
+        <summary>Milestone targets ({challenge.milestones.length})</summary>
+        <ul>
+          {challenge.milestones.map((m) => (
+            <li key={m.id}>
+              <span>{m.label}</span>
+              <strong>
+                {formatTicks(m.thresholdTicks, challenge.metric.quantum)}
+              </strong>
+            </li>
+          ))}
+        </ul>
+      </details>
       {selected !== undefined && (
         <div className="chart-inspection">
           Receipt #{selected}{" "}

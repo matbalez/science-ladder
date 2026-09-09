@@ -137,20 +137,28 @@ export function ChallengeDetail({ slug }: { slug: string }) {
   const frontierSubmission = c.submissions?.find(
     (s) => s.id === c.publicFrontier?.submissionId,
   );
+  const bestSubmission = (c.submissions || [])
+    .filter(
+      (s) =>
+        s.outcome === "valid" &&
+        ["platform_verified", "independently_replicated"].includes(
+          s.verificationStatus || "",
+        ) &&
+        /^-?\d+$/.test(s.scoreTicks || ""),
+    )
+    .sort((a, b) => {
+      const aa = BigInt(a.scoreTicks!),
+        bb = BigInt(b.scoreTicks!);
+      return aa === bb
+        ? a.sequence - b.sequence
+        : (aa < bb ? -1 : 1) * (c.metric.direction === "maximize" ? -1 : 1);
+    })[0];
   // This explorer explains one immutable scientific source, not arbitrary later versions.
   const explorerUrl =
     c.repository === "matbalez/science-ladder-quiet-echoes" &&
     c.sourceCommit === "f42f527e97563b1c068a1835732c6da44f21223f"
       ? "/showcase/quiet-echoes/index.html"
       : undefined;
-  const hasVerifiedAttempt = c.submissions?.some(
-    (submission) =>
-      submission.outcome === "valid" &&
-      /^-?\d+$/.test(submission.scoreTicks || "") &&
-      ["platform_verified", "independently_replicated"].includes(
-        submission.verificationStatus || "",
-      ),
-  );
   const solverPrompt = solverInstructions(c);
   return (
     <ChallengeLearningProvider key={c.versionId}>
@@ -200,73 +208,62 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             />
           </div>
         </header>
+        <section
+          className="challenge-results"
+          aria-labelledby="results-heading"
+        >
+          <div className="results-heading">
+            <div>
+              <h2 id="results-heading">
+                {c.publicFrontier ? "Current leader" : "Reference to beat"}
+              </h2>
+              {c.publicFrontier ? (
+                <Link href={`/submissions/${c.publicFrontier.submissionId}`}>
+                  {frontierSubmission
+                    ? `Submission #${frontierSubmission.sequence} · ${frontierSubmission.attribution?.model || "Model not supplied"}`
+                    : "View leading submission"}
+                </Link>
+              ) : (
+                <p>No verified submission has improved the reference yet.</p>
+              )}
+            </div>
+            <div className="leader-score">
+              <strong>
+                {formatTicks(
+                  c.publicFrontier?.scoreTicks || c.metric.baselineTicks,
+                  c.metric.quantum,
+                )}
+              </strong>
+              <span>
+                {c.metric.units} ·{" "}
+                {c.metric.direction === "maximize" ? "Higher" : "Lower"} is
+                better
+              </span>
+            </div>
+          </div>
+          <h3>
+            Submissions{" "}
+            <span className="subtle">({c.submissions?.length || 0})</span>
+          </h3>
+          <SubmissionTable
+            submissions={c.submissions || []}
+            quantum={c.metric.quantum}
+            direction={c.metric.direction}
+            leaderId={c.publicFrontier?.submissionId || bestSubmission?.id}
+            leaderLabel={c.publicFrontier ? "Leader" : "Best submission"}
+            compact
+          />
+          <details className="progress-details">
+            <summary>Verified progress</summary>
+            <FrontierChart challenge={c} />
+          </details>
+        </section>
         {hasNativeLoadPathsChecker(c) && <LoadPathsExplorer />}
         {c.repository === "matbalez/science-ladder-one-less-multiply" &&
           c.sourceCommit === MULTIPLY_SOURCE && <MultiplyExplorer />}
         {c.repository === "matbalez/science-ladder-smallest-triangle" &&
           c.sourceCommit === TRIANGLE_SOURCE && <SmallestTriangleExplorer />}
         <ChallengeLearning key={c.versionId} challenge={c} section={tab} />
-        <div className="detail-stat-row">
-          <div>
-            <span className="tiny-label">
-              {c.publicFrontier ? "PUBLIC FRONTIER" : "BASELINE"}
-            </span>
-            <strong>
-              <span
-                className="score-number"
-                title={formatTicks(
-                  c.publicFrontier?.scoreTicks || c.metric.baselineTicks,
-                  c.metric.quantum,
-                )}
-              >
-                {formatTicks(
-                  c.publicFrontier?.scoreTicks || c.metric.baselineTicks,
-                  c.metric.quantum,
-                )}
-              </span>
-              <small>{c.metric.units}</small>
-            </strong>
-            <span>
-              {c.metric.direction === "maximize" ? "↑ Higher" : "↓ Lower"} is
-              better
-            </span>
-          </div>
-          <div>
-            <span className="tiny-label">VERIFIED BEST</span>
-            <strong>
-              <span
-                className="score-number"
-                title={formatTicks(
-                  c.verifiedBest?.scoreTicks,
-                  c.metric.quantum,
-                )}
-              >
-                {formatTicks(c.verifiedBest?.scoreTicks, c.metric.quantum)}
-              </span>
-            </strong>
-            <span>
-              {c.verifiedBest
-                ? "Validation complete"
-                : hasVerifiedAttempt
-                  ? "No verified improvement yet"
-                  : "Awaiting validation"}
-            </span>
-          </div>
-          <div>
-            <span className="tiny-label">MILESTONES</span>
-            <strong>
-              {c.milestones.filter((m) => m.claimedBy).length}
-              <small>/ {c.milestones.length} claimed</small>
-            </strong>
-            <span>First verified submission to each threshold</span>
-          </div>
-          <div>
-            <span className="tiny-label">REVIEW</span>
-            <strong className="stat-word">
-              {humanize(c.reviewStatus || "Pending review")}
-            </strong>
-          </div>
-        </div>
         <div
           className="detail-tabs"
           role="tablist"
@@ -274,9 +271,8 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         >
           {[
             ["overview", "The question"],
-            ["frontier", "Frontier & artifacts"],
+            ["frontier", "Artifacts"],
             ["evaluation", "Evaluation"],
-            ["history", "Submissions"],
           ].map(([id, label]) => (
             <button
               key={id}
@@ -428,15 +424,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           )}
           {tab === "frontier" && (
             <div className="content-section">
-              <div className="section-title">
-                <div>
-                  <h2>Verified progress</h2>
-                </div>
-                <span className="tiny-label">
-                  {c.metric.name} / {c.metric.units}
-                </span>
-              </div>
-              <FrontierChart challenge={c} />
               <div className="two-column">
                 <ArtifactViewer digest={frontierSubmission?.artifactDigest} />
                 <MilestoneLadder challenge={c} />
@@ -595,24 +582,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                 </div>
               </aside>
             </div>
-          )}
-          {tab === "history" && (
-            <section className="content-section">
-              <div className="section-title">
-                <div>
-                  <h2>Submissions</h2>
-                </div>
-              </div>
-              <p>
-                Public results are shown below. Unpublished candidate artifacts
-                remain private to their submitter. Model and harness attribution
-                is self-attested.
-              </p>
-              <SubmissionTable
-                submissions={c.submissions || []}
-                quantum={c.metric.quantum}
-              />
-            </section>
           )}
         </div>
       </div>

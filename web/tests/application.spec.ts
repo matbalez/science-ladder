@@ -128,7 +128,7 @@ test("flat canonical manifest renders real evidence, gates, and exact score deci
     page.getByText("Every coordinate must be finite.", { exact: true }),
   ).toBeVisible();
   await expect(page.getByText("0.00001", { exact: true })).toBeVisible();
-  await page.getByRole("tab", { name: "Frontier & artifacts" }).click();
+  await page.locator(".progress-details > summary").click();
   await expect(
     page.getByText(
       "Verified submissions will trace the actual frontier here.",
@@ -347,7 +347,7 @@ test("canonical artifact bundle previews real coordinate data without executing 
     }),
   );
   await page.goto("/challenges/test-only");
-  await page.getByRole("tab", { name: "Frontier & artifacts" }).click();
+  await page.getByRole("tab", { name: "Artifacts" }).click();
   await expect(
     page.getByRole("img", {
       name: "submission/points.json: 3 artifact coordinates",
@@ -434,7 +434,9 @@ test("educational explorer link is secondary and bound to the exact registered s
   await expect(setup).toContainText("python3 -m unittest discover -s tests -v");
   await expect(setup).not.toContainText("sl challenge test");
   await expect(
-    page.getByText("No verified improvement yet", { exact: true }),
+    page.getByText("No verified submission has improved the reference yet.", {
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.locator(".challenge-header-actions .primary:visible"),
@@ -451,7 +453,7 @@ test("educational explorer link is secondary and bound to the exact registered s
   ).toBeVisible();
   await expect(link).toHaveCount(0);
   await expect(
-    page.getByText("Awaiting validation", { exact: true }),
+    page.getByRole("heading", { name: "Reference to beat", exact: true }),
   ).toBeVisible();
 });
 

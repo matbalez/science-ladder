@@ -15,6 +15,9 @@ import (
 	"github.com/matbalez/science-ladder/prompts"
 )
 
+var cliVersion = "0.3.0-dev"
+var cliCommit = "development"
+
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, "sl:", err)
@@ -28,8 +31,10 @@ func run(args []string) error {
 		return nil
 	}
 	switch args[0] {
+	case "clone", "setup", "run", "doctor":
+		return workspaceCommand(args[0], args[1:])
 	case "version":
-		fmt.Println("Science Ladder protocol v1 · CLI 0.2.0 · MIT")
+		fmt.Printf("Science Ladder CLI %s (%s) · MIT\n", cliVersion, cliCommit)
 		return nil
 	case "scout-prompt":
 		f := flag.NewFlagSet("scout-prompt", flag.ContinueOnError)
@@ -110,7 +115,7 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
-		tree, digest, err := protocol.CanonicalArtifact(*artifactPath, m.Submission)
+		tree, digest, err := localArtifact(*artifactPath, m.Submission)
 		if err != nil {
 			return err
 		}
@@ -171,6 +176,9 @@ func run(args []string) error {
 	case "suite":
 		return suiteCommand(args[1:])
 	case "auth", "submit", "resume", "status", "export":
+		if args[0] == "submit" && !hasFlag(args[1:], "version") {
+			return workspaceCommand("submit", args[1:])
+		}
 		return remoteCommand(args)
 	}
 	return fmt.Errorf("unknown command %q; run sl --help", args[0])
@@ -235,6 +243,12 @@ func conformance(args []string) error {
 
 const help = `Science Ladder · payment-free scientific challenge protocol
 
+  sl clone CHALLENGE [--version ID] [--out DIRECTORY]
+  sl doctor
+  sl setup
+  sl run [--baseline]
+  sl submit [--model MODEL] [--harness HARNESS]
+
   sl scout-prompt --topic "scientific field"
   sl candidate lint science-ladder-candidate.yaml
   sl challenge init --candidate science-ladder-candidate.yaml --out challenge
@@ -255,3 +269,12 @@ const help = `Science Ladder · payment-free scientific challenge protocol
 Local container runs require Docker and are always nonofficial.
 SL_API_TOKEN provides a scoped API token without placing it in command history.
 `
+
+func hasFlag(args []string, name string) bool {
+	for _, a := range args {
+		if a == "--"+name || a == "-"+name || strings.HasPrefix(a, "--"+name+"=") || strings.HasPrefix(a, "-"+name+"=") {
+			return true
+		}
+	}
+	return false
+}

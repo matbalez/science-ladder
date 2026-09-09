@@ -3690,3 +3690,30 @@ small {
 .learning-note { font-size: 11px; line-height: 1.6; color: #919d83; margin: 12px 0 0; }
 .learning-error { color: #f4bb97; font-size: 13px; margin: 12px 0; }
 @media (max-width: 620px) { .learning-heading { align-items: flex-start; flex-wrap: wrap; } .learning-heading h2 { font-size: 17px; } .learning-suggestions { flex-direction: column; } .learning-reply { padding: 0 3px; } .learning-log { max-height: 380px; padding-right: 5px; } }
+
+.challenge-results { margin: 0 0 36px; padding: 26px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.results-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:28px; }
+.results-heading h2 { margin:0 0 8px; }
+.results-heading p { margin:0; color:var(--muted); }
+.results-heading a { color:var(--lime); }
+.leader-score { min-width:0; text-align:right; }
+.leader-score strong { display:block; font-size:clamp(20px,2.7vw,38px); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.leader-score span { display:block; color:var(--muted); font-size:12px; margin-top:5px; }
+.leader-row { background: #cdf9920b; }
+.leader-row .receipt-number { display:flex; gap:8px; align-items:center; }
+.progress-details { margin-top:20px; }
+.progress-details > summary, .chart-targets > summary { cursor:pointer; color:var(--muted); }
+.frontier-chart svg { overflow:hidden; }
+.chart-targets { font-size:12px; margin: 0 10px 14px; }
+.chart-targets ul { padding:0; list-style:none; }
+.chart-targets li { display:flex; justify-content:space-between; gap:16px; padding:6px 0; flex-wrap:wrap; }
+.chart-targets strong { font-family:var(--mono); overflow-wrap:anywhere; }
+.chart-axis-note { font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+@media(max-width:700px) {
+ .challenge-results { padding:18px 12px; }
+ .results-heading { align-items:flex-start; flex-direction:column; gap:16px; }
+ .leader-score { text-align:left; max-width:100%; }
+ .chart-key { flex-wrap:wrap; }
+}
+/* Contain visually hidden table headings within the horizontal scroller. */
+.table-scroll { position:relative; }

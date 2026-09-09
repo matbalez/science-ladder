@@ -160,7 +160,7 @@ export default function Page() {
                   <code>promptVersion</code>
                 </td>
                 <td>
-                  <code>"1.8.0"</code> for the current Scout prompt;{" "}
+                  <code>"1.9.0"</code> for the current Scout prompt;{" "}
                   <code>"1.7.0"</code>, <code>"1.6.0"</code>,{" "}
                   <code>"1.5.0"</code>, <code>"1.4.0"</code>,{" "}
                   <code>"1.3.0"</code>, <code>"1.2.0"</code>,{" "}

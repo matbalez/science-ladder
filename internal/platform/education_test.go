@@ -19,7 +19,7 @@ func TestScientificReviewRequiresBothEducationalSections(t *testing.T) {
 }
 
 func TestScoutCurrentAndArchivedPromptVersions(t *testing.T) {
-	for _, tc := range []struct{ request, version, prompt string }{{"v1", "1.8.0", prompts.Scout}, {"1.8.0", "1.8.0", prompts.Scout}, {"1.7.0", "1.7.0", prompts.ScoutV17}, {"1.6.0", "1.6.0", prompts.ScoutV16}, {"1.5.0", "1.5.0", prompts.ScoutV15}} {
+	for _, tc := range []struct{ request, version, prompt string }{{"v1", "1.9.0", prompts.Scout}, {"1.9.0", "1.9.0", prompts.Scout}, {"1.8.0", "1.8.0", prompts.ScoutV18}, {"1.7.0", "1.7.0", prompts.ScoutV17}, {"1.6.0", "1.6.0", prompts.ScoutV16}, {"1.5.0", "1.5.0", prompts.ScoutV15}} {
 		r := httptest.NewRequest("GET", "/v1/prompts/challenge-scout/"+tc.request, nil)
 		r.SetPathValue("version", tc.request)
 		w := httptest.NewRecorder()

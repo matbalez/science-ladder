@@ -64,88 +64,66 @@ test("date-only citations keep their day west and east of UTC", () => {
   }
 });
 
-test("solver bootstrap binds exact metadata and preserves generic artifact paths", async () => {
-  const { solverInstructions, CLI_SOURCE } = await import("./solver-prompt.ts");
-  const challenge = {
+test("prebuilt workspace instructions retain the frozen identity and scientific constraints", async () => {
+  const { solverInstructions, CLI_VERSION } =
+    await import("./solver-prompt.ts");
+  const c = {
     slug: "test-only",
-    title: "Test-only construction",
+    title: "Test",
     versionId: "test-version",
-    repository: "test-owner/test-repo",
+    repository: "test/repo",
     sourceCommit: "a".repeat(40),
     status: "draft",
-    reviewStatus: "pending",
     intakeStatus: "closed",
-    summary: "Synthetic test fixture",
+    summary: "Test question",
     metric: {
-      name: "Test energy",
-      direction: "minimize",
-      quantum: "1",
+      name: "area",
+      direction: "maximize",
+      quantum: "0.01",
       baselineTicks: "9",
     },
-    milestones: [{ label: "Test tier", thresholdTicks: "8" }],
-    manifest: {
-      fixtures: [{ name: "baseline", path: "fixtures/seed's data" }],
-      submission: { allowedPaths: ["matrix.csv"], license: "MIT" },
-    },
+    milestones: [{ label: "Target", thresholdTicks: "10" }],
+    manifest: { submission: { allowedPaths: ["matrix.csv"], license: "MIT" } },
   } as unknown as import("./types.ts").Challenge;
-  const prompt = solverInstructions(challenge);
-  assert.ok(prompt.includes(`cmd/sl@${CLI_SOURCE}`));
-  assert.ok(prompt.includes("sl claim --api"));
-  assert.ok(prompt.includes('--claim "$SL_FINAL_RUN/claim.json"'));
+  const p = solverInstructions(c);
+  for (const expected of [
+    "SL_VERSION=" + CLI_VERSION,
+    "install.sh",
+    "sl clone 'test-only' --version 'test-version'",
+    c.sourceCommit,
+    "sl setup",
+    "sl run --baseline",
+    "sl submit",
+    "sl auth login",
+    "matrix.csv",
+    "Target: 10",
+    "404 before publication",
+    "intake: closed",
+    "Do not upload baseline or non-improving attempts",
+  ])
+    assert.ok(p.includes(expected), expected);
+  assert.ok(!p.includes("go install"));
+  assert.ok(p.indexOf("sl run --baseline") < p.indexOf("sl submit"));
   assert.ok(
-    prompt.indexOf("FINAL LOCAL CHECK AND FRONTIER CLAIM") <
-      prompt.indexOf("Create a dedicated artifact-only GitHub repository"),
-  );
-  assert.ok(prompt.includes("-- sl validate --local"));
-  assert.ok(prompt.includes("git checkout --detach '" + "a".repeat(40) + "'"));
-  assert.ok(prompt.includes("--version 'test-version'"));
-  assert.ok(prompt.includes("Test tier: 8"));
-  assert.ok(prompt.includes("matrix.csv"));
-  assert.ok(prompt.includes("404 before publication"));
-  const published = solverInstructions({
-    ...challenge,
-    status: "published",
-    reviewStatus: "human_approved",
-    intakeStatus: "open",
-  });
-  assert.ok(!published.includes("404 before publication"));
-  assert.ok(!published.includes("awaiting review or publication"));
-  assert.ok(
-    published.includes("Inspect the frozen version and current intake"),
-  );
-
-  assert.ok(!prompt.includes("512 ASCII"));
-  assert.ok(prompt.includes("'fixtures/seed'\\''s data'"));
-  assert.ok(
-    prompt.includes(
-      "Use the native setup, baseline and public-test commands documented by this exact challenge",
+    !solverInstructions({ ...c, sourceCommit: "invalid" }).includes(
+      "sl clone 'test-only'",
     ),
   );
   assert.ok(
-    prompt.indexOf("sl challenge test") >
-      prompt.indexOf("OPTIONAL EXACT-RUNTIME CONTAINER CHECK"),
+    !solverInstructions({ ...c, status: "published" }).includes(
+      "404 before publication",
+    ),
   );
-  assert.ok(prompt.includes("sl auth login --api 'https://scienceladder.org'"));
-  const untrusted = solverInstructions({
-    ...challenge,
-    sourceCommit: "$(touch /tmp/no)",
-    manifest: { fixtures: [{ name: "baseline", path: "../escape" }] },
-  });
-  assert.ok(!untrusted.includes("git checkout"));
-  assert.ok(!untrusted.includes("--artifact '../escape'"));
 });
-
-test("native Quiet Echoes setup is exact-source scoped and defers CLI/container setup", async () => {
-  const { solverInstructions, challengeSetupCommands } =
-    await import("./solver-prompt.ts");
+test("legacy scientific guidance is bound to the exact immutable source", async () => {
+  const { solverInstructions } = await import("./solver-prompt.ts");
   const c = {
     slug: "quiet-echoes-labs512",
-    title: "Test-only metadata",
-    versionId: "test-version",
+    title: "Test",
+    versionId: "test",
     repository: "matbalez/science-ladder-quiet-echoes",
     sourceCommit: "f42f527e97563b1c068a1835732c6da44f21223f",
     status: "published",
-    summary: "Test",
     metric: {
       name: "Energy",
       direction: "minimize",
@@ -153,58 +131,12 @@ test("native Quiet Echoes setup is exact-source scoped and defers CLI/container 
       baselineTicks: "17996",
     },
     milestones: [],
-    manifest: {
-      fixtures: [{ name: "baseline", path: "fixtures/baseline" }],
-      submission: { allowedPaths: ["sequence.txt"], license: "CC-BY-4.0" },
-    },
+    manifest: {},
   } as unknown as import("./types.ts").Challenge;
-  const prompt = solverInstructions(c);
-  assert.ok(prompt.includes("Python 3.13 or newer on macOS or Linux"));
-  assert.equal(
-    (prompt.match(/python3 tools\/reproduce.py --check/g) || []).length,
-    2,
-  );
-  assert.equal(
-    (prompt.match(/python3 -m unittest discover -s tests -v/g) || []).length,
-    2,
-  );
+  assert.ok(solverInstructions(c).includes("exactly 512 ASCII"));
   assert.ok(
-    prompt.includes(
-      'SL_BASELINE_RUN="$(mktemp -d "$PWD/.local/baseline.XXXXXX")"',
+    !solverInstructions({ ...c, sourceCommit: "b".repeat(40) }).includes(
+      "exactly 512 ASCII",
     ),
   );
-  assert.ok(
-    prompt.includes(
-      'SL_CANDIDATE_RUN="$(mktemp -d "$PWD/.local/candidate.XXXXXX")"',
-    ),
-  );
-  assert.ok(
-    prompt.includes(
-      'python3 checker.py --submission ../candidate-artifact --suite suite --output "$SL_CANDIDATE_RUN/result.json"',
-    ),
-  );
-  assert.ok(
-    prompt.indexOf("go install") >
-      prompt.indexOf("Before final submission, repeat the full native checks"),
-  );
-  assert.ok(
-    prompt.indexOf("sl challenge test") >
-      prompt.indexOf("OPTIONAL EXACT-RUNTIME CONTAINER CHECK"),
-  );
-  assert.ok(!prompt.includes("Docker running for local checks"));
-  const snippet = challengeSetupCommands(c);
-  assert.ok(snippet.includes("python3 tools/reproduce.py --check"));
-  assert.ok(snippet.includes("python3 -m unittest discover -s tests -v"));
-  assert.ok(!snippet.includes("sl challenge test"));
-  for (const other of [
-    { ...c, repository: "other/repo" },
-    { ...c, sourceCommit: "b".repeat(40) },
-  ]) {
-    assert.ok(
-      !solverInstructions(other).includes("python3 checker.py --submission"),
-    );
-    assert.ok(
-      !challengeSetupCommands(other).includes("python3 tools/reproduce.py"),
-    );
-  }
 });
