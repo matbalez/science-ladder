@@ -3847,3 +3847,19 @@ small {
     margin-top: 0.5rem;
   }
 }
+
+.create-challenge-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 4rem;
+  padding: 3rem 0 1rem;
+  border-top: 1px solid var(--border);
+}
+.create-challenge-section h2 { margin: 0 0 1rem; }
+.create-challenge-section p { max-width: 44rem; line-height: 1.7; }
+.create-challenge-section .button { flex-shrink: 0; }
+@media (max-width: 720px) {
+  .create-challenge-section { align-items: flex-start; flex-direction: column; margin-top: 3rem; padding-top: 2rem; gap: 1.5rem; }
+}

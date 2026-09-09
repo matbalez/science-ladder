@@ -89,7 +89,7 @@ test("public empty state has no invented challenges and mobile has no horizontal
   await page.goto("/");
   await expect(page.getByText("No challenges published yet.")).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Create the first challenge" }),
+    page.getByRole("link", { name: "Create challenge", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(

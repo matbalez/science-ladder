@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, BookOpen, Github, Plus, Telescope } from "lucide-react";
+import { ArrowUpRight, BookOpen, Github, Telescope } from "lucide-react";
 import { createContext, useContext } from "react";
 import { useResource } from "@/lib/api";
 import type { Session } from "@/lib/types";
@@ -65,10 +65,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
             )}
           </nav>
           <div className="header-actions">
-            <Link href="/create" className="button small ghost">
-              <Plus size={15} />
-              <span>Create challenge</span>
-            </Link>
             <Link
               href="/account"
               className="account-link"
