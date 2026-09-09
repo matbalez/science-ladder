@@ -1,0 +1,13 @@
+{
+  "version": "science-ladder/science-visual/v1",
+  "kind": "static",
+  "asset": "visualization/science.svg",
+  "caption": "The 55-addition reference shares intermediate sums across 23 products. Saving an addition requires a correct circuit with less total linear work.",
+  "alt": "Reference operation diagram: 13 additions on A plus 14 on B plus 28 on the output. A branch shows u5 reused by u6 and u7.",
+  "description": "The schematic separates left and right linear preprocessing, 23 ordered products and output reconstruction. The reference costs 13+14+28=55 additions/subtractions. In the displayed branch, u5=u4−A8 is computed once; u6=u5−A1 and u7=u5+A7 reuse it. Each equation costs one binary operation. These are actual reference steps, with zero-based row-major A entries. The diagram omits the other gates and is not a full multiplication algorithm. Solvers can replace the entire decomposition; simply rescheduling the fixed oriented reference tensor cannot beat its proved 55-addition optimum.",
+  "sources": [
+    "https://arxiv.org/abs/2607.28676",
+    "https://github.com/trylogical/cn122_add55"
+  ],
+  "credit": "Original schematic by Science Ladder, MIT; circuit data from Karunaratne and Idamekorala, with Perminov’s tensor."
+}

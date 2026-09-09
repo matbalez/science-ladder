@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 550" role="img" aria-labelledby="title desc">
+<title id="title">Where the 55 additions go</title>
+<desc id="desc">The reference uses 13 additions on A, 14 on B and 28 after 23 ordered products. A shared intermediate u5 feeds u6 and u7 instead of being recomputed.</desc>
+<rect width="900" height="550" rx="18" fill="#f3f0e8"/>
+<g font-family="Arial, sans-serif" fill="#24251f">
+<text x="44" y="57" font-size="27">Where the additions go</text>
+<text x="44" y="87" font-size="17">Reference: 55 additions/subtractions + 23 products</text>
+<g fill="none" stroke="#7b826e" stroke-width="2"><path d="M255 162H330V216H405M255 267H330V216M555 216H620"/></g>
+<g fill="#e2e6d3" stroke="#a6ae95"><rect x="44" y="124" width="211" height="77" rx="8"/><rect x="44" y="229" width="211" height="77" rx="8"/><rect x="405" y="176" width="150" height="80" rx="8"/><rect x="620" y="176" width="232" height="80" rx="8"/></g>
+<g font-size="20"><text x="62" y="155">Prepare A: 13</text><text x="62" y="260">Prepare B: 14</text><text x="423" y="207">23 products</text><text x="638" y="207">Assemble C: 28</text></g>
+<g font-size="15" fill="#59614d"><text x="62" y="182">9 entries → 23 factors</text><text x="62" y="287">9 entries → 23 factors</text><text x="423" y="234">A factor × B factor</text><text x="638" y="234">23 products → 9 entries</text></g>
+<path d="M44 334H852" stroke="#c1c5b6"/>
+<text x="44" y="375" font-size="23">Compute a sum once. Reuse it.</text>
+<text x="44" y="408" font-size="16">An actual branch of the reference's left-input circuit:</text>
+<g font-size="20"><text x="70" y="464">u₅ = u₄ − A₈</text><text x="540" y="450">u₆ = u₅ − A₁</text><text x="540" y="491">u₇ = u₅ + A₇</text></g>
+<path d="M230 460H435V444H510M435 460V486H510" fill="none" stroke="#7b826e" stroke-width="2"/>
+<text x="44" y="526" font-size="14" fill="#59614d">Each box count includes shared work once. Diagram is schematic; the full circuit is in the repository.</text>
+</g></svg>

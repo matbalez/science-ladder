@@ -34,6 +34,8 @@ import {
   ChallengeLearning,
   ChallengeLearningProvider,
 } from "./challenge-learning";
+import { AdditionsVisual } from "./additions-visual";
+import { ADDITIONS_SOURCE } from "@/lib/additions-reference";
 import { MultiplyExplorer } from "./multiply-explorer";
 import { MULTIPLY_SOURCE } from "@/lib/multiply-reference";
 import { SmallestTriangleExplorer } from "./smallest-triangle";
@@ -69,8 +71,19 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           <ArrowLeft size={14} />
           Explore challenges
         </Link>
-        <h1>Challenge removed</h1>
+        <h1>
+          {slug === "one-less-multiply"
+            ? "One Less Multiply is paused"
+            : "Challenge removed"}
+        </h1>
         <p>{error.message}</p>
+        {slug === "one-less-multiply" && (
+          <p>
+            <Link href="/challenges/fewer-additions">Try Fewer Additions</Link>:
+            reduce the additions needed for matrix multiplication while keeping
+            23 products.
+          </p>
+        )}
       </div>
     );
   if (!c)
@@ -245,6 +258,8 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             <FrontierChart challenge={c} />
           </details>
         </section>
+        {c.repository === "matbalez/science-ladder-fewer-additions" &&
+          c.sourceCommit === ADDITIONS_SOURCE && <AdditionsVisual />}
         {hasNativeLoadPathsChecker(c) && <LoadPathsExplorer />}
         {c.repository === "matbalez/science-ladder-one-less-multiply" &&
           c.sourceCommit === MULTIPLY_SOURCE && <MultiplyExplorer />}
