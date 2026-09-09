@@ -212,6 +212,303 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             />
           </div>
         </header>
+        <div className="challenge-reading-layout">
+          <div className="challenge-reading-main">
+            <div
+              className="detail-tabs"
+              role="tablist"
+              aria-label="Challenge sections"
+            >
+              {[
+                ["overview", "The question"],
+                ["evaluation", "Evaluation"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  id={`tab-${id}`}
+                  role="tab"
+                  aria-selected={tab === id}
+                  aria-controls={`panel-${id}`}
+                  className={tab === id ? "active" : ""}
+                  onClick={() => setTab(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div
+              role="tabpanel"
+              id={`panel-${tab}`}
+              aria-labelledby={`tab-${tab}`}
+              tabIndex={0}
+            >
+              {tab === "overview" && (
+                <div className="challenge-prose">
+                  <div>
+                    <section className="content-section">
+                      <h2>{asText(science.question, c.summary)}</h2>
+                      <ChallengeEducation challenge={c} />
+                      {!challengeEducation(c) &&
+                        asText(science.impactStatement) && (
+                          <p>{asText(science.impactStatement)}</p>
+                        )}
+                      {explorerUrl && (
+                        <p>
+                          <Link
+                            href={explorerUrl}
+                            style={{
+                              color: "var(--lime)",
+                              textDecoration: "underline",
+                              textUnderlineOffset: 4,
+                            }}
+                          >
+                            Explore the pulse and its echoes →
+                          </Link>
+                        </p>
+                      )}
+                      {asText(asRecord(science).metricRationale) && (
+                        <>
+                          <h3>Why this metric matters</h3>
+                          <p>{asText(asRecord(science).metricRationale)}</p>
+                        </>
+                      )}
+                      <TextList
+                        title="Assumptions"
+                        value={asRecord(science).assumptions}
+                      />
+                      <TextList
+                        title="Limitations"
+                        value={science.limitations}
+                      />
+                    </section>
+                  </div>
+                </div>
+              )}
+              {tab === "evaluation" && (
+                <div className="challenge-prose">
+                  <div>
+                    <section className="content-section">
+                      <h2>Scoring and validity</h2>
+                      <dl className="contract-grid">
+                        <div>
+                          <dt>Primary metric</dt>
+                          <dd>{c.metric.name}</dd>
+                        </div>
+                        <div>
+                          <dt>Direction</dt>
+                          <dd>{humanize(c.metric.direction)}</dd>
+                        </div>
+                        <div>
+                          <dt>Exact score quantum</dt>
+                          <dd className="mono">{c.metric.quantum}</dd>
+                        </div>
+                        <div>
+                          <dt>Baseline</dt>
+                          <dd>
+                            {formatTicks(
+                              c.metric.baselineTicks,
+                              c.metric.quantum,
+                            )}{" "}
+                            {c.metric.units}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>Minimum meaningful improvement</dt>
+                          <dd>
+                            {asText(
+                              evaluation.minimumMeaningfulDelta,
+                              "Defined in manifest",
+                            )}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>Numeric tolerance</dt>
+                          <dd>
+                            {asText(
+                              asRecord(evaluation.primaryMetric)
+                                .numericTolerance,
+                              "Defined in manifest",
+                            )}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>Artifact profile</dt>
+                          <dd>{asText(task.profile, "artifact-checker-v1")}</dd>
+                        </div>
+                        <div>
+                          <dt>Maximum artifact bytes</dt>
+                          <dd>
+                            {asText(
+                              task.maximumArtifactBytes,
+                              "Defined in manifest",
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+                      <TextList
+                        title="Hard validity gates"
+                        value={evaluation.hardGates}
+                      />
+                      <TextList
+                        title="Allowed artifact paths"
+                        value={task.editablePaths}
+                      />
+                      <MeasurementContract
+                        evaluation={asRecord(manifest.evaluation)}
+                      />
+                      <h3>Tests & reproducibility</h3>
+                      <p>
+                        {c.verificationPolicy === "platform"
+                          ? "This challenge uses platform verification: the locked checker runs on a dedicated host, with confirmation in a fresh virtual machine. Independent replication is recorded separately."
+                          : "This challenge requires confirmation on a different physical host group before a result can advance the frontier or claim a milestone."}{" "}
+                        Scores are adjudicated in acceptance-receipt order.
+                      </p>
+                      <details className="verification-record">
+                        <summary>Verification record</summary>
+                        <p>
+                          <ExternalLink
+                            href={`https://github.com/${c.repository}/tree/${c.sourceCommit}`}
+                          >
+                            Inspect exact source
+                          </ExternalLink>
+                        </p>
+                        <p>
+                          Download the public specification, submissions, signed
+                          verification receipts, and artifact links as JSON.
+                        </p>
+                        <a
+                          href={`/v1/exports/challenge-versions/${c.versionId}`}
+                          download
+                        >
+                          Download verification record
+                        </a>
+                      </details>
+                      <button
+                        className="text-button"
+                        onClick={() => setShowFlag((v) => !v)}
+                      >
+                        <Flag size={13} /> Flag a concern
+                      </button>
+                      {showFlag && <FlagForm versionId={c.versionId} />}
+                      <JsonViewer
+                        value={evaluation}
+                        label="Inspect the complete evaluation contract"
+                      />
+                      <JsonViewer
+                        value={manifest}
+                        label="Inspect the immutable manifest"
+                      />
+                    </section>
+                    <section className="content-section">
+                      <h2>Checker and scientific reviews</h2>
+                      {c.reviews?.length ? (
+                        c.reviews.map((r, i) => (
+                          <div className="review-record" key={i}>
+                            <Status value={asText(r.status, "recorded")} />
+                            <h3>
+                              {asText(r.type, asText(r.kind, "Review report"))}
+                            </h3>
+                            <JsonViewer
+                              value={r}
+                              label="View checks, evidence, and reviewer version"
+                            />
+                          </div>
+                        ))
+                      ) : (
+                        <Empty title="Review reports are not yet public.">
+                          A challenge cannot publish until required conformance
+                          and scientific review gates pass.
+                        </Empty>
+                      )}
+                    </section>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <aside
+            className="challenge-research-sidebar"
+            aria-labelledby="research-background-heading"
+          >
+            <section className="content-section">
+              <h2 id="research-background-heading">Research background</h2>
+              {asList(science.citations).length ? (
+                asList(science.citations).map((citation, i) => {
+                  const cite = asRecord(citation);
+                  const identifier = asText(cite.identifier, asText(cite.url));
+                  const url =
+                    safeWebUrl(cite.url) ||
+                    safeWebUrl(identifier) ||
+                    (identifier.startsWith("10.")
+                      ? `https://doi.org/${encodeURIComponent(identifier)}`
+                      : undefined);
+                  return (
+                    <article className="citation" key={i}>
+                      <span className="citation-index">[{i + 1}]</span>
+                      <div>
+                        <h3>
+                          {asText(
+                            cite.title,
+                            identifier || `Primary source ${i + 1}`,
+                          )}
+                        </h3>
+                        <span className="subtle">
+                          {cite.publicationDate
+                            ? dateLabel(asText(cite.publicationDate))
+                            : cite.accessedAt
+                              ? `Source accessed ${dateLabel(asText(cite.accessedAt))}`
+                              : ""}
+                        </span>
+                        <p>
+                          {asText(
+                            cite.openQuestionEvidence,
+                            asText(cite.evidence, asText(cite.evidenceSummary)),
+                          )}
+                        </p>
+                        <span className="citation-location">
+                          Evidence location:{" "}
+                          {asText(
+                            cite.openQuestionLocation,
+                            asText(
+                              cite.location,
+                              asText(cite.evidenceLocation, "See cited source"),
+                            ),
+                          )}
+                        </span>
+                        {url && (
+                          <ExternalLink href={url}>
+                            Read primary source
+                          </ExternalLink>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })
+              ) : (
+                <Empty title="Evidence is in the challenge package.">
+                  Open the repository and inspect the pinned manifest to read
+                  the creator’s primary sources.
+                </Empty>
+              )}
+            </section>
+            <ResearcherSection
+              context={c.researcherContext}
+              editHref={
+                session.data?.capabilities.review
+                  ? `/review?challenge=${encodeURIComponent(c.slug)}&version=${encodeURIComponent(c.versionId)}#researcher-editor`
+                  : undefined
+              }
+            />
+          </aside>
+        </div>
+        {c.repository === "matbalez/science-ladder-fewer-additions" &&
+          c.sourceCommit === ADDITIONS_SOURCE && <AdditionsVisual />}
+        {hasNativeLoadPathsChecker(c) && <LoadPathsExplorer />}
+        {c.repository === "matbalez/science-ladder-one-less-multiply" &&
+          c.sourceCommit === MULTIPLY_SOURCE && <MultiplyExplorer />}
+        {c.repository === "matbalez/science-ladder-smallest-triangle" &&
+          c.sourceCommit === TRIANGLE_SOURCE && <SmallestTriangleExplorer />}
+        <ChallengeLearning key={c.versionId} challenge={c} section={tab} />
         <section
           className="challenge-results"
           aria-labelledby="results-heading"
@@ -262,296 +559,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
             <FrontierChart challenge={c} />
           </details>
         </section>
-        {c.repository === "matbalez/science-ladder-fewer-additions" &&
-          c.sourceCommit === ADDITIONS_SOURCE && <AdditionsVisual />}
-        {hasNativeLoadPathsChecker(c) && <LoadPathsExplorer />}
-        {c.repository === "matbalez/science-ladder-one-less-multiply" &&
-          c.sourceCommit === MULTIPLY_SOURCE && <MultiplyExplorer />}
-        {c.repository === "matbalez/science-ladder-smallest-triangle" &&
-          c.sourceCommit === TRIANGLE_SOURCE && <SmallestTriangleExplorer />}
-        <ChallengeLearning key={c.versionId} challenge={c} section={tab} />
-        <div
-          className="detail-tabs"
-          role="tablist"
-          aria-label="Challenge sections"
-        >
-          {[
-            ["overview", "The question"],
-            ["evaluation", "Evaluation"],
-          ].map(([id, label]) => (
-            <button
-              key={id}
-              id={`tab-${id}`}
-              role="tab"
-              aria-selected={tab === id}
-              aria-controls={`panel-${id}`}
-              className={tab === id ? "active" : ""}
-              onClick={() => setTab(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div
-          role="tabpanel"
-          id={`panel-${tab}`}
-          aria-labelledby={`tab-${tab}`}
-          tabIndex={0}
-        >
-          {tab === "overview" && (
-            <div className="challenge-prose">
-              <div>
-                <section className="content-section">
-                  <h2>{asText(science.question, c.summary)}</h2>
-                  <ChallengeEducation challenge={c} />
-                  {!challengeEducation(c) &&
-                    asText(science.impactStatement) && (
-                      <p>{asText(science.impactStatement)}</p>
-                    )}
-                  {explorerUrl && (
-                    <p>
-                      <Link
-                        href={explorerUrl}
-                        style={{
-                          color: "var(--lime)",
-                          textDecoration: "underline",
-                          textUnderlineOffset: 4,
-                        }}
-                      >
-                        Explore the pulse and its echoes →
-                      </Link>
-                    </p>
-                  )}
-                  {asText(asRecord(science).metricRationale) && (
-                    <>
-                      <h3>Why this metric matters</h3>
-                      <p>{asText(asRecord(science).metricRationale)}</p>
-                    </>
-                  )}
-                  <TextList
-                    title="Assumptions"
-                    value={asRecord(science).assumptions}
-                  />
-                  <TextList title="Limitations" value={science.limitations} />
-                </section>
-                <section className="content-section">
-                  <h2>Research background</h2>
-                  {asList(science.citations).length ? (
-                    asList(science.citations).map((citation, i) => {
-                      const cite = asRecord(citation);
-                      const identifier = asText(
-                        cite.identifier,
-                        asText(cite.url),
-                      );
-                      const url =
-                        safeWebUrl(cite.url) ||
-                        safeWebUrl(identifier) ||
-                        (identifier.startsWith("10.")
-                          ? `https://doi.org/${encodeURIComponent(identifier)}`
-                          : undefined);
-                      return (
-                        <article className="citation" key={i}>
-                          <span className="citation-index">[{i + 1}]</span>
-                          <div>
-                            <h3>
-                              {asText(
-                                cite.title,
-                                identifier || `Primary source ${i + 1}`,
-                              )}
-                            </h3>
-                            <span className="subtle">
-                              {cite.publicationDate
-                                ? dateLabel(asText(cite.publicationDate))
-                                : cite.accessedAt
-                                  ? `Source accessed ${dateLabel(asText(cite.accessedAt))}`
-                                  : ""}
-                            </span>
-                            <p>
-                              {asText(
-                                cite.openQuestionEvidence,
-                                asText(
-                                  cite.evidence,
-                                  asText(cite.evidenceSummary),
-                                ),
-                              )}
-                            </p>
-                            <span className="citation-location">
-                              Evidence location:{" "}
-                              {asText(
-                                cite.openQuestionLocation,
-                                asText(
-                                  cite.location,
-                                  asText(
-                                    cite.evidenceLocation,
-                                    "See cited source",
-                                  ),
-                                ),
-                              )}
-                            </span>
-                            {url && (
-                              <ExternalLink href={url}>
-                                Read primary source
-                              </ExternalLink>
-                            )}
-                          </div>
-                        </article>
-                      );
-                    })
-                  ) : (
-                    <Empty title="Evidence is in the challenge package.">
-                      Open the repository and inspect the pinned manifest to
-                      read the creator’s primary sources.
-                    </Empty>
-                  )}
-                </section>
-                <ResearcherSection
-                  context={c.researcherContext}
-                  editHref={
-                    session.data?.capabilities.review
-                      ? `/review?challenge=${encodeURIComponent(c.slug)}&version=${encodeURIComponent(c.versionId)}#researcher-editor`
-                      : undefined
-                  }
-                />
-              </div>
-            </div>
-          )}
-          {tab === "evaluation" && (
-            <div className="challenge-prose">
-              <div>
-                <section className="content-section">
-                  <h2>Scoring and validity</h2>
-                  <dl className="contract-grid">
-                    <div>
-                      <dt>Primary metric</dt>
-                      <dd>{c.metric.name}</dd>
-                    </div>
-                    <div>
-                      <dt>Direction</dt>
-                      <dd>{humanize(c.metric.direction)}</dd>
-                    </div>
-                    <div>
-                      <dt>Exact score quantum</dt>
-                      <dd className="mono">{c.metric.quantum}</dd>
-                    </div>
-                    <div>
-                      <dt>Baseline</dt>
-                      <dd>
-                        {formatTicks(c.metric.baselineTicks, c.metric.quantum)}{" "}
-                        {c.metric.units}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Minimum meaningful improvement</dt>
-                      <dd>
-                        {asText(
-                          evaluation.minimumMeaningfulDelta,
-                          "Defined in manifest",
-                        )}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Numeric tolerance</dt>
-                      <dd>
-                        {asText(
-                          asRecord(evaluation.primaryMetric).numericTolerance,
-                          "Defined in manifest",
-                        )}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Artifact profile</dt>
-                      <dd>{asText(task.profile, "artifact-checker-v1")}</dd>
-                    </div>
-                    <div>
-                      <dt>Maximum artifact bytes</dt>
-                      <dd>
-                        {asText(
-                          task.maximumArtifactBytes,
-                          "Defined in manifest",
-                        )}
-                      </dd>
-                    </div>
-                  </dl>
-                  <TextList
-                    title="Hard validity gates"
-                    value={evaluation.hardGates}
-                  />
-                  <TextList
-                    title="Allowed artifact paths"
-                    value={task.editablePaths}
-                  />
-                  <MeasurementContract
-                    evaluation={asRecord(manifest.evaluation)}
-                  />
-                  <h3>Tests & reproducibility</h3>
-                  <p>
-                    {c.verificationPolicy === "platform"
-                      ? "This challenge uses platform verification: the locked checker runs on a dedicated host, with confirmation in a fresh virtual machine. Independent replication is recorded separately."
-                      : "This challenge requires confirmation on a different physical host group before a result can advance the frontier or claim a milestone."}{" "}
-                    Scores are adjudicated in acceptance-receipt order.
-                  </p>
-                  <details className="verification-record">
-                    <summary>Verification record</summary>
-                    <p>
-                      <ExternalLink
-                        href={`https://github.com/${c.repository}/tree/${c.sourceCommit}`}
-                      >
-                        Inspect exact source
-                      </ExternalLink>
-                    </p>
-                    <p>
-                      Download the public specification, submissions, signed
-                      verification receipts, and artifact links as JSON.
-                    </p>
-                    <a
-                      href={`/v1/exports/challenge-versions/${c.versionId}`}
-                      download
-                    >
-                      Download verification record
-                    </a>
-                  </details>
-                  <button
-                    className="text-button"
-                    onClick={() => setShowFlag((v) => !v)}
-                  >
-                    <Flag size={13} /> Flag a concern
-                  </button>
-                  {showFlag && <FlagForm versionId={c.versionId} />}
-                  <JsonViewer
-                    value={evaluation}
-                    label="Inspect the complete evaluation contract"
-                  />
-                  <JsonViewer
-                    value={manifest}
-                    label="Inspect the immutable manifest"
-                  />
-                </section>
-                <section className="content-section">
-                  <h2>Checker and scientific reviews</h2>
-                  {c.reviews?.length ? (
-                    c.reviews.map((r, i) => (
-                      <div className="review-record" key={i}>
-                        <Status value={asText(r.status, "recorded")} />
-                        <h3>
-                          {asText(r.type, asText(r.kind, "Review report"))}
-                        </h3>
-                        <JsonViewer
-                          value={r}
-                          label="View checks, evidence, and reviewer version"
-                        />
-                      </div>
-                    ))
-                  ) : (
-                    <Empty title="Review reports are not yet public.">
-                      A challenge cannot publish until required conformance and
-                      scientific review gates pass.
-                    </Empty>
-                  )}
-                </section>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </ChallengeLearningProvider>
   );

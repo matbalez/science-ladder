@@ -3863,3 +3863,32 @@ small {
 @media (max-width: 720px) {
   .create-challenge-section { align-items: flex-start; flex-direction: column; margin-top: 3rem; padding-top: 2rem; gap: 1.5rem; }
 }
+
+/* Read the science first, with supporting sources alongside it. */
+.challenge-reading-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  align-items: start;
+  gap: clamp(32px, 4vw, 64px);
+  margin-bottom: 40px;
+}
+.challenge-reading-main, .challenge-research-sidebar { min-width: 0; }
+.challenge-reading-main .challenge-prose { max-width: none; margin: 0; }
+.challenge-research-sidebar {
+  border-left: 1px solid var(--border);
+  padding-left: 28px;
+  overflow-wrap: anywhere;
+}
+.challenge-research-sidebar .content-section { padding-top: 0; }
+.challenge-research-sidebar .content-section > h2 { font-size: 20px; margin-top: 0; }
+.challenge-research-sidebar .citation { gap: 10px; padding: 20px 0; }
+.challenge-research-sidebar .citation h3 { font-size: 15px; line-height: 1.5; margin-top: 0; }
+.challenge-research-sidebar .citation p { font-size: 13px; line-height: 1.7; }
+.challenge-research-sidebar .citation-location { font-size: 12px; line-height: 1.6; }
+.challenge-research-sidebar .citation a { font-size: 13px; }
+@media (max-width: 900px) {
+  .challenge-reading-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .challenge-research-sidebar { border-left: 0; border-top: 1px solid var(--border); padding: 28px 0 0; }
+}
+.challenge-research-sidebar .citation-index { flex-shrink: 0; white-space: nowrap; }
+.challenge-research-sidebar .citation > div { min-width: 0; }
