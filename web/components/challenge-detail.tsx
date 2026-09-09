@@ -73,10 +73,14 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         </Link>
         <h1>
           {slug === "one-less-multiply"
-            ? "One Less Multiply is paused"
+            ? "One Less Multiply is sunset"
             : "Challenge removed"}
         </h1>
-        <p>{error.message}</p>
+        <p>
+          {slug === "one-less-multiply"
+            ? "The rank-22 target has been set aside for now. Its source and historical records are preserved."
+            : error.message}
+        </p>
         {slug === "one-less-multiply" && (
           <p>
             <Link href="/challenges/fewer-additions">Try Fewer Additions</Link>:
