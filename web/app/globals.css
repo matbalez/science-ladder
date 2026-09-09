@@ -3892,3 +3892,4 @@ small {
 }
 .challenge-research-sidebar .citation-index { flex-shrink: 0; white-space: nowrap; }
 .challenge-research-sidebar .citation > div { min-width: 0; }
+.challenge-reading-main { overflow-wrap: anywhere; }
