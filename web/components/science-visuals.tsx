@@ -23,7 +23,6 @@ function chartData(challenge: Challenge) {
     challenge.metric.baselineTicks,
     challenge.publicFrontier?.scoreTicks || challenge.metric.baselineTicks,
     ...items.map((s) => s.scoreTicks!),
-    ...challenge.milestones.map((m) => m.thresholdTicks),
   ].filter((s) => /^-?\d+$/.test(s || ""));
   const values = scores.map(BigInt);
   const min = values.reduce((a, b) => (a < b ? a : b), values[0] || 0n);
@@ -125,7 +124,7 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
   const [selected, setSelected] = useState<number>();
   useLearningView("frontier chart", {
     description:
-      "Score history ordered by acceptance receipt, with a step line for improvements over the reference. A flat baseline means no advance. Dots are verified submitted results; horizontal lines are milestone targets.",
+      "Score history ordered by acceptance receipt, with a step line for improvements over the reference. A flat baseline means no advance. Dots are verified submitted results.",
     selectedSequence: selected,
     advances: events
       .map((e) => ({ sequence: e.sequence, scoreTicks: e.scoreTicks }))
@@ -187,9 +186,9 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
       <svg
         viewBox="0 0 930 310"
         role="img"
-        aria-label="Verified score history in receipt order. Milestone thresholds are shown as horizontal lines."
+        aria-label="Verified score history in receipt order."
       >
-        {[0, 0.25, 0.5, 0.75, 1].map((v, i) => (
+        {(min === max ? [0.5] : [0, 0.25, 0.5, 0.75, 1]).map((v, i) => (
           <g key={i}>
             <path d={`M90 ${48 + v * 200}H870`} stroke="#29312a" />
             <text
@@ -208,20 +207,6 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
               </title>
               {axisLabel((max - ((max - min) * BigInt(i)) / 4n).toString())}
             </text>
-          </g>
-        ))}
-        {challenge.milestones.map((m) => (
-          <g key={m.id}>
-            <path
-              d={`M90 ${y(m.thresholdTicks)}H870`}
-              stroke={m.claimedBy ? "#b8e970" : "#67754e"}
-              strokeDasharray="4 6"
-              opacity=".65"
-            />
-            <title>
-              {m.label}:{" "}
-              {formatTicks(m.thresholdTicks, challenge.metric.quantum)}
-            </title>
           </g>
         ))}
         <path d={path} stroke="#cdf992" strokeWidth="2.5" fill="none" />
@@ -262,19 +247,6 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
             : "Awaiting the first verified result"}
         </text>
       </svg>
-      <details className="chart-targets">
-        <summary>Milestone targets ({challenge.milestones.length})</summary>
-        <ul>
-          {challenge.milestones.map((m) => (
-            <li key={m.id}>
-              <span>{m.label}</span>
-              <strong>
-                {formatTicks(m.thresholdTicks, challenge.metric.quantum)}
-              </strong>
-            </li>
-          ))}
-        </ul>
-      </details>
       {selected !== undefined && (
         <div className="chart-inspection">
           Receipt #{selected}{" "}
@@ -293,8 +265,8 @@ export function FrontierChart({ challenge }: { challenge: Challenge }) {
       )}
       {!items.length && (
         <p className="chart-empty-note">
-          The baseline and declared milestones are shown. Verified submissions
-          will trace the actual frontier here.
+          The reference is shown. Verified submissions will trace the actual
+          frontier here.
         </p>
       )}
     </div>

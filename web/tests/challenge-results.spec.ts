@@ -119,10 +119,16 @@ for (const width of [1280, 390])
     await expect(svg.locator("text").filter({ hasText: "Gain" })).toHaveCount(
       0,
     );
-    await results.locator(".chart-targets > summary").click();
-    await expect(results.locator(".chart-targets")).toContainText(
-      "0.024303979620992487",
-    );
+    await expect(
+      page.getByRole("tab", { name: "Artifacts", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByText("Milestone ladder", { exact: true }),
+    ).toHaveCount(0);
+    await page.getByRole("tab", { name: "Evaluation", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Version rules", exact: true }),
+    ).toHaveCount(0);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBe(width);

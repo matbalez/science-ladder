@@ -346,8 +346,13 @@ test("canonical artifact bundle previews real coordinate data without executing 
       },
     }),
   );
+  await page.route("**/v1/submissions/test-record", (r) =>
+    r.fulfill({ json: record }),
+  );
   await page.goto("/challenges/test-only");
-  await page.getByRole("tab", { name: "Artifacts" }).click();
+  await page
+    .getByRole("link", { name: "Open submission 1", exact: true })
+    .click();
   await expect(
     page.getByRole("img", {
       name: "submission/points.json: 3 artifact coordinates",

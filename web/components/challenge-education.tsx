@@ -100,7 +100,7 @@ export function ChallengeEducation({ challenge: c }: { challenge: Challenge }) {
   const context = challengeEducation(c);
   if (!context) return null;
   return (
-    <div>
+    <div className="challenge-education">
       <h3>Where the research stands</h3>
       {context.frontier.map((p, i) => (
         <p key={i}>{p}</p>

@@ -2,18 +2,7 @@
 import Link from "next/link";
 import { displaySummary } from "@/lib/presentation";
 import { useState } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  BookOpen,
-  Check,
-  Clock3,
-  Download,
-  Flag,
-  GitBranch,
-  LockKeyhole,
-} from "lucide-react";
+import { ArrowLeft, Check, Clock3, Flag, GitBranch } from "lucide-react";
 import { ApiError, useAction, useResource } from "@/lib/api";
 import {
   asList,
@@ -27,7 +16,7 @@ import {
 } from "@/lib/scientific";
 import type { Challenge } from "@/lib/types";
 import { useSession } from "./shell";
-import { ArtifactViewer, FrontierChart } from "./science-visuals";
+import { FrontierChart } from "./science-visuals";
 import {
   Badge,
   CodeBlock,
@@ -271,7 +260,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
         >
           {[
             ["overview", "The question"],
-            ["frontier", "Artifacts"],
             ["evaluation", "Evaluation"],
           ].map(([id, label]) => (
             <button
@@ -284,7 +272,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
               onClick={() => setTab(id)}
             >
               {label}
-              {id === "history" && <span>{c.submissions?.length || 0}</span>}
             </button>
           ))}
         </div>
@@ -295,7 +282,7 @@ export function ChallengeDetail({ slug }: { slug: string }) {
           tabIndex={0}
         >
           {tab === "overview" && (
-            <div className="two-column">
+            <div className="challenge-prose">
               <div>
                 <section className="content-section">
                   <h2>{asText(science.question, c.summary)}</h2>
@@ -417,21 +404,10 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                   <CodeBlock code={challengeSetupCommands(c)} />
                 </details>
               </div>
-              <aside>
-                <MilestoneLadder challenge={c} />
-              </aside>
-            </div>
-          )}
-          {tab === "frontier" && (
-            <div className="content-section">
-              <div className="two-column">
-                <ArtifactViewer digest={frontierSubmission?.artifactDigest} />
-                <MilestoneLadder challenge={c} />
-              </div>
             </div>
           )}
           {tab === "evaluation" && (
-            <div className="two-column">
+            <div className="challenge-prose">
               <div>
                 <section className="content-section">
                   <h2>Scoring and validity</h2>
@@ -508,6 +484,13 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                   <details className="local-setup">
                     <summary>Verification record</summary>
                     <p>
+                      <ExternalLink
+                        href={`https://github.com/${c.repository}/tree/${c.sourceCommit}`}
+                      >
+                        Inspect exact source
+                      </ExternalLink>
+                    </p>
+                    <p>
                       Download the public specification, submissions, signed
                       verification receipts, and artifact links as JSON.
                     </p>
@@ -557,30 +540,6 @@ export function ChallengeDetail({ slug }: { slug: string }) {
                   )}
                 </section>
               </div>
-              <aside>
-                <div className="trust-panel">
-                  <LockKeyhole size={21} />
-                  <h3>Version rules</h3>
-                  <p>
-                    The evaluator, score arithmetic, milestone thresholds,
-                    deadline, and artifact publication policy are locked for
-                    this version. Changes require a new version.
-                  </p>
-                  <ExternalLink
-                    href={`https://github.com/${c.repository}/tree/${c.sourceCommit}`}
-                  >
-                    Inspect exact source
-                  </ExternalLink>
-                  <a
-                    href={`/v1/exports/challenge-versions/${c.versionId}`}
-                    className="button small ghost"
-                    download
-                  >
-                    <Download size={14} />
-                    Export contract & receipts
-                  </a>
-                </div>
-              </aside>
             </div>
           )}
         </div>
@@ -612,54 +571,6 @@ function TextList({ title, value }: { title: string; value: unknown }) {
       )}
     </div>
   ) : null;
-}
-export function MilestoneLadder({ challenge: c }: { challenge: Challenge }) {
-  const milestones = [...c.milestones].sort((a, b) => {
-    const aa = BigInt(a.thresholdTicks),
-      bb = BigInt(b.thresholdTicks);
-    return aa === bb
-      ? 0
-      : (aa < bb ? -1 : 1) * (c.metric.direction === "maximize" ? 1 : -1);
-  });
-  return (
-    <section className="ladder-panel">
-      <div className="panel-heading">
-        <h3>Milestone ladder</h3>
-        <span className="tiny-label">
-          {c.metric.direction === "maximize" ? "↑" : "↓"} {c.metric.units}
-        </span>
-      </div>
-      <ol className="milestone-ladder">
-        {milestones.map((m, i) => (
-          <li key={m.id} className={m.claimedBy ? "claimed" : ""}>
-            <span className="milestone-node">
-              {m.claimedBy ? (
-                <Check size={13} />
-              ) : (
-                String(i + 1).padStart(2, "0")
-              )}
-            </span>
-            <div>
-              <span className="tiny-label">
-                {m.claimedBy ? "CLAIMED" : "OPEN MILESTONE"}
-              </span>
-              <strong>{formatTicks(m.thresholdTicks, c.metric.quantum)}</strong>
-              <p>{m.label}</p>
-              {m.claimedBy && (
-                <Link href={`/submissions/${m.claimedBy}`}>
-                  View winning receipt <ArrowUpRight size={12} />
-                </Link>
-              )}
-            </div>
-          </li>
-        ))}
-      </ol>
-      <p className="ladder-note">
-        One result claims every unclaimed threshold it crosses. Earliest
-        qualifying receipt wins.
-      </p>
-    </section>
-  );
 }
 export function FlagForm({ versionId }: { versionId: string }) {
   const [category, setCategory] = useState("science");
