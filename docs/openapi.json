@@ -2340,7 +2340,8 @@
                 "properties": {
                   "githubId": {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 1,
+                    "deprecated": true
                   },
                   "role": {
                     "type": "string",
@@ -2352,15 +2353,41 @@
                   "validationQuota": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 10000
+                    "maximum": 10000,
+                    "deprecated": true,
+                    "description": "Ignored legacy field; no lifetime allowance applies."
+                  },
+                  "githubUsername": {
+                    "type": "string",
+                    "description": "GitHub username, optionally prefixed with @. Resolved to a personal account before inviting."
                   }
                 },
                 "required": [
-                  "githubId",
-                  "role",
-                  "validationQuota"
+                  "role"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "required": [
+                      "githubUsername"
+                    ],
+                    "not": {
+                      "required": [
+                        "githubId"
+                      ]
+                    }
+                  },
+                  {
+                    "required": [
+                      "githubId"
+                    ],
+                    "not": {
+                      "required": [
+                        "githubUsername"
+                      ]
+                    }
+                  }
+                ]
               }
             }
           }

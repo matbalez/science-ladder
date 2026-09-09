@@ -201,15 +201,25 @@ func (s *Server) invite(w http.ResponseWriter, r *http.Request, u *User) error {
 	}
 	return s.mutate(w, r, u, func(tx pgx.Tx) (int, any, error) {
 		var in struct {
-			GitHubID int64  `json:"githubId"`
+			GitHubID int64  `json:"githubId,omitempty"` // Legacy API clients only.
+			Username string `json:"githubUsername,omitempty"`
 			Role     string `json:"role"`
 			Quota    *int   `json:"validationQuota,omitempty"` // Deprecated; accepted but ignored.
 		}
 		if err := readJSON(r, &in); err != nil {
 			return 0, nil, err
 		}
-		if in.GitHubID <= 0 || (in.Role != "member" && in.Role != "editor") {
-			return 0, nil, fail(422, "invitation_invalid", "Use an immutable numeric GitHub ID and a member/editor role")
+		if (in.Role != "member" && in.Role != "editor") || (in.Username != "" && in.GitHubID != 0) {
+			return 0, nil, fail(422, "invitation_invalid", "Use a GitHub username and a member/editor role")
+		}
+		if in.Username != "" {
+			identity, err := s.invitationIdentity(r.Context(), in.Username)
+			if err != nil {
+				return 0, nil, err
+			}
+			in.GitHubID, in.Username = identity.ID, identity.Login
+		} else if in.GitHubID <= 0 {
+			return 0, nil, fail(422, "invitation_invalid", "Enter a GitHub username")
 		}
 		_, err := tx.Exec(r.Context(), `INSERT INTO invitations(github_id,role,validation_quota,invited_by) VALUES($1,$2,0,$3) ON CONFLICT(github_id) DO UPDATE SET role=excluded.role`, in.GitHubID, in.Role, u.ID)
 		if err != nil {

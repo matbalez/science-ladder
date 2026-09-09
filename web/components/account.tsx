@@ -560,9 +560,9 @@ function IntentRow({
 }
 function InviteForm() {
   const action = useAction();
-  const [githubId, setId] = useState("");
+  const [githubUsername, setUsername] = useState("");
   const [role, setRole] = useState("member");
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState("");
   return (
     <section className="panel">
       <h2>Invite a participant</h2>
@@ -573,21 +573,28 @@ function InviteForm() {
       <form
         onSubmit={async (e) => {
           e.preventDefault();
-          setSuccess(false);
-          const r = await action.run("/invites", {
-            githubId: Number(githubId),
+          setSuccess("");
+          const r = await action.run<{ githubUsername: string }>("/invites", {
+            githubUsername: githubUsername.trim(),
             role,
           });
-          if (r) setSuccess(true);
+          if (r) setSuccess(r.githubUsername);
         }}
       >
         <div className="form-grid">
-          <Field label="Numeric GitHub user ID">
+          <Field label="GitHub username">
             <input
               required
-              pattern="[0-9]{1,15}"
-              value={githubId}
-              onChange={(e) => setId(e.target.value)}
+              placeholder="e.g. octocat"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              maxLength={41}
+              value={githubUsername}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setSuccess("");
+              }}
             />
           </Field>
           <Field label="Access role">
@@ -601,7 +608,8 @@ function InviteForm() {
         {success && (
           <div className="success-note">
             <Check size={16} />
-            Invitation recorded.
+            Invitation recorded for @{success}. They can sign in with GitHub to
+            participate.
           </div>
         )}
         <button className="button ghost" disabled={action.busy}>

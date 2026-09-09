@@ -154,3 +154,31 @@ test("activity failures are not presented as zero participation and CLI approval
     page.getByText("CLI session approved.", { exact: false }),
   ).toBeVisible();
 });
+
+test("operator invites by GitHub username and gets the resolved account confirmation", async ({
+  page,
+}) => {
+  await page.route("**/v1/me", (r) => r.fulfill({ json: me }));
+  await page.route("**/v1/dashboard", (r) => r.fulfill({ json: activity }));
+  await page.route("**/v1/invites", (r) => {
+    expect(r.request().postDataJSON()).toEqual({
+      githubUsername: "@octocat",
+      role: "member",
+    });
+    return r.fulfill({
+      status: 201,
+      json: { githubUsername: "octocat", githubId: 43, role: "member" },
+    });
+  });
+  await page.goto("/account");
+  await page
+    .locator("summary")
+    .filter({ hasText: "Invite a participant" })
+    .click();
+  await expect(page.getByLabel("Numeric GitHub user ID")).toHaveCount(0);
+  await page.getByLabel("GitHub username", { exact: true }).fill("@octocat");
+  await page.getByRole("button", { name: "Grant invitation" }).click();
+  await expect(
+    page.getByText("Invitation recorded for @octocat.", { exact: false }),
+  ).toBeVisible();
+});
