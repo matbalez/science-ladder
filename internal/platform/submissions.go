@@ -127,13 +127,10 @@ func (s *Server) acceptIntent(w http.ResponseWriter, r *http.Request, u *User) e
 		if intake != "open" || !deadline.After(time.Now()) {
 			return 0, nil, fail(409, "intake_closed", "The challenge intake is closed or its deadline has passed")
 		}
-		var quota int
-		err = tx.QueryRow(ctx, `SELECT validation_quota FROM users WHERE id=$1 FOR NO KEY UPDATE`, u.ID).Scan(&quota)
-		if err != nil {
+		// Serialize acceptance for this account so concurrent requests cannot bypass
+		// its active-run limit. The retired lifetime allowance is not consulted.
+		if _, err = tx.Exec(ctx, `SELECT id FROM users WHERE id=$1 FOR NO KEY UPDATE`, u.ID); err != nil {
 			return 0, nil, err
-		}
-		if quota <= 0 {
-			return 0, nil, fail(429, "quota_exhausted", "No validation grants remain for this account")
 		}
 		var active int
 		if err = tx.QueryRow(ctx, `SELECT count(*) FROM submissions WHERE owner_id=$1 AND status<>'finalized'`, u.ID).Scan(&active); err != nil {
@@ -242,9 +239,6 @@ func (s *Server) acceptIntent(w http.ResponseWriter, r *http.Request, u *User) e
 			return 0, nil, err
 		}
 		if _, err = tx.Exec(ctx, `INSERT INTO capacity_reservations(submission_id) VALUES($1)`, submission); err != nil {
-			return 0, nil, err
-		}
-		if _, err = tx.Exec(ctx, `UPDATE users SET validation_quota=validation_quota-1 WHERE id=$1`, u.ID); err != nil {
 			return 0, nil, err
 		}
 		if _, err = tx.Exec(ctx, `UPDATE challenge_versions SET next_sequence=$2 WHERE id=$1`, version, sequence); err != nil {

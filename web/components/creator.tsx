@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { parseDocument } from "yaml";
 import styles from "./creator.module.css";
+import { scoutPrompt } from "@/lib/scout-prompt";
 import { useAction, useResource } from "@/lib/api";
 import { asList, asRecord, asText, humanize } from "@/lib/scientific";
 import type { Candidate, Finding, Preflight } from "@/lib/types";
@@ -140,19 +141,9 @@ export function Creator() {
     lock,
     restored,
   ]);
-  const replacements: Record<string, string> = {
-    FIELD_OR_TOPIC: inputs.topic,
-    OPEN_QUESTION_OR_BLANK: inputs.question,
-    SEED_PAPERS_OR_BLANK: inputs.papers,
-    RESOURCES_OR_BLANK: inputs.resources,
-    RESOURCE_CEILING_OR_BLANK: inputs.compute,
-    CONSTRAINTS_OR_BLANK: inputs.constraints,
-  };
-  const filledPrompt =
-    prompt.data?.prompt.replace(
-      /\{\{([A-Z_]+)\}\}/g,
-      (_, key) => replacements[key] || "(investigate)",
-    ) || "";
+  const filledPrompt = prompt.data
+    ? scoutPrompt(prompt.data.version, inputs)
+    : "";
   const steps = ["Candidate", "Repository", "Verification", "Publish"];
   const active = published
     ? 4
@@ -315,6 +306,13 @@ export function Creator() {
                         Download
                       </DownloadButton>
                     </div>
+                    <a
+                      href={`/docs/authoring/${prompt.data?.version}/index.md`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Full scout instructions <ArrowUpRight size={14} />
+                    </a>
                     <details className="prompt-details">
                       <summary>Read prompt</summary>
                       <pre>{filledPrompt}</pre>

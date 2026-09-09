@@ -53,6 +53,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: node ../scripts/sync-explorer-prompt.cjs --check
+      - run: node ../scripts/sync-scout-docs.cjs --check
       - run: npm test
       - run: npm run build
   deploy-images:

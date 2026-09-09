@@ -90,3 +90,37 @@ test("manifest pasted into candidate import gets a useful error before any reque
   await page.getByLabel("Candidate YAML").fill("kind: ChallengeCandidate\n");
   await expect(page.locator("main").getByRole("alert")).toHaveCount(0);
 });
+
+test("scout copies a short starting prompt with inputs and readable versioned site specifications", async ({
+  page,
+  request,
+}) => {
+  await page.route("**/v1/prompts/challenge-scout/v1", (r) =>
+    r.fulfill({
+      json: {
+        version: "1.9.0",
+        prompt: "Long guide remains available from the API.",
+      },
+    }),
+  );
+  await page.goto("/create");
+  await page
+    .getByLabel("Field or topic", { exact: true })
+    .fill("Quantum error correction");
+  await page.getByText("Read prompt", { exact: true }).click();
+  const prompt = await page.locator(".prompt-details pre").innerText();
+  expect(prompt).toContain(
+    "https://scienceladder.org/docs/authoring/1.9.0/index.md",
+  );
+  expect(prompt).toContain("Quantum error correction");
+  expect(prompt.split(/\s+/).length).toBeLessThan(250);
+  const index = await request.get("/docs/authoring/1.9.0/index.md");
+  expect(index.ok()).toBeTruthy();
+  const body = await index.text();
+  const links = [...body.matchAll(/\]\(([^)]+)\)/g)].map((m) => m[1]);
+  for (const link of links) {
+    const resource = await request.get(`/docs/authoring/1.9.0/${link}`);
+    expect(resource.ok(), link).toBeTruthy();
+    expect(resource.headers()["content-type"]).not.toContain("text/html");
+  }
+});

@@ -13,11 +13,17 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useAction, useResource } from "@/lib/api";
-import { asRecord, asText, dateLabel, humanize } from "@/lib/scientific";
+import {
+  asRecord,
+  asText,
+  dateLabel,
+  formatTicks,
+  humanize,
+} from "@/lib/scientific";
 import type { Candidate, Challenge, Intent, Submission } from "@/lib/types";
 import { useSession } from "./shell";
-import { Badge, Empty, ErrorMessage, Field, Loading, Status } from "./ui";
-import { SubmissionTable } from "./submission";
+import { Empty, ErrorMessage, Field, Loading, Status } from "./ui";
+
 export function Account() {
   const session = useSession();
   const me = session.data;
@@ -27,7 +33,24 @@ export function Account() {
     candidates: Candidate[];
     submissions: Submission[];
     intents: Intent[];
-  }>(me?.user ? "/dashboard" : null, 15000);
+    participation: {
+      id: string;
+      slug: string;
+      title: string;
+      status: string;
+      open: boolean;
+      submissionCount: number;
+      pendingCount: number;
+    }[];
+    submissionCount: number;
+    submissionContexts: {
+      versionId: string;
+      slug: string;
+      title: string;
+      quantum: string;
+      units: string;
+    }[];
+  }>(me?.user?.invited ? "/dashboard" : null, 15000);
   const [cliId, setCliId] = useState("");
   const [cliCode, setCliCode] = useState("");
   const [cliOpen, setCliOpen] = useState(false);
@@ -42,11 +65,20 @@ export function Account() {
     setCliCode(q.get("userCode") || q.get("code") || "");
     setAuthError(q.get("error") || "");
   }, []);
+  const activity = dashboard.data;
+  const created = [
+    ...new Map(
+      [...(activity?.challenges || [])].reverse().map((c) => [c.id, c]),
+    ).values(),
+  ];
+  const participation = activity?.participation || [];
+  const loaded = !!activity;
   return (
     <div className="page account-page">
       <header className="page-heading">
         <div>
           <h1>Account</h1>
+          {me?.user && <p>{me.user.login}</p>}
         </div>
         {me?.user && (
           <button
@@ -118,52 +150,24 @@ export function Account() {
         </div>
       ) : (
         <>
-          <section className="account-summary">
-            <div>
-              <Badge tone={me.user.invited ? "lime" : "amber"}>
-                {me.user.invited ? "Invited participant" : "Public account"}
-              </Badge>
-              <h2>{me.user.login}</h2>
-              <span>{humanize(me.user.role)}</span>
-            </div>
-            <div>
-              <span className="tiny-label">VALIDATIONS REMAINING</span>
-              <strong>{me.quotas.remaining}</strong>
-              <p>Free grants, each tied to a specific submission</p>
-            </div>
-            <div>
-              <span className="tiny-label">ACTIVE RUN LIMIT</span>
-              <strong>{me.quotas.activeLimit}</strong>
-              <p>Validations that can run at once</p>
-            </div>
-            <div>
-              <span className="tiny-label">SERVICES</span>
-              <ul>
-                <li>
-                  <i
-                    className={
-                      me.configuration.officialRunner ? "status-dot" : "off-dot"
-                    }
-                  />
-                  {me.configuration.officialRunner
-                    ? "Platform verification configured"
-                    : "Platform verification unavailable"}
-                </li>
-                <li>
-                  <i
-                    className={
-                      me.configuration.scientificReview
-                        ? "status-dot"
-                        : "off-dot"
-                    }
-                  />
-                  {me.configuration.scientificReview
-                    ? "Science review configured"
-                    : "Science review unavailable"}
-                </li>
-              </ul>
-            </div>
-          </section>
+          {me.user.invited && (
+            <nav className="account-activity" aria-label="Your activity">
+              <a href="#participation">
+                <strong>
+                  {loaded ? participation.filter((c) => c.open).length : "—"}
+                </strong>
+                <span>Open challenges participated in</span>
+              </a>
+              <a href="#submissions">
+                <strong>{loaded ? activity.submissionCount : "—"}</strong>
+                <span>Submissions</span>
+              </a>
+              <a href="#created">
+                <strong>{loaded ? created.length : "—"}</strong>
+                <span>Challenges created</span>
+              </a>
+            </nav>
+          )}
           {!me.user.invited && (
             <div className="note">
               <LockKeyhole size={20} />
@@ -174,34 +178,6 @@ export function Account() {
               </p>
             </div>
           )}
-          {me.quotas.remaining === 0 && me.user.invited && (
-            <div className="note">
-              <LockKeyhole size={20} />
-              <p>
-                You have no hosted validations remaining. An operator must
-                increase your quota before another run can be accepted. Local
-                testing remains available.
-              </p>
-            </div>
-          )}
-          <details className="panel account-settings">
-            <summary>Repository access</summary>
-            <p>
-              The Science Ladder GitHub App reads exact commits from
-              repositories you authorize. Install it on your challenge and
-              solver repositories before submitting.
-            </p>
-            <a
-              className="button ghost"
-              href="https://github.com/apps/science-ladder/installations/new"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Github size={16} />
-              Install or configure GitHub App
-              <ArrowUpRight size={14} />
-            </a>
-          </details>
           <details
             className="panel account-settings cli-session"
             open={cliOpen}
@@ -258,107 +234,281 @@ export function Account() {
               </form>
             )}
           </details>
-          <ErrorMessage error={dashboard.error} retry={dashboard.refresh} />
-          {dashboard.loading && !dashboard.data ? (
-            <Loading label="Loading your activity" />
-          ) : (
+          {me.user.invited && (
             <>
-              <section className="content-section">
-                <div className="section-title">
-                  <h2>Your challenges</h2>
-                  <Link href="/create" className="button small ghost">
-                    <Plus size={14} />
-                    Create challenge
-                  </Link>
-                </div>
-                {dashboard.data?.challenges?.length ? (
-                  <div className="account-challenges">
-                    {dashboard.data.challenges.map((c) => (
-                      <Link
-                        href={`/challenges/${c.slug}`}
-                        className="account-challenge"
-                        key={c.id}
-                      >
-                        <div>
-                          <span className="tiny-label">{c.domain}</span>
-                          <h3>{c.title}</h3>
-                        </div>
-                        <Status value={c.status} />
-                        <ArrowUpRight size={17} />
+              <ErrorMessage error={dashboard.error} retry={dashboard.refresh} />
+              {dashboard.loading && !dashboard.data ? (
+                <Loading label="Loading your activity" />
+              ) : dashboard.error && !activity ? null : (
+                <>
+                  <section className="content-section" id="participation">
+                    <div className="section-title">
+                      <h2>Your participation</h2>
+                      <Link href="/">
+                        Find a challenge <ArrowUpRight size={14} />
                       </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <Empty title="No challenges yet.">
-                    Use the Challenge Scout to draft a challenge, then attach
-                    its repository.
-                  </Empty>
-                )}
-                {dashboard.data?.candidates?.length ? (
-                  <div className="candidate-list">
-                    <h3>Imported candidates</h3>
-                    {dashboard.data.candidates.map((c) => (
-                      <div key={c.id}>
-                        <span>
-                          {asText(
-                            asRecord(c.candidate.manifest).title,
-                            asText(c.candidate.title, c.id),
-                          )}
-                        </span>
-                        <Status value={c.status} />
-                        <Link href={`/create?candidate=${c.id}`}>
-                          Continue
-                          <ArrowRight size={13} />
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </section>
-              <section className="content-section">
-                <div className="section-title">
-                  <h2>Your submissions</h2>
-                  <Link href="/">
-                    Find a challenge
-                    <ArrowUpRight size={14} />
-                  </Link>
-                </div>
-                <SubmissionTable
-                  submissions={dashboard.data?.submissions || []}
-                />
-              </section>
-              {dashboard.data?.intents?.length ? (
-                <section className="content-section">
-                  <h2>Source inspections</h2>
-                  <div className="table-scroll">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Repository</th>
-                          <th>State</th>
-                          <th>Created</th>
-                          <th>Next step</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dashboard.data.intents.map((i) => (
-                          <IntentRow
-                            key={i.id}
-                            intent={i}
-                            refresh={() => {
-                              dashboard.refresh();
-                              session.refresh();
-                            }}
-                          />
+                    </div>
+                    <p className="subtle">
+                      Based on work sent to the platform. Local agent runs are
+                      not tracked.
+                    </p>
+                    {participation.length ? (
+                      <div className="account-challenges">
+                        {participation.map((c) => (
+                          <div className="account-challenge" key={c.id}>
+                            <div>
+                              {c.status === "withdrawn" ? (
+                                <h3>{c.title}</h3>
+                              ) : (
+                                <Link href={`/challenges/${c.slug}`}>
+                                  <h3>{c.title}</h3>
+                                </Link>
+                              )}
+                              <p>
+                                {c.submissionCount}{" "}
+                                {c.submissionCount === 1
+                                  ? "submission"
+                                  : "submissions"}
+                                {c.pendingCount > 0
+                                  ? ` · ${c.pendingCount} awaiting acceptance`
+                                  : ""}
+                              </p>
+                            </div>
+                            <Status
+                              value={
+                                c.open
+                                  ? "open"
+                                  : c.status === "withdrawn"
+                                    ? "withdrawn"
+                                    : "closed"
+                              }
+                            />
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-              ) : null}
+                      </div>
+                    ) : (
+                      <Empty title="No participation recorded yet.">
+                        Choose a challenge and give its Participate instructions
+                        to your agent.
+                      </Empty>
+                    )}
+                  </section>
+                  <section className="content-section" id="submissions">
+                    <div className="section-title">
+                      <h2>Your submissions</h2>
+                      {(activity?.submissionCount || 0) > 100 && (
+                        <span className="subtle">
+                          Latest 100 of {activity?.submissionCount}
+                        </span>
+                      )}
+                    </div>
+                    {activity?.submissions?.length ? (
+                      <div className="table-scroll">
+                        <table className="data-table">
+                          <thead>
+                            <tr>
+                              <th>Challenge</th>
+                              <th>Submission</th>
+                              <th>Score</th>
+                              <th>Status</th>
+                              <th>Submitted</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activity.submissions.map((s) => {
+                              const context = activity.submissionContexts?.find(
+                                (c) => c.versionId === s.versionId,
+                              );
+                              return (
+                                <tr key={s.id}>
+                                  <td>
+                                    {context ? context.title : "Challenge"}
+                                  </td>
+                                  <td>
+                                    <Link href={`/submissions/${s.id}`}>
+                                      #{s.sequence} <ArrowUpRight size={13} />
+                                    </Link>
+                                    <small>{s.attribution?.model}</small>
+                                  </td>
+                                  <td>
+                                    {s.scoreTicks != null
+                                      ? context?.quantum
+                                        ? `${formatTicks(s.scoreTicks, context.quantum)} ${context.units || ""}`
+                                        : `${s.scoreTicks} ticks`
+                                      : "—"}
+                                  </td>
+                                  <td>
+                                    <Status
+                                      value={
+                                        s.verificationStatus ||
+                                        s.outcome ||
+                                        s.status
+                                      }
+                                    />
+                                  </td>
+                                  <td>{dateLabel(s.createdAt)}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <Empty title="No submissions yet.">
+                        Your agent’s submissions will appear here.
+                      </Empty>
+                    )}
+                  </section>
+                  <section className="content-section" id="created">
+                    <div className="section-title">
+                      <h2>Challenges you created</h2>
+                      <Link href="/create" className="button small ghost">
+                        <Plus size={14} />
+                        Create challenge
+                      </Link>
+                    </div>
+                    {created.length ? (
+                      <div className="account-challenges">
+                        {created.map((c) => {
+                          const content = (
+                            <>
+                              <div>
+                                <span className="tiny-label">{c.domain}</span>
+                                <h3>{c.title}</h3>
+                              </div>
+                              <Status value={c.status} />
+                            </>
+                          );
+                          return c.status === "withdrawn" ? (
+                            <div className="account-challenge" key={c.id}>
+                              {content}
+                            </div>
+                          ) : (
+                            <Link
+                              href={`/challenges/${c.slug}`}
+                              className="account-challenge"
+                              key={c.id}
+                            >
+                              {content}
+                              <ArrowUpRight size={17} />
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <Empty title="No challenges yet.">
+                        Use the Challenge Scout to draft a challenge, then
+                        attach its repository.
+                      </Empty>
+                    )}
+                    {dashboard.data?.candidates?.length ? (
+                      <div className="candidate-list">
+                        <h3>Imported candidates</h3>
+                        {dashboard.data.candidates.map((c) => (
+                          <div key={c.id}>
+                            <span>
+                              {asText(
+                                asRecord(c.candidate.manifest).title,
+                                asText(c.candidate.title, c.id),
+                              )}
+                            </span>
+                            <Status value={c.status} />
+                            <Link href={`/create?candidate=${c.id}`}>
+                              Continue
+                              <ArrowRight size={13} />
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </section>
+                  {dashboard.data?.intents?.length ? (
+                    <details className="panel account-settings">
+                      <summary>Source inspections</summary>
+                      <div className="table-scroll">
+                        <table className="data-table">
+                          <thead>
+                            <tr>
+                              <th>Repository</th>
+                              <th>State</th>
+                              <th>Created</th>
+                              <th>Next step</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {dashboard.data.intents.map((i) => (
+                              <IntentRow
+                                key={i.id}
+                                intent={i}
+                                refresh={() => {
+                                  dashboard.refresh();
+                                  session.refresh();
+                                }}
+                              />
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </details>
+                  ) : null}
+                </>
+              )}
             </>
           )}
-          {me.user.role === "operator" && <InviteForm />}
+          <details className="panel account-settings">
+            <summary>Account settings & limits</summary>
+            <p>
+              {humanize(me.user.role)} ·{" "}
+              {me.user.invited ? "Invited account" : "Public account"}
+            </p>
+            <p>
+              There is no lifetime submission limit. Up to{" "}
+              {me.quotas.activeLimit} submissions can be in progress at once.
+              Daily admission and preparation limits protect shared verification
+              capacity; local checks are unlimited.
+            </p>
+            <p>
+              Creating a challenge or submitting a solution requires an
+              invitation. Invited members can create challenges; publication
+              requires automated scientific review. Issues flagged for human
+              review need editor approval.
+            </p>
+            {me.user.role === "operator" && (
+              <p>
+                Platform verification:{" "}
+                {me.configuration.officialRunner ? "configured" : "unavailable"}
+                . Science review:{" "}
+                {me.configuration.scientificReview
+                  ? "configured"
+                  : "unavailable"}
+                .
+              </p>
+            )}
+          </details>
+          <details className="panel account-settings">
+            <summary>Repository access</summary>
+            <p>
+              The Science Ladder GitHub App reads exact commits from
+              repositories you authorize. Install it on your challenge and
+              solver repositories before submitting.
+            </p>
+            <a
+              className="button ghost"
+              href="https://github.com/apps/science-ladder/installations/new"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Github size={16} />
+              Install or configure GitHub App
+              <ArrowUpRight size={14} />
+            </a>
+          </details>
+          {me.user.role === "operator" && (
+            <details className="panel account-settings">
+              <summary>Invite a participant</summary>
+              <InviteForm />
+            </details>
+          )}
         </>
       )}
     </div>
@@ -412,12 +562,14 @@ function InviteForm() {
   const action = useAction();
   const [githubId, setId] = useState("");
   const [role, setRole] = useState("member");
-  const [quota, setQuota] = useState(20);
   const [success, setSuccess] = useState(false);
   return (
     <section className="panel">
       <h2>Invite a participant</h2>
-      <p>Give a GitHub account access and a hosted validation quota.</p>
+      <p>
+        Give a GitHub account permission to create challenges and submit
+        solutions.
+      </p>
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -425,7 +577,6 @@ function InviteForm() {
           const r = await action.run("/invites", {
             githubId: Number(githubId),
             role,
-            validationQuota: quota,
           });
           if (r) setSuccess(true);
         }}
@@ -445,22 +596,12 @@ function InviteForm() {
               <option value="editor">Editor</option>
             </select>
           </Field>
-          <Field label="Validation allocation">
-            <input
-              type="number"
-              min="0"
-              max="100000"
-              required
-              value={quota}
-              onChange={(e) => setQuota(Number(e.target.value))}
-            />
-          </Field>
         </div>
         <ErrorMessage error={action.error} />
         {success && (
           <div className="success-note">
             <Check size={16} />
-            Invitation and quota recorded.
+            Invitation recorded.
           </div>
         )}
         <button className="button ghost" disabled={action.busy}>

@@ -163,8 +163,8 @@ func TestAdmissionConcurrencyAndRetry(t *testing.T) {
 	}
 	s.DB.QueryRow(context.Background(), `SELECT validation_quota FROM users WHERE id=$1`, u.ID).Scan(&quota)
 	s.DB.QueryRow(context.Background(), `SELECT reserved_units FROM capacity`).Scan(&units)
-	if quota != 17 || units != 6 {
-		t.Fatalf("retry spent quota/capacity twice: %d %d", quota, units)
+	if quota != 20 || units != 6 {
+		t.Fatalf("retired allowance changed or retry spent capacity twice: %d %d", quota, units)
 	}
 }
 func TestOrderedAllCrossedMilestones(t *testing.T) {

@@ -203,19 +203,19 @@ func (s *Server) invite(w http.ResponseWriter, r *http.Request, u *User) error {
 		var in struct {
 			GitHubID int64  `json:"githubId"`
 			Role     string `json:"role"`
-			Quota    int    `json:"validationQuota"`
+			Quota    *int   `json:"validationQuota,omitempty"` // Deprecated; accepted but ignored.
 		}
 		if err := readJSON(r, &in); err != nil {
 			return 0, nil, err
 		}
-		if in.GitHubID <= 0 || (in.Role != "member" && in.Role != "editor") || in.Quota < 0 || in.Quota > 10000 {
-			return 0, nil, fail(422, "invitation_invalid", "Use an immutable numeric GitHub ID, member/editor role, and bounded validation quota")
+		if in.GitHubID <= 0 || (in.Role != "member" && in.Role != "editor") {
+			return 0, nil, fail(422, "invitation_invalid", "Use an immutable numeric GitHub ID and a member/editor role")
 		}
-		_, err := tx.Exec(r.Context(), `INSERT INTO invitations(github_id,role,validation_quota,invited_by) VALUES($1,$2,$3,$4) ON CONFLICT(github_id) DO UPDATE SET role=excluded.role,validation_quota=excluded.validation_quota`, in.GitHubID, in.Role, in.Quota, u.ID)
+		_, err := tx.Exec(r.Context(), `INSERT INTO invitations(github_id,role,validation_quota,invited_by) VALUES($1,$2,0,$3) ON CONFLICT(github_id) DO UPDATE SET role=excluded.role`, in.GitHubID, in.Role, u.ID)
 		if err != nil {
 			return 0, nil, err
 		}
-		_, err = tx.Exec(r.Context(), `UPDATE users SET invited=true,role=$2,validation_quota=$3 WHERE github_id=$1 AND role<>'operator'`, in.GitHubID, in.Role, in.Quota)
+		_, err = tx.Exec(r.Context(), `UPDATE users SET invited=true,role=$2 WHERE github_id=$1 AND role<>'operator'`, in.GitHubID, in.Role)
 		return 201, in, err
 	})
 }

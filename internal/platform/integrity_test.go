@@ -175,7 +175,7 @@ func TestProtocolMaximumTicksPersistAndAdjudicate(t *testing.T) {
 	}
 }
 
-func TestPreparationQuotaAndExactSnapshotDedup(t *testing.T) {
+func TestPreparationIgnoresRetiredQuotaAndDeduplicatesExactSnapshot(t *testing.T) {
 	s := testDB(t)
 	u, v := seed(t, s, protocol.VerificationPlatform)
 	ctx := context.Background()
@@ -195,15 +195,7 @@ func TestPreparationQuotaAndExactSnapshotDedup(t *testing.T) {
 		json.Unmarshal(w.Body.Bytes(), &out)
 		return out, err
 	}
-	if _, err := send("prep-no-quota"); err == nil {
-		t.Fatal("zero-quota account queued remote preparation")
-	}
 	var count int
-	s.DB.QueryRow(ctx, `SELECT count(*) FROM jobs`).Scan(&count)
-	if count != 0 {
-		t.Fatal("failed admission queued external work")
-	}
-	s.DB.Exec(ctx, `UPDATE users SET validation_quota=10 WHERE id=$1`, u.ID)
 	a, err := send("prep-first-key")
 	if err != nil {
 		t.Fatal(err)

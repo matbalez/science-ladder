@@ -79,7 +79,7 @@ func (s *Server) authCallback(w http.ResponseWriter, r *http.Request, u *User) e
 	defer tx.Rollback(r.Context())
 	role, invited, quota := "member", false, 0
 	if identity.ID == s.Config.OperatorGitHubID {
-		role, invited, quota = "operator", true, 1000
+		role, invited, quota = "operator", true, 0
 	} else {
 		err = tx.QueryRow(r.Context(), `SELECT role,validation_quota FROM invitations WHERE github_id=$1`, identity.ID).Scan(&role, &quota)
 		if err == nil {
@@ -122,10 +122,8 @@ func (s *Server) logout(w http.ResponseWriter, r *http.Request, u *User) error {
 	return nil
 }
 func (s *Server) me(w http.ResponseWriter, r *http.Request, u *User) error {
-	remaining := 0
 	write, review := false, false
 	if u != nil {
-		remaining = u.Quota
 		write = u.Invited
 		review = u.Role == "editor" || u.Role == "operator"
 	}
@@ -133,7 +131,7 @@ func (s *Server) me(w http.ResponseWriter, r *http.Request, u *User) error {
 	if err := s.DB.QueryRow(r.Context(), `SELECT count(DISTINCT host_group) FROM runner_hosts WHERE enabled`).Scan(&groups); err != nil {
 		return err
 	}
-	respond(w, 200, map[string]any{"user": u, "quotas": map[string]any{"remaining": remaining, "activeLimit": s.Config.ActiveLimit}, "capabilities": map[string]bool{"creation": write, "submission": write && groups >= 1, "review": review}, "configuration": map[string]bool{"githubAuth": s.Config.GitHubClientID != "", "scientificReview": s.Config.OpenAIKey != "", "officialRunner": groups >= 1, "platformRunner": groups >= 1, "independentRunner": groups >= 2}})
+	respond(w, 200, map[string]any{"user": u, "quotas": map[string]any{"remaining": nil, "lifetimeLimit": nil, "activeLimit": s.Config.ActiveLimit}, "capabilities": map[string]bool{"creation": write, "submission": write && groups >= 1, "review": review}, "configuration": map[string]bool{"githubAuth": s.Config.GitHubClientID != "", "scientificReview": s.Config.OpenAIKey != "", "officialRunner": groups >= 1, "platformRunner": groups >= 1, "independentRunner": groups >= 2}})
 	return nil
 }
 func (s *Server) webhook(w http.ResponseWriter, r *http.Request) error {

@@ -18,7 +18,7 @@ export interface User {
 }
 export interface Session {
   user: User | null;
-  quotas: { remaining: number; activeLimit: number };
+  quotas: { remaining: number | null; lifetimeLimit?: null; activeLimit: number };
   capabilities: { creation: boolean; submission: boolean; review: boolean };
   configuration: {
     githubAuth: boolean;

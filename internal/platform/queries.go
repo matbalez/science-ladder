@@ -94,7 +94,30 @@ func (s *Server) dashboard(w http.ResponseWriter, r *http.Request, u *User) erro
 	if err != nil {
 		return err
 	}
-	respond(w, 200, map[string]any{"challenges": c, "candidates": ca, "submissions": subs, "intents": intents})
+	participation, err := queryObjects(r.Context(), s.DB, `SELECT jsonb_build_object(
+        'id',c.id,'slug',c.slug,'title',v.manifest->>'title','status',v.status,
+        'open',v.status='published' AND v.intake_status='open' AND v.deadline>now(),
+        'submissionCount',(SELECT count(*) FROM submissions s JOIN challenge_versions sv ON sv.id=s.version_id WHERE sv.challenge_id=c.id AND s.owner_id=$1),
+        'pendingCount',(SELECT count(*) FROM submission_intents i JOIN challenge_versions iv ON iv.id=i.version_id WHERE iv.challenge_id=c.id AND i.owner_id=$1 AND i.submission_id IS NULL AND i.status NOT IN('failed','rejected')),
+        'lastActivity',(SELECT max(i.created_at) FROM submission_intents i JOIN challenge_versions iv ON iv.id=i.version_id WHERE iv.challenge_id=c.id AND i.owner_id=$1))
+        FROM challenges c JOIN LATERAL (SELECT * FROM challenge_versions cv WHERE cv.challenge_id=c.id AND
+          (cv.status IN('published','closed','superseded','compromised','withdrawn') OR c.owner_id=$1 OR EXISTS(SELECT 1 FROM submission_intents i WHERE i.version_id=cv.id AND i.owner_id=$1))
+          ORDER BY (cv.status IN('published','closed','superseded','compromised','withdrawn')) DESC,cv.created_at DESC,cv.id DESC LIMIT 1) v ON true
+        WHERE EXISTS(SELECT 1 FROM submission_intents i JOIN challenge_versions iv ON iv.id=i.version_id WHERE iv.challenge_id=c.id AND i.owner_id=$1)
+        ORDER BY (SELECT max(i.created_at) FROM submission_intents i JOIN challenge_versions iv ON iv.id=i.version_id WHERE iv.challenge_id=c.id AND i.owner_id=$1) DESC`, u.ID)
+	if err != nil {
+		return err
+	}
+	var submissionCount int
+	if err = s.DB.QueryRow(r.Context(), `SELECT count(*) FROM submissions WHERE owner_id=$1`, u.ID).Scan(&submissionCount); err != nil {
+		return err
+	}
+	// Supply exact-version labels and metric units for the recent submission table.
+	contexts, err := queryObjects(r.Context(), s.DB, `SELECT jsonb_build_object('versionId',v.id,'slug',c.slug,'title',v.manifest->>'title','quantum',v.manifest->'metric'->>'quantum','units',v.manifest->'metric'->>'unit') FROM challenge_versions v JOIN challenges c ON c.id=v.challenge_id WHERE v.id IN(SELECT version_id FROM submissions WHERE owner_id=$1 ORDER BY created_at DESC LIMIT 100)`, u.ID)
+	if err != nil {
+		return err
+	}
+	respond(w, 200, map[string]any{"challenges": c, "candidates": ca, "submissions": subs, "intents": intents, "participation": participation, "submissionCount": submissionCount, "submissionContexts": contexts})
 	return nil
 }
 func (s *Server) getCandidate(w http.ResponseWriter, r *http.Request, u *User) error {

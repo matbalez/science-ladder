@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "TimingEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "baselineDigest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "summary": {
+          "$ref": "#/$defs/TimingSummary"
+        },
+        "trials": {
+          "items": {
+            "$ref": "#/$defs/TimingTrial"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        },
+        "warmups": {
+          "items": {
+            "$ref": "#/$defs/TimingTrial"
+          },
+          "maxItems": 4096,
+          "type": "array"
+        }
+      },
+      "required": [
+        "baselineDigest",
+        "warmups",
+        "trials",
+        "summary"
+      ],
+      "type": "object"
+    },
+    "TimingSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptedTrials": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "confidencePpm": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "lowerRatio": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "medianRatio": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "outcome": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "practicalGain": {
+          "type": "boolean"
+        },
+        "upperRatio": {
+          "maxLength": 131072,
+          "type": "string"
+        }
+      },
+      "required": [
+        "medianRatio",
+        "lowerRatio",
+        "upperRatio",
+        "confidencePpm",
+        "acceptedTrials",
+        "outcome",
+        "practicalGain"
+      ],
+      "type": "object"
+    },
+    "TimingTrial": {
+      "additionalProperties": false,
+      "properties": {
+        "baselineFirst": {
+          "type": "boolean"
+        },
+        "baselineNanos": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "candidateNanos": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "qualityPassed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "baselineNanos",
+        "candidateNanos",
+        "baselineFirst",
+        "qualityPassed"
+      ],
+      "type": "object"
+    },
+    "ValidatorResult": {
+      "additionalProperties": false,
+      "properties": {
+        "apiVersion": {
+          "const": "science-ladder/v2"
+        },
+        "comparisonId": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "gates": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "maxProperties": 128,
+          "type": "object"
+        },
+        "kind": {
+          "const": "ValidatorResult"
+        },
+        "measurements": {
+          "additionalProperties": {
+            "maxLength": 131072,
+            "type": "string"
+          },
+          "maxProperties": 128,
+          "type": "object"
+        },
+        "score": {
+          "maxLength": 131072,
+          "type": "string"
+        },
+        "timing": {
+          "$ref": "#/$defs/TimingEvidence"
+        }
+      },
+      "required": [
+        "comparisonId",
+        "measurements",
+        "apiVersion",
+        "kind",
+        "score",
+        "gates"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/matbalez/science-ladder/blob/main/protocol/schemas/validator-result-v2.schema.json",
+  "$ref": "#/$defs/ValidatorResult",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Science Ladder ValidatorResult v2"
+}

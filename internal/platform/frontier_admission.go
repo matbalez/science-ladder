@@ -96,13 +96,6 @@ func (s *Server) createFrontierTicket(w http.ResponseWriter, r *http.Request, u 
 		if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(6842077295)`); err != nil {
 			return 0, nil, err
 		}
-		var quota int
-		if err = tx.QueryRow(ctx, `SELECT validation_quota FROM users WHERE id=$1`, u.ID).Scan(&quota); err != nil {
-			return 0, nil, err
-		}
-		if quota <= 0 {
-			return 0, nil, fail(429, "quota_exhausted", "No validation grants remain")
-		}
 		var duplicate bool
 		if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM submissions WHERE version_id=$1 AND artifact_digest=$2) OR EXISTS(SELECT 1 FROM frontier_tickets WHERE owner_id=$3 AND version_id=$1 AND artifact_digest=$2 AND consumed_at IS NOT NULL)`, in.Claim.VersionID, in.Claim.ArtifactDigest, u.ID).Scan(&duplicate); err != nil {
 			return 0, nil, err
@@ -124,7 +117,7 @@ func (s *Server) createFrontierTicket(w http.ResponseWriter, r *http.Request, u 
 		if err != nil {
 			return 0, nil, err
 		}
-		if daily >= 5 || global >= 100 || active >= quota || active >= 3 || p.Mode == "qualification" && qualification >= 2 {
+		if daily >= 5 || global >= 100 || active >= 3 || p.Mode == "qualification" && qualification >= 2 {
 			return 0, nil, fail(429, "frontier_admission_budget", "Verification admission budget reached; continue local work and inspect existing submissions")
 		}
 		id = ID()

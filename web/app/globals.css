@@ -3732,3 +3732,50 @@ small {
  .challenge-prose .content-section > h3,
  .challenge-prose .text-list > h3 { margin-top: 30px; }
 }
+
+.account-activity {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--border);
+  margin: 24px 0 36px;
+}
+.account-activity a {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 20px;
+  color: var(--muted);
+}
+.account-activity a + a {
+  border-left: 1px solid var(--border);
+}
+.account-activity strong {
+  font-size: 38px;
+  font-weight: 500;
+  color: var(--lime);
+}
+.account-activity a:hover span {
+  color: var(--lime);
+}
+.account-page .content-section {
+  scroll-margin-top: 100px;
+}
+.account-page .account-settings {
+  margin-top: 24px;
+}
+.account-page .account-challenge p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+.account-page #participation > p {
+  margin-bottom: 24px;
+}
+@media (max-width: 600px) {
+  .account-activity a {
+    padding: 20px 10px;
+    font-size: 13px;
+  }
+  .account-activity strong {
+    font-size: 30px;
+  }
+}

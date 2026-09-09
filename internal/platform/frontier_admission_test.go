@@ -113,6 +113,8 @@ func TestFrontierTicketBindingsAndReplay(t *testing.T) {
 func TestFrontierAdmissionConcurrentBudget(t *testing.T) {
 	s := testDB(t)
 	u, v := seed(t, s, protocol.VerificationPlatform)
+	// The retired zero lifetime allowance must not block valid claims.
+	s.DB.Exec(context.Background(), `UPDATE users SET validation_quota=0 WHERE id=$1`, u.ID)
 	claims := make([]claimRequest, 10)
 	for i := range claims {
 		claims[i] = admissionFixture(t, s, v, i+1)
